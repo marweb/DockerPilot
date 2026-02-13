@@ -151,7 +151,7 @@ services:
     image: node:20-alpine
     container_name: dockpilot-web-dev
     working_dir: /app
-    command: sh -c "corepack enable && corepack prepare pnpm@8.15.0 --activate && pnpm install && pnpm --filter @dockpilot/web dev --host"
+    command: sh -c "corepack enable && corepack prepare pnpm@9.15.9 --activate && pnpm install && pnpm --filter @dockpilot/web dev --host"
     ports:
       - '${WEB_PORT:-5173}:5173'
     environment:
