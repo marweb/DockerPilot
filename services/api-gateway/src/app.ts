@@ -13,12 +13,25 @@ import { healthRoutes } from './routes/health.js';
 import { systemRoutes } from './routes/system.js';
 import { authMiddleware, routePermissionMiddleware } from './middleware/auth.js';
 import { auditMiddleware } from './middleware/audit.js';
-import { startRateLimitCleanup } from './middleware/rateLimit.js';
+import {
+  startRateLimitCleanup,
+  heavyOperationRateLimitMiddleware,
+} from './middleware/rateLimit.js';
 import { proxyRequest } from './proxy/index.js';
 import { registerWebSocketProxy } from './websocket/proxy.js';
 import './types/fastify.js';
 
 export async function createApp(config: Config) {
+  const parsedAnon = process.env.RATE_LIMIT_ANON_MAX
+    ? parseInt(process.env.RATE_LIMIT_ANON_MAX, 10)
+    : 60;
+  const parsedAuth = process.env.RATE_LIMIT_AUTH_MAX
+    ? parseInt(process.env.RATE_LIMIT_AUTH_MAX, 10)
+    : 120;
+  const anonymousRateLimitMax = Number.isFinite(parsedAnon) && parsedAnon > 0 ? parsedAnon : 60;
+  const authenticatedRateLimitMax =
+    Number.isFinite(parsedAuth) && parsedAuth > 0 ? parsedAuth : 120;
+
   const fastify = Fastify({
     logger: {
       level: config.logLevel,
@@ -75,10 +88,19 @@ export async function createApp(config: Config) {
   });
 
   await fastify.register(rateLimit, {
-    max: config.rateLimitMax,
+    max: (request) => {
+      const hasBearer =
+        typeof request.headers.authorization === 'string' &&
+        request.headers.authorization.startsWith('Bearer ');
+      return hasBearer ? authenticatedRateLimitMax : anonymousRateLimitMax;
+    },
     timeWindow: config.rateLimitWindow,
     keyGenerator: (request) => {
       return request.ip;
+    },
+    allowList: (request) => {
+      const path = request.url.split('?')[0];
+      return path === '/healthz' || path.startsWith('/api/health') || path.startsWith('/api/auth/');
     },
   });
 
@@ -97,6 +119,9 @@ export async function createApp(config: Config) {
 
   // RBAC middleware for REST routes
   fastify.addHook('onRequest', routePermissionMiddleware);
+
+  // Additional limiter for heavy mutating operations
+  fastify.addHook('onRequest', heavyOperationRateLimitMiddleware);
 
   // Audit middleware for all routes
   fastify.addHook('onRequest', auditMiddleware);

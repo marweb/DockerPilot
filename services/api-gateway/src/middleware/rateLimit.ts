@@ -17,6 +17,12 @@ interface RateLimitStore {
   [key: string]: RateLimitEntry;
 }
 
+function parseEnvInt(value: string | undefined, defaultValue: number): number {
+  if (!value) return defaultValue;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+}
+
 // In-memory store for rate limiting
 const store: RateLimitStore = {};
 
@@ -45,7 +51,31 @@ const defaultRoleLimits: Record<UserRole, RateLimitConfig> = {
 // Default rate limit for unauthenticated requests
 const defaultAnonymousConfig: RateLimitConfig = {
   windowMs: 60 * 1000,
-  maxRequests: 30,
+  maxRequests: 60,
+  skipSuccessfulRequests: false,
+};
+
+const strictLoginConfig: RateLimitConfig = {
+  windowMs: parseEnvInt(process.env.AUTH_LOGIN_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
+  maxRequests: parseEnvInt(process.env.AUTH_LOGIN_RATE_LIMIT_MAX, 5),
+  skipSuccessfulRequests: false,
+};
+
+const setupConfig: RateLimitConfig = {
+  windowMs: parseEnvInt(process.env.AUTH_SETUP_RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000),
+  maxRequests: parseEnvInt(process.env.AUTH_SETUP_RATE_LIMIT_MAX, 10),
+  skipSuccessfulRequests: false,
+};
+
+const refreshConfig: RateLimitConfig = {
+  windowMs: parseEnvInt(process.env.AUTH_REFRESH_RATE_LIMIT_WINDOW_MS, 5 * 60 * 1000),
+  maxRequests: parseEnvInt(process.env.AUTH_REFRESH_RATE_LIMIT_MAX, 30),
+  skipSuccessfulRequests: false,
+};
+
+const heavyOperationConfig: RateLimitConfig = {
+  windowMs: parseEnvInt(process.env.HEAVY_OP_RATE_LIMIT_WINDOW_MS, 60 * 1000),
+  maxRequests: parseEnvInt(process.env.HEAVY_OP_RATE_LIMIT_MAX, 10),
   skipSuccessfulRequests: false,
 };
 
@@ -141,8 +171,8 @@ function getRateLimitHeaders(entry: RateLimitEntry, maxRequests: number): Record
  */
 export function createRateLimitMiddleware(config?: Partial<RateLimitConfig>) {
   return async function (request: FastifyRequest, reply: FastifyReply): Promise<void> {
-    const role: UserRole = (request.user as { role?: UserRole })?.role || 'viewer';
-    const roleConfig = defaultRoleLimits[role];
+    const role: UserRole | undefined = (request.user as { role?: UserRole })?.role;
+    const roleConfig = role ? defaultRoleLimits[role] : defaultAnonymousConfig;
 
     const finalConfig: RateLimitConfig = {
       ...roleConfig,
@@ -187,8 +217,8 @@ export async function rateLimitMiddleware(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const role: UserRole = (request.user as { role?: UserRole })?.role || 'viewer';
-  const config = defaultRoleLimits[role];
+  const role: UserRole | undefined = (request.user as { role?: UserRole })?.role;
+  const config = role ? defaultRoleLimits[role] : defaultAnonymousConfig;
 
   // Generate key based on user ID or IP
   const identifier = (request.user as { id?: string })?.id || request.ip;
@@ -223,15 +253,22 @@ export async function strictRateLimitMiddleware(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const config: RateLimitConfig = {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 5,
-    skipSuccessfulRequests: false,
-  };
+  const username =
+    typeof (request.body as { username?: unknown } | undefined)?.username === 'string'
+      ? ((request.body as { username?: string }).username || '').toLowerCase().trim()
+      : '';
 
-  const key = generateKey(request.ip, 'ip');
-  const entry = incrementCount(key, config.windowMs);
-  const headers = getRateLimitHeaders(entry, config.maxRequests);
+  const perIpEntry = incrementCount(generateKey(request.ip, 'ip'), strictLoginConfig.windowMs);
+  const compositeKey = username ? `${request.ip}:${username}` : request.ip;
+  const perIdentityEntry = incrementCount(
+    generateKey(compositeKey, 'ip'),
+    strictLoginConfig.windowMs
+  );
+
+  const counted = Math.max(perIpEntry.count, perIdentityEntry.count);
+  const resetTime = Math.max(perIpEntry.resetTime, perIdentityEntry.resetTime);
+  const entry: RateLimitEntry = { count: counted, resetTime };
+  const headers = getRateLimitHeaders(entry, strictLoginConfig.maxRequests);
 
   // Set rate limit headers
   for (const [header, value] of Object.entries(headers)) {
@@ -239,12 +276,99 @@ export async function strictRateLimitMiddleware(
   }
 
   // Check if limit exceeded
-  if (entry.count > config.maxRequests) {
+  if (entry.count > strictLoginConfig.maxRequests) {
     reply.status(429).send({
       success: false,
       error: {
         code: 'RATE_LIMIT_EXCEEDED',
         message: 'Too many login attempts. Please try again later.',
+        retryAfter: Math.ceil((entry.resetTime - Date.now()) / 1000),
+      },
+    });
+    return;
+  }
+}
+
+export async function setupRateLimitMiddleware(
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> {
+  const entry = incrementCount(generateKey(request.ip, 'ip'), setupConfig.windowMs);
+  const headers = getRateLimitHeaders(entry, setupConfig.maxRequests);
+
+  for (const [header, value] of Object.entries(headers)) {
+    void reply.header(header, value);
+  }
+
+  if (entry.count > setupConfig.maxRequests) {
+    reply.status(429).send({
+      success: false,
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: 'Too many setup attempts. Please try again later.',
+        retryAfter: Math.ceil((entry.resetTime - Date.now()) / 1000),
+      },
+    });
+    return;
+  }
+}
+
+export async function refreshRateLimitMiddleware(
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> {
+  const identifier = (request.user as { id?: string } | undefined)?.id || request.ip;
+  const keyType = request.user ? 'user' : 'ip';
+  const entry = incrementCount(generateKey(identifier, keyType), refreshConfig.windowMs);
+  const headers = getRateLimitHeaders(entry, refreshConfig.maxRequests);
+
+  for (const [header, value] of Object.entries(headers)) {
+    void reply.header(header, value);
+  }
+
+  if (entry.count > refreshConfig.maxRequests) {
+    reply.status(429).send({
+      success: false,
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: 'Too many token refresh attempts. Please try again later.',
+        retryAfter: Math.ceil((entry.resetTime - Date.now()) / 1000),
+      },
+    });
+    return;
+  }
+}
+
+export async function heavyOperationRateLimitMiddleware(
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> {
+  const method = request.method.toUpperCase();
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    return;
+  }
+
+  const url = request.url.split('?')[0];
+  const heavyPrefixes = ['/api/builds', '/api/compose', '/api/tunnels', '/api/images/pull'];
+  if (!heavyPrefixes.some((prefix) => url.startsWith(prefix))) {
+    return;
+  }
+
+  const identifier = (request.user as { id?: string } | undefined)?.id || request.ip;
+  const keyType = request.user ? 'user' : 'ip';
+  const entry = incrementCount(generateKey(identifier, keyType), heavyOperationConfig.windowMs);
+  const headers = getRateLimitHeaders(entry, heavyOperationConfig.maxRequests);
+
+  for (const [header, value] of Object.entries(headers)) {
+    void reply.header(header, value);
+  }
+
+  if (entry.count > heavyOperationConfig.maxRequests) {
+    reply.status(429).send({
+      success: false,
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: 'Heavy operation rate limit exceeded. Please retry shortly.',
         retryAfter: Math.ceil((entry.resetTime - Date.now()) / 1000),
       },
     });

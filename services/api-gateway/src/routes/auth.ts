@@ -10,7 +10,11 @@ import {
   updateUser,
 } from '../services/database.js';
 import { logAuditEntry } from '../middleware/audit.js';
-import { strictRateLimitMiddleware } from '../middleware/rateLimit.js';
+import {
+  strictRateLimitMiddleware,
+  setupRateLimitMiddleware,
+  refreshRateLimitMiddleware,
+} from '../middleware/rateLimit.js';
 import {
   hashPassword,
   verifyPasswordWithStatus,
@@ -84,6 +88,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       schema: {
         body: setupSchema,
       },
+      preHandler: setupRateLimitMiddleware,
     },
     async (request, reply) => {
       try {
@@ -325,6 +330,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       schema: {
         body: refreshTokenSchema,
       },
+      preHandler: refreshRateLimitMiddleware,
     },
     async (request, reply) => {
       try {
