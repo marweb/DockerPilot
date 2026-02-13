@@ -19,8 +19,9 @@ COPY tsconfig.json ./
 # Install build tools needed for native modules (argon2, better-sqlite3)
 RUN apk add --no-cache python3 make g++
 
-# Install only service + workspace dependencies
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted \
+# Install only service + workspace dependencies.
+# NOTE: --jitless + lower child concurrency avoids sporadic SIGILL under QEMU arm64 in CI.
+RUN NODE_OPTIONS=--jitless pnpm install --frozen-lockfile --config.node-linker=hoisted --child-concurrency=1 \
   --filter @dockpilot/api-gateway... \
   --filter @dockpilot/types...
 

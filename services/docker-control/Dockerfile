@@ -19,7 +19,7 @@ COPY tsconfig.json ./
 # Install only service + workspace dependencies; --ignore-scripts prevents
 # native module compilation (argon2, better-sqlite3, ssh2) that crashes under
 # QEMU ARM64 emulation. docker-control has no native dependencies at runtime.
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted --ignore-scripts \
+RUN NODE_OPTIONS=--jitless pnpm install --frozen-lockfile --config.node-linker=hoisted --child-concurrency=1 --ignore-scripts \
   --filter @dockpilot/docker-control... \
   --filter @dockpilot/types...
 
