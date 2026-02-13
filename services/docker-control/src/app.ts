@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import websocket from '@fastify/websocket';
+import { validatorCompiler, serializerCompiler } from 'fastify-type-provider-zod';
 import type { Duplex } from 'stream';
 import type { Config } from './config/index.js';
 import { initDocker } from './services/docker.js';
@@ -38,6 +39,10 @@ export async function createApp(config: Config) {
     requestIdHeader: 'x-request-id',
     genReqId: () => crypto.randomUUID(),
   });
+
+  // Enable Zod schemas in route `schema` blocks
+  fastify.setValidatorCompiler(validatorCompiler);
+  fastify.setSerializerCompiler(serializerCompiler);
 
   // Register plugins
   await fastify.register(cors, {
