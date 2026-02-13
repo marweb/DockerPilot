@@ -17,8 +17,8 @@ COPY apps/web ./apps/web
 COPY tsconfig.json ./
 COPY turbo.json ./
 
-# Install only app + workspace dependencies to speed up CI and avoid unrelated native builds
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted \
+# Install only web + shared types dependencies (avoid hoisting all workspace deps)
+RUN pnpm install --frozen-lockfile \
   --filter @dockpilot/web... \
   --filter @dockpilot/types...
 
