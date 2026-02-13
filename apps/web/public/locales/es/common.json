@@ -1,4 +1,5 @@
 {
+  "select_language": "Seleccionar idioma",
   "nav": {
     "dashboard": "Panel",
     "containers": "Contenedores",
@@ -208,7 +209,51 @@
   },
   "volumes": {
     "title": "Volúmenes",
-    "comingSoon": "Gestión de volúmenes próximamente..."
+    "create": "Crear volumen",
+    "createTitle": "Crear nuevo volumen",
+    "createButton": "Crear",
+    "searchPlaceholder": "Buscar por nombre o driver...",
+    "name": "Nombre",
+    "namePlaceholder": "mi-volumen",
+    "driver": "Driver",
+    "containers": "contenedores",
+    "inUse": "El volumen está en uso",
+    "notFound": "Volumen no encontrado",
+    "prune": "Limpiar",
+    "pruneTitle": "Limpiar volúmenes sin uso",
+    "pruneMessage": "Se eliminarán {{count}} volúmenes sin uso.",
+    "pruneWarning": "Esta acción no se puede deshacer.",
+    "pruneButton": "Limpiar volúmenes",
+    "pruneComplete": "Limpieza completada",
+    "pruneResult": "Se eliminaron {{count}} volúmenes y se liberaron {{space}}.",
+    "deleteInUseConfirm": "El volumen {{name}} está siendo usado por contenedores. ¿Eliminar de todas formas?",
+    "empty": {
+      "title": "No se encontraron volúmenes",
+      "description": "Crea un volumen para persistir datos"
+    },
+    "list": {
+      "name": "Nombre",
+      "driver": "Driver",
+      "scope": "Scope",
+      "mountpoint": "Mountpoint",
+      "size": "Tamaño",
+      "usage": "Uso",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "remove": "Eliminar"
+    },
+    "details": {
+      "driver": "Driver",
+      "scope": "Scope",
+      "mountpoint": "Mountpoint",
+      "created": "Creado",
+      "usage": "Uso",
+      "size": "Tamaño",
+      "refCount": "Referencias",
+      "labels": "Etiquetas",
+      "options": "Opciones"
+    }
   },
   "networks": {
     "title": "Redes",
@@ -312,6 +357,17 @@
     "autoUpdateActive": "Las actualizaciones automáticas están habilitadas. DockPilot buscará nuevas versiones cada día a las 00:00 UTC y las instalará automáticamente.",
     "autoUpdateDisabled": "Las actualizaciones automáticas están deshabilitadas. Puedes buscar actualizaciones manualmente desde esta página.",
     "autoUpdateStatus": "Auto-Actualización",
+    "changePassword": "Cambiar clave",
+    "currentPassword": "Clave actual",
+    "newPassword": "Nueva clave",
+    "confirmNewPassword": "Confirmar nueva clave",
+    "saveNewPassword": "Guardar nueva clave",
+    "changingPassword": "Cambiando clave...",
+    "passwordChanged": "Clave cambiada exitosamente",
+    "passwordChangeFailed": "No se pudo cambiar la clave",
+    "passwordMismatch": "Las nuevas claves no coinciden",
+    "passwordMinLength": "La nueva clave debe tener al menos 8 caracteres",
+    "passwordAllRequired": "Completa todos los campos de clave",
     "settingsSaved": "Configuración guardada exitosamente",
     "settingsSaveFailed": "Error al guardar la configuración",
     "systemInfo": "Información del Sistema",
@@ -342,6 +398,7 @@
     "version": "Versión"
   },
   "common": {
+    "select_language": "Seleccionar idioma",
     "menu": "Menú",
     "close": "Cerrar",
     "more": "Más",

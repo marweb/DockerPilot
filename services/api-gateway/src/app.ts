@@ -131,8 +131,7 @@ export async function createApp(config: Config) {
 
   // Proxy routes to docker-control
   fastify.all('/api/containers/*', async (request, reply) => {
-    const path = request.url.replace('/api', '');
-    await proxyRequest(request, reply, `${config.dockerControlUrl}${path}`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}${request.url}`);
   });
 
   fastify.all('/api/containers', async (request, reply) => {
@@ -141,8 +140,7 @@ export async function createApp(config: Config) {
   });
 
   fastify.all('/api/images/*', async (request, reply) => {
-    const path = request.url.replace('/api', '');
-    await proxyRequest(request, reply, `${config.dockerControlUrl}${path}`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}${request.url}`);
   });
 
   fastify.all('/api/images', async (request, reply) => {
@@ -151,8 +149,7 @@ export async function createApp(config: Config) {
   });
 
   fastify.all('/api/volumes/*', async (request, reply) => {
-    const path = request.url.replace('/api', '');
-    await proxyRequest(request, reply, `${config.dockerControlUrl}${path}`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}${request.url}`);
   });
 
   fastify.all('/api/volumes', async (request, reply) => {
@@ -161,8 +158,7 @@ export async function createApp(config: Config) {
   });
 
   fastify.all('/api/networks/*', async (request, reply) => {
-    const path = request.url.replace('/api', '');
-    await proxyRequest(request, reply, `${config.dockerControlUrl}${path}`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}${request.url}`);
   });
 
   fastify.all('/api/networks', async (request, reply) => {
@@ -171,8 +167,7 @@ export async function createApp(config: Config) {
   });
 
   fastify.all('/api/builds/*', async (request, reply) => {
-    const path = request.url.replace('/api', '');
-    await proxyRequest(request, reply, `${config.dockerControlUrl}${path}`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}${request.url}`);
   });
 
   fastify.all('/api/builds', async (request, reply) => {
@@ -181,8 +176,7 @@ export async function createApp(config: Config) {
   });
 
   fastify.all('/api/compose/*', async (request, reply) => {
-    const path = request.url.replace('/api', '');
-    await proxyRequest(request, reply, `${config.dockerControlUrl}${path}`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}${request.url}`);
   });
 
   fastify.all('/api/compose', async (request, reply) => {
@@ -191,25 +185,38 @@ export async function createApp(config: Config) {
   });
 
   fastify.all('/api/info', async (request, reply) => {
-    await proxyRequest(request, reply, `${config.dockerControlUrl}/api/info`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/info`);
   });
 
   fastify.all('/api/version', async (request, reply) => {
-    await proxyRequest(request, reply, `${config.dockerControlUrl}/api/version`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/version`);
   });
 
   fastify.all('/api/df', async (request, reply) => {
-    await proxyRequest(request, reply, `${config.dockerControlUrl}/api/df`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/df`);
   });
 
   fastify.all('/api/ping', async (request, reply) => {
-    await proxyRequest(request, reply, `${config.dockerControlUrl}/api/ping`);
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/ping`);
   });
 
   // Proxy routes to tunnel-control
   fastify.all('/api/tunnels/*', async (request, reply) => {
-    const path = request.url.replace('/api', '');
-    await proxyRequest(request, reply, `${config.tunnelControlUrl}${path}`);
+    await proxyRequest(request, reply, `${config.tunnelControlUrl}${request.url}`);
+  });
+
+  // Legacy aliases without /api prefix
+  fastify.all('/compose/*', async (request, reply) => {
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/api${request.url}`);
+  });
+
+  fastify.all('/compose', async (request, reply) => {
+    const queryString = request.url.includes('?') ? `?${request.url.split('?')[1]}` : '';
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/api/compose${queryString}`);
+  });
+
+  fastify.all('/info', async (request, reply) => {
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/info`);
   });
 
   fastify.all('/api/tunnels', async (request, reply) => {

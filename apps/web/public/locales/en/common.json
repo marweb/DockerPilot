@@ -1,4 +1,5 @@
 {
+  "select_language": "Select language",
   "nav": {
     "dashboard": "Dashboard",
     "containers": "Containers",
@@ -208,7 +209,51 @@
   },
   "volumes": {
     "title": "Volumes",
-    "comingSoon": "Volume management coming soon..."
+    "create": "Create volume",
+    "createTitle": "Create new volume",
+    "createButton": "Create",
+    "searchPlaceholder": "Search by volume name or driver...",
+    "name": "Name",
+    "namePlaceholder": "my-volume",
+    "driver": "Driver",
+    "containers": "containers",
+    "inUse": "Volume is in use",
+    "notFound": "Volume not found",
+    "prune": "Prune",
+    "pruneTitle": "Prune unused volumes",
+    "pruneMessage": "{{count}} unused volumes will be removed.",
+    "pruneWarning": "This action cannot be undone.",
+    "pruneButton": "Prune volumes",
+    "pruneComplete": "Cleanup completed",
+    "pruneResult": "Removed {{count}} volumes and reclaimed {{space}}.",
+    "deleteInUseConfirm": "Volume {{name}} is being used by containers. Remove it anyway?",
+    "empty": {
+      "title": "No volumes found",
+      "description": "Create a volume to persist data"
+    },
+    "list": {
+      "name": "Name",
+      "driver": "Driver",
+      "scope": "Scope",
+      "mountpoint": "Mountpoint",
+      "size": "Size",
+      "usage": "Usage",
+      "actions": "Actions"
+    },
+    "actions": {
+      "remove": "Remove"
+    },
+    "details": {
+      "driver": "Driver",
+      "scope": "Scope",
+      "mountpoint": "Mountpoint",
+      "created": "Created",
+      "usage": "Usage",
+      "size": "Size",
+      "refCount": "References",
+      "labels": "Labels",
+      "options": "Options"
+    }
   },
   "networks": {
     "title": "Networks",
@@ -312,6 +357,17 @@
     "autoUpdateActive": "Automatic updates are enabled. DockPilot will check for new versions every day at 00:00 UTC and install them automatically.",
     "autoUpdateDisabled": "Automatic updates are disabled. You can manually check for updates and upgrade from this page.",
     "autoUpdateStatus": "Auto-Update",
+    "changePassword": "Change Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "saveNewPassword": "Save new password",
+    "changingPassword": "Changing password...",
+    "passwordChanged": "Password changed successfully",
+    "passwordChangeFailed": "Could not change password",
+    "passwordMismatch": "New passwords do not match",
+    "passwordMinLength": "New password must be at least 8 characters",
+    "passwordAllRequired": "Please complete all password fields",
     "settingsSaved": "Settings saved successfully",
     "settingsSaveFailed": "Failed to save settings",
     "systemInfo": "System Information",
@@ -342,6 +398,7 @@
     "version": "Version"
   },
   "common": {
+    "select_language": "Select language",
     "menu": "Menu",
     "close": "Close",
     "more": "More",

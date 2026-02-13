@@ -14,6 +14,9 @@ i18n
     defaultNS: 'common',
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
+      requestOptions: {
+        cache: 'no-store',
+      },
     },
     detection: {
       order: ['localStorage', 'navigator'],

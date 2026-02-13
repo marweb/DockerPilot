@@ -12,7 +12,21 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
 /**
  * API base URL from environment or default
  */
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+function resolveApiBaseUrl(): string {
+  const configured = (import.meta.env.VITE_API_URL || '').trim();
+
+  if (!configured || configured === '/') {
+    return '/api';
+  }
+
+  if (/^https?:\/\/[^/]+$/i.test(configured)) {
+    return `${configured}/api`;
+  }
+
+  return configured;
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 /**
  * Request timeout in milliseconds

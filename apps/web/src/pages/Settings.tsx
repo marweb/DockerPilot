@@ -12,6 +12,7 @@ import {
   ArrowUpCircle,
   Loader2,
   Info,
+  KeyRound,
 } from 'lucide-react';
 import api from '../api/client';
 
@@ -43,6 +44,10 @@ export default function Settings() {
   const [checking, setChecking] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -84,6 +89,44 @@ export default function Settings() {
       setError(t('settings.settingsSaveFailed'));
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const changePassword = async () => {
+    setError('');
+    setSuccessMessage('');
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      setError(t('settings.passwordAllRequired'));
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setError(t('settings.passwordMismatch'));
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError(t('settings.passwordMinLength'));
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setSuccessMessage(t('settings.passwordChanged'));
+      setTimeout(() => setSuccessMessage(''), 4000);
+    } catch (err: unknown) {
+      const message = (err as { message?: string })?.message;
+      setError(message || t('settings.passwordChangeFailed'));
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -309,8 +352,7 @@ export default function Settings() {
           {/* Last Check Time */}
           {versionInfo?.checkedAt && (
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {t('settings.lastChecked')}{' '}
-              {new Date(versionInfo.checkedAt).toLocaleString()}
+              {t('settings.lastChecked')} {new Date(versionInfo.checkedAt).toLocaleString()}
             </p>
           )}
         </div>
@@ -382,6 +424,68 @@ export default function Settings() {
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
           <div className="flex items-center gap-2">
+            <KeyRound className="h-5 w-5 text-primary-500" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {t('settings.changePassword')}
+            </h2>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="label">{t('settings.currentPassword')}</label>
+            <input
+              type="password"
+              className="input"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder={t('settings.currentPassword')}
+            />
+          </div>
+          <div>
+            <label className="label">{t('settings.newPassword')}</label>
+            <input
+              type="password"
+              className="input"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder={t('settings.newPassword')}
+            />
+          </div>
+          <div>
+            <label className="label">{t('settings.confirmNewPassword')}</label>
+            <input
+              type="password"
+              className="input"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              placeholder={t('settings.confirmNewPassword')}
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={changePassword}
+              disabled={changingPassword}
+              className="btn btn-primary"
+              type="button"
+            >
+              {changingPassword ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('settings.changingPassword')}
+                </>
+              ) : (
+                t('settings.saveNewPassword')
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* System Information */}
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+          <div className="flex items-center gap-2">
             <SettingsIcon className="h-5 w-5 text-primary-500" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {t('settings.systemInfo')}
@@ -430,9 +534,7 @@ export default function Settings() {
                 {t('settings.updateSchedule')}
               </dt>
               <dd className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                {settings.autoUpdate
-                  ? t('settings.dailyAtMidnight')
-                  : t('settings.manualOnly')}
+                {settings.autoUpdate ? t('settings.dailyAtMidnight') : t('settings.manualOnly')}
               </dd>
             </div>
           </dl>
