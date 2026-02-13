@@ -18,6 +18,7 @@ RUN pnpm install --frozen-lockfile
 COPY packages/types ./packages/types
 COPY services/tunnel-control ./services/tunnel-control
 COPY tsconfig.json ./
+RUN pnpm install --frozen-lockfile
 
 # Build types package first
 RUN pnpm --filter @dockpilot/types build

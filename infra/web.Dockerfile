@@ -19,6 +19,7 @@ COPY packages/types ./packages/types
 COPY apps/web ./apps/web
 COPY tsconfig.json ./
 COPY turbo.json ./
+RUN pnpm install --frozen-lockfile
 
 # Build types package first
 RUN pnpm --filter @dockpilot/types build
