@@ -28,6 +28,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-100}
       - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-1 minute}
+      - DOCKPILOT_VERSION=${DOCKPILOT_VERSION:-latest}
     volumes:
       - api-gateway-data:/data
     networks:
@@ -60,6 +61,8 @@ services:
       - DOCKER_HOST=${DOCKER_HOST:-unix:///var/run/docker.sock}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - COMPOSE_DIR=/data/compose
+      - DOCKPILOT_VERSION=${DOCKPILOT_VERSION:-latest}
+      - DOCKPILOT_SOURCE_DIR=${DOCKPILOT_HOME:-/data/dockpilot}/source
     volumes:
       - docker-control-data:/data
       - /var/run/docker.sock:/var/run/docker.sock:ro

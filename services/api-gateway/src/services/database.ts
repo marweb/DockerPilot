@@ -202,6 +202,27 @@ export async function completeSetup(): Promise<void> {
   sqlite.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('setup_complete', '1')").run();
 }
 
+export async function getSystemSetting(key: string): Promise<string | null> {
+  const sqlite = await getDatabase();
+  const row = sqlite.prepare('SELECT value FROM meta WHERE key = ?').get(key) as { value: string } | undefined;
+  return row?.value ?? null;
+}
+
+export async function setSystemSetting(key: string, value: string): Promise<void> {
+  const sqlite = await getDatabase();
+  sqlite.prepare('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)').run(key, value);
+}
+
+export async function getSystemSettings(): Promise<Record<string, string>> {
+  const sqlite = await getDatabase();
+  const rows = sqlite.prepare("SELECT key, value FROM meta WHERE key LIKE 'setting_%'").all() as Array<{ key: string; value: string }>;
+  const settings: Record<string, string> = {};
+  for (const row of rows) {
+    settings[row.key.replace('setting_', '')] = row.value;
+  }
+  return settings;
+}
+
 export async function findUserByUsername(username: string): Promise<StoredUser | null> {
   const sqlite = await getDatabase();
   const row = sqlite.prepare(

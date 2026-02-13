@@ -1,0 +1,150 @@
+name: Cache Cleanup
+
+on:
+  # Ejecutar manualmente desde la UI de GitHub
+  workflow_dispatch:
+    inputs:
+      keep_count:
+        description: 'Numero de caches recientes a mantener por servicio'
+        required: false
+        default: '2'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+      dry_run:
+        description: 'Solo mostrar que se borraria (sin borrar)'
+        required: false
+        default: false
+        type: boolean
+
+  # Ejecutar automaticamente cada domingo a las 3:00 AM UTC
+  schedule:
+    - cron: '0 3 * * 0'
+
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Display current cache usage
+        run: |
+          echo "=============================================="
+          echo "  GitHub Actions Cache - Estado actual"
+          echo "=============================================="
+          echo ""
+
+          CACHE_LIST=$(gh actions-cache list --repo "$REPO" --limit 100 2>/dev/null || echo "")
+
+          if [ -z "$CACHE_LIST" ]; then
+            echo "No se encontraron caches."
+            exit 0
+          fi
+
+          echo "$CACHE_LIST"
+          echo ""
+
+          TOTAL_CACHES=$(echo "$CACHE_LIST" | wc -l | tr -d ' ')
+          echo "Total de entradas de cache: $TOTAL_CACHES"
+          echo ""
+
+      - name: Cleanup old caches
+        env:
+          KEEP_COUNT: ${{ github.event.inputs.keep_count || '2' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          echo "=============================================="
+          echo "  Limpieza de Cache"
+          echo "  Mantener por servicio: $KEEP_COUNT"
+          echo "  Modo simulacion: $DRY_RUN"
+          echo "=============================================="
+          echo ""
+
+          DELETED=0
+          SKIPPED=0
+
+          # Servicios Docker (caches con scope)
+          for service in api-gateway docker-control tunnel-control web; do
+            echo "--- $service ---"
+
+            CACHE_KEYS=$(gh actions-cache list --repo "$REPO" --limit 100 \
+              --sort last-used --order asc 2>/dev/null | grep -i "$service" | awk '{print $1}' || true)
+
+            if [ -z "$CACHE_KEYS" ]; then
+              echo "  Sin caches"
+              echo ""
+              continue
+            fi
+
+            TOTAL=$(echo "$CACHE_KEYS" | wc -l | tr -d ' ')
+            DELETE_COUNT=$((TOTAL - KEEP_COUNT))
+
+            if [ "$DELETE_COUNT" -le 0 ]; then
+              echo "  $TOTAL caches (OK, dentro del limite de $KEEP_COUNT)"
+              SKIPPED=$((SKIPPED + TOTAL))
+              echo ""
+              continue
+            fi
+
+            echo "  $TOTAL caches encontrados, eliminando $DELETE_COUNT, manteniendo $KEEP_COUNT"
+
+            echo "$CACHE_KEYS" | head -n "$DELETE_COUNT" | while read -r key; do
+              if [ "$DRY_RUN" = "true" ]; then
+                echo "  [SIMULACION] Se eliminaria: $key"
+              else
+                echo "  Eliminando: $key"
+                gh actions-cache delete "$key" --repo "$REPO" --confirm 2>/dev/null || true
+              fi
+            done
+
+            DELETED=$((DELETED + DELETE_COUNT))
+            SKIPPED=$((SKIPPED + KEEP_COUNT))
+            echo ""
+          done
+
+          # Caches genericos de buildx/buildkit (sin scope - del formato anterior)
+          echo "--- Caches buildx genericos ---"
+          GENERIC_KEYS=$(gh actions-cache list --repo "$REPO" --limit 100 \
+            --sort last-used --order asc 2>/dev/null | grep -iE "buildx|buildkit" | grep -iv "api-gateway\|docker-control\|tunnel-control\|web" | awk '{print $1}' || true)
+
+          if [ -n "$GENERIC_KEYS" ]; then
+            TOTAL=$(echo "$GENERIC_KEYS" | wc -l | tr -d ' ')
+            echo "  $TOTAL caches buildx genericos encontrados (restos del formato anterior)"
+            echo "$GENERIC_KEYS" | while read -r key; do
+              if [ "$DRY_RUN" = "true" ]; then
+                echo "  [SIMULACION] Se eliminaria: $key"
+              else
+                echo "  Eliminando: $key"
+                gh actions-cache delete "$key" --repo "$REPO" --confirm 2>/dev/null || true
+              fi
+            done
+            DELETED=$((DELETED + TOTAL))
+          else
+            echo "  Sin caches genericos"
+          fi
+
+          echo ""
+          echo "=============================================="
+          echo "  Resumen"
+          echo "  Eliminados: $DELETED"
+          echo "  Conservados: $SKIPPED"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "  (Modo simulacion - nada fue eliminado realmente)"
+          fi
+          echo "=============================================="
+
+      - name: Display final cache state
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          echo ""
+          echo "=== Estado del cache despues de limpieza ==="
+          gh actions-cache list --repo "$REPO" --limit 100 2>/dev/null || echo "Sin caches"

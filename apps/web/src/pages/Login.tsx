@@ -1,14 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth';
 
 export default function Login() {
   const { t } = useTranslation();
-  const { login } = useAuthStore();
+  const navigate = useNavigate();
+  const { login, setupComplete, checkSetupStatus, isAuthenticated } = useAuthStore();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  // Verificar si el setup está completo al montar
+  useEffect(() => {
+    const check = async () => {
+      await checkSetupStatus();
+      setChecking(false);
+    };
+    check();
+  }, [checkSetupStatus]);
+
+  // Redirigir a /setup si el setup no está completo
+  useEffect(() => {
+    if (!checking && setupComplete === false) {
+      navigate('/setup', { replace: true });
+    }
+  }, [checking, setupComplete, navigate]);
+
+  // Redirigir a / si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,12 +43,22 @@ export default function Login() {
 
     try {
       await login(username, password);
+      navigate('/', { replace: true });
     } catch (err) {
       setError(t('auth.loginError'));
     } finally {
       setLoading(false);
     }
   };
+
+  // Mostrar loading mientras verifica el estado del setup
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">

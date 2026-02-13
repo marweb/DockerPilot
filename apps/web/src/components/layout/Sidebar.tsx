@@ -7,10 +7,12 @@ import {
   Image,
   HardDrive,
   Network,
+  Settings,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import clsx from 'clsx';
+import api from '../../api/client';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -19,13 +21,14 @@ interface SidebarProps {
   defaultCollapsed?: boolean;
 }
 
-// Navigation items - placeholder pages (builds, compose, tunnels, settings) hidden until implemented
+// Navigation items
 const navigation = [
   { name: 'dashboard', href: '/', icon: Home },
   { name: 'containers', href: '/containers', icon: Box },
   { name: 'images', href: '/images', icon: Image },
   { name: 'volumes', href: '/volumes', icon: HardDrive },
   { name: 'networks', href: '/networks', icon: Network },
+  { name: 'settings', href: '/settings', icon: Settings },
 ];
 
 export default function Sidebar({
@@ -38,6 +41,7 @@ export default function Sidebar({
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [isMobile, setIsMobile] = useState(false);
+  const [appVersion, setAppVersion] = useState('...');
 
   useEffect(() => {
     const checkMobile = () => {
@@ -46,6 +50,16 @@ export default function Sidebar({
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    api.get('/system/version')
+      .then((res) => {
+        setAppVersion(res.data?.data?.currentVersion || '...');
+      })
+      .catch(() => {
+        setAppVersion('...');
+      });
   }, []);
 
   const isActive = (href: string) => {
@@ -117,7 +131,7 @@ export default function Sidebar({
       {!collapsed && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="rounded-lg bg-gray-50 dark:bg-gray-700/50 p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400">{t('sidebar.version')} 1.0.0</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('sidebar.version')} {appVersion}</p>
           </div>
         </div>
       )}

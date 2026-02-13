@@ -12,9 +12,78 @@ env:
 permissions:
   contents: write
   packages: write
+  actions: write
 
 jobs:
+  # Limpiar caches antiguos antes de construir para no superar el límite de 10GB
+  cleanup-caches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cleanup old build caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "=== Limpiando caches antiguos de GitHub Actions ==="
+          echo "Cache usage antes de limpieza:"
+          gh actions-cache list --repo ${{ github.repository }} --limit 100 | head -5
+
+          # Obtener todos los caches, ordenados por último acceso (más antiguos primero)
+          # Mantener solo los 2 más recientes por cada prefijo de servicio
+          for service in api-gateway docker-control tunnel-control web; do
+            echo ""
+            echo "--- Procesando caches de: $service ---"
+
+            # Listar caches de este servicio (el scope de buildx usa el nombre como prefijo)
+            CACHE_KEYS=$(gh actions-cache list --repo ${{ github.repository }} --limit 100 \
+              --sort last-used --order asc | grep -i "$service" | awk '{print $1}' || true)
+
+            if [ -z "$CACHE_KEYS" ]; then
+              echo "  No se encontraron caches para $service"
+              continue
+            fi
+
+            # Contar total y borrar todos excepto los 2 más recientes
+            TOTAL=$(echo "$CACHE_KEYS" | wc -l | tr -d ' ')
+            KEEP=2
+            DELETE_COUNT=$((TOTAL - KEEP))
+
+            if [ "$DELETE_COUNT" -gt 0 ]; then
+              echo "  Total: $TOTAL caches, eliminando $DELETE_COUNT antiguos, manteniendo $KEEP recientes"
+              echo "$CACHE_KEYS" | head -n "$DELETE_COUNT" | while read -r key; do
+                echo "  Eliminando: $key"
+                gh actions-cache delete "$key" --repo ${{ github.repository }} --confirm 2>/dev/null || true
+              done
+            else
+              echo "  Total: $TOTAL caches (dentro del límite de $KEEP)"
+            fi
+          done
+
+          # También limpiar caches genéricos de buildx sin scope
+          echo ""
+          echo "--- Limpiando caches buildx genéricos ---"
+          GENERIC_KEYS=$(gh actions-cache list --repo ${{ github.repository }} --limit 100 \
+            --sort last-used --order asc | grep -i "buildx\|buildkit" | awk '{print $1}' || true)
+          if [ -n "$GENERIC_KEYS" ]; then
+            TOTAL=$(echo "$GENERIC_KEYS" | wc -l | tr -d ' ')
+            KEEP=4
+            DELETE_COUNT=$((TOTAL - KEEP))
+            if [ "$DELETE_COUNT" -gt 0 ]; then
+              echo "  Eliminando $DELETE_COUNT caches buildx genéricos antiguos"
+              echo "$GENERIC_KEYS" | head -n "$DELETE_COUNT" | while read -r key; do
+                echo "  Eliminando: $key"
+                gh actions-cache delete "$key" --repo ${{ github.repository }} --confirm 2>/dev/null || true
+              done
+            fi
+          fi
+
+          echo ""
+          echo "=== Limpieza completada ==="
+
   build-and-push:
+    needs: cleanup-caches
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -71,8 +140,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,scope=${{ matrix.service }},mode=min
 
   update-versions:
     needs: build-and-push

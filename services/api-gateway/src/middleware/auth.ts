@@ -225,11 +225,19 @@ export const routePermissions: Record<string, string> = {
   'GET:/api/compose/:name/logs': 'compose:logs',
   'DELETE:/api/compose/:name': 'compose:delete',
 
-  // System
+  // System (Docker)
   'GET:/api/info': 'system:read',
   'GET:/api/version': 'system:read',
   'GET:/api/df': 'system:read',
   'GET:/api/ping': 'system:read',
+
+  // System (DockPilot)
+  'GET:/api/system/version': 'system:read',
+  'GET:/api/system/check-update': 'system:read',
+  'GET:/api/system/settings': 'settings:read',
+  'PUT:/api/system/settings': 'settings:update',
+  'POST:/api/system/upgrade': 'settings:update',
+  'GET:/api/system/upgrade-status': 'system:read',
 
   // Users
   'GET:/api/users': 'users:list',

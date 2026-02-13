@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Github, Book, Heart } from 'lucide-react';
+import api from '../../api/client';
 
 interface FooterProps {
   showVersion?: boolean;
@@ -20,6 +22,17 @@ export default function Footer({
 }: FooterProps) {
   const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
+  const [appVersion, setAppVersion] = useState('...');
+
+  useEffect(() => {
+    api.get('/system/version')
+      .then((res) => {
+        setAppVersion(res.data?.data?.currentVersion || '...');
+      })
+      .catch(() => {
+        setAppVersion('...');
+      });
+  }, []);
 
   return (
     <footer
@@ -72,7 +85,7 @@ export default function Footer({
                 <Book className="h-5 w-5" />
               </a>
               <span className="text-xs text-gray-400 dark:text-gray-500 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">
-                v1.0.0
+                v{appVersion}
               </span>
             </div>
           )}

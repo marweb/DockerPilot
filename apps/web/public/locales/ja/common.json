@@ -1,0 +1,152 @@
+{
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "containers": "コンテナ",
+    "images": "イメージ",
+    "volumes": "ボリューム",
+    "networks": "ネットワーク",
+    "builds": "ビルド",
+    "compose": "Compose",
+    "tunnels": "トンネル",
+    "settings": "設定"
+  },
+  "theme": {
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム"
+  },
+  "auth": {
+    "signIn": "サインイン",
+    "signingIn": "サインイン中...",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "logout": "ログアウト",
+    "loginError": "ユーザー名またはパスワードが無効です"
+  },
+  "setup": {
+    "title": "初期設定",
+    "description": "管理者アカウントを作成して開始します",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "confirmPassword": "パスワード確認",
+    "create": "アカウント作成",
+    "creating": "作成中...",
+    "passwordMismatch": "パスワードが一致しません",
+    "passwordTooShort": "パスワードは8文字以上必要です",
+    "passwordNeedsUppercase": "大文字を少なくとも1つ含める必要があります",
+    "passwordNeedsLowercase": "小文字を少なくとも1つ含める必要があります",
+    "passwordNeedsNumber": "数字を少なくとも1つ含める必要があります",
+    "passwordNeedsSpecial": "特殊文字を少なくとも1つ含める必要があります",
+    "passwordRequirements": "8文字以上、大文字・小文字・数字・特殊文字を含むこと",
+    "error": "アカウントの作成に失敗しました"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "containers": "コンテナ",
+    "images": "イメージ",
+    "volumes": "ボリューム",
+    "networks": "ネットワーク",
+    "running": "実行中",
+    "systemInfo": "システム情報",
+    "cpus": "CPU",
+    "memory": "メモリ",
+    "os": "オペレーティングシステム",
+    "version": "Dockerバージョン",
+    "quickActions": "クイックアクション",
+    "pullImage": "イメージを取得",
+    "createContainer": "コンテナ作成",
+    "prune": "システムクリーンアップ"
+  },
+  "containers": {
+    "title": "コンテナ",
+    "comingSoon": "コンテナ管理は近日公開予定..."
+  },
+  "images": {
+    "title": "イメージ",
+    "comingSoon": "イメージ管理は近日公開予定..."
+  },
+  "volumes": {
+    "title": "ボリューム",
+    "comingSoon": "ボリューム管理は近日公開予定..."
+  },
+  "networks": {
+    "title": "ネットワーク",
+    "comingSoon": "ネットワーク管理は近日公開予定..."
+  },
+  "builds": {
+    "title": "ビルド",
+    "comingSoon": "ビルド管理は近日公開予定..."
+  },
+  "compose": {
+    "title": "Composeスタック",
+    "comingSoon": "Compose管理は近日公開予定..."
+  },
+  "tunnels": {
+    "title": "Cloudflareトンネル",
+    "comingSoon": "トンネル管理は近日公開予定..."
+  },
+  "settings": {
+    "title": "設定",
+    "versionAndUpdates": "バージョンとアップデート",
+    "currentVersion": "現在のバージョン",
+    "latestVersion": "最新バージョン",
+    "checkForUpdates": "アップデートを確認",
+    "updateAvailable": "アップデートあり",
+    "newVersionAvailable": "バージョン {{version}} がダウンロード可能です",
+    "upgradeNow": "今すぐアップデート",
+    "upToDate": "最新バージョンです！",
+    "runningLatest": "DockPilotの最新バージョンを実行しています",
+    "upgradeInProgress": "アップデート進行中",
+    "upgradeInProgressDescription": "バージョン {{version}} にアップデート中です。数分かかる場合があります...",
+    "upgradeStepPulling": "新バージョンをダウンロードしてコンテナを更新中...",
+    "upgradeWarning": "アップデート中はこのページを閉じたりサーバーを再起動したりしないでください。完了後にシステムは自動的に再起動します。",
+    "upgradeComplete": "アップデートが正常に完了しました！ページはまもなくリフレッシュされます。",
+    "upgradeConfirm": "バージョン {{version}} にアップデートしてもよろしいですか？アップデート中にシステムが再起動します。",
+    "upgradeAlreadyInProgress": "アップデートが既に進行中です。お待ちください。",
+    "upgradeFailed": "アップデートの開始に失敗しました。もう一度お試しください。",
+    "updateCheckFailed": "アップデートの確認に失敗しました。もう一度お試しください。",
+    "lastChecked": "最終確認：",
+    "autoUpdate": "自動アップデート",
+    "autoUpdateLabel": "自動アップデートを有効にする",
+    "autoUpdateDescription": "有効にすると、DockPilotは毎日UTC 00:00にアップデートを自動的に確認してインストールします。",
+    "autoUpdateActive": "自動アップデートが有効です。DockPilotは毎日UTC 00:00に新しいバージョンを確認し、自動的にインストールします。",
+    "autoUpdateDisabled": "自動アップデートは無効です。このページから手動でアップデートを確認できます。",
+    "autoUpdateStatus": "自動アップデート",
+    "settingsSaved": "設定が正常に保存されました",
+    "settingsSaveFailed": "設定の保存に失敗しました",
+    "systemInfo": "システム情報",
+    "installedVersion": "インストール済みバージョン",
+    "enabled": "有効",
+    "disabled": "無効",
+    "updateSchedule": "アップデートスケジュール",
+    "dailyAtMidnight": "毎日 UTC 00:00",
+    "manualOnly": "手動のみ"
+  },
+  "errors": {
+    "pageNotFound": "ページが見つかりません",
+    "pageNotFoundDescription": "お探しのページは存在しないか、移動されました。",
+    "goHome": "ホームへ",
+    "goBack": "戻る",
+    "ifProblem": "問題があると思われる場合は、",
+    "contactSupport": "サポートにお問い合わせください"
+  },
+  "footer": {
+    "allRightsReserved": "全著作権所有。",
+    "documentation": "ドキュメント",
+    "support": "サポート",
+    "madeWith": "Made with",
+    "api": "API",
+    "github": "GitHub"
+  },
+  "sidebar": {
+    "version": "バージョン"
+  },
+  "common": {
+    "menu": "メニュー",
+    "close": "閉じる",
+    "more": "もっと見る",
+    "moreOptions": "その他のオプション",
+    "expand": "展開",
+    "collapse": "折りたたむ"
+  }
+}

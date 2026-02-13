@@ -1,15 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth';
 
 export default function Setup() {
   const { t } = useTranslation();
-  const { setup } = useAuthStore();
+  const navigate = useNavigate();
+  const { setup, setupComplete, checkSetupStatus } = useAuthStore();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  // Verificar si el setup ya está completo al montar
+  useEffect(() => {
+    const check = async () => {
+      await checkSetupStatus();
+      setChecking(false);
+    };
+    check();
+  }, [checkSetupStatus]);
+
+  // Redirigir a /login si el setup ya está completo
+  useEffect(() => {
+    if (!checking && setupComplete === true) {
+      navigate('/login', { replace: true });
+    }
+  }, [checking, setupComplete, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,16 +44,46 @@ export default function Setup() {
       return;
     }
 
+    // Validar fortaleza de contraseña (debe coincidir con requisitos del backend)
+    const errors: string[] = [];
+    if (!/[A-Z]/.test(password)) errors.push(t('setup.passwordNeedsUppercase'));
+    if (!/[a-z]/.test(password)) errors.push(t('setup.passwordNeedsLowercase'));
+    if (!/[0-9]/.test(password)) errors.push(t('setup.passwordNeedsNumber'));
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push(t('setup.passwordNeedsSpecial'));
+
+    if (errors.length > 0) {
+      setError(errors.join('. '));
+      return;
+    }
+
     setLoading(true);
 
     try {
       await setup(username, password);
-    } catch (err) {
-      setError(t('setup.error'));
+      navigate('/', { replace: true });
+    } catch (err: unknown) {
+      // Intentar mostrar el error específico del backend
+      const apiError = err as { message?: string; details?: string[] };
+      if (apiError?.details && Array.isArray(apiError.details)) {
+        setError(apiError.details.join('. '));
+      } else if (apiError?.message) {
+        setError(apiError.message);
+      } else {
+        setError(t('setup.error'));
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  // Mostrar loading mientras verifica el estado del setup
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -84,6 +133,9 @@ export default function Setup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t('setup.passwordRequirements')}
+              </p>
             </div>
             <div>
               <label htmlFor="confirmPassword" className="label">

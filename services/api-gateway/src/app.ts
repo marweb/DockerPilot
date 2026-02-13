@@ -10,6 +10,7 @@ import { initDatabase } from './services/database.js';
 import { authRoutes } from './routes/auth.js';
 import { userRoutes } from './routes/users.js';
 import { healthRoutes } from './routes/health.js';
+import { systemRoutes } from './routes/system.js';
 import { authMiddleware, routePermissionMiddleware } from './middleware/auth.js';
 import { auditMiddleware } from './middleware/audit.js';
 import { startRateLimitCleanup } from './middleware/rateLimit.js';
@@ -89,7 +90,7 @@ export async function createApp(config: Config) {
   fastify.get('/healthz', async (_request, reply) => {
     return reply.send({
       status: 'healthy',
-      version: '1.0.0',
+      version: process.env.DOCKPILOT_VERSION || '0.0.0',
     });
   });
 
@@ -171,6 +172,19 @@ export async function createApp(config: Config) {
 
   // Register health routes
   await fastify.register(healthRoutes, { prefix: '/api/health' });
+
+  // Register system routes (version check, settings, upgrade)
+  await fastify.register(systemRoutes, { prefix: '/api' });
+
+  // Proxy upgrade request to docker-control
+  fastify.post('/api/system/upgrade', async (request, reply) => {
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/system/upgrade`);
+  });
+
+  // Proxy upgrade status request to docker-control
+  fastify.get('/api/system/upgrade-status', async (request, reply) => {
+    await proxyRequest(request, reply, `${config.dockerControlUrl}/system/upgrade-status`);
+  });
 
   // Error handler
   fastify.setErrorHandler((error, request, reply) => {

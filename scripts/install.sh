@@ -271,7 +271,9 @@ curl -fsSL "${CDN}/docker-compose.yml" -o "${SOURCE_DIR}/docker-compose.yml"
 curl -fsSL "${CDN}/docker-compose.prod.yml" -o "${SOURCE_DIR}/docker-compose.prod.yml"
 curl -fsSL "${CDN}/.env.production" -o "${ENV_FILE}"
 curl -fsSL "${CDN}/upgrade.sh" -o "${SOURCE_DIR}/upgrade.sh"
+curl -fsSL "${CDN}/auto-update.sh" -o "${SOURCE_DIR}/auto-update.sh"
 chmod +x "${SOURCE_DIR}/upgrade.sh"
+chmod +x "${SOURCE_DIR}/auto-update.sh"
 echo " Done."
 
 # Step 7/9: Environment variables
@@ -334,6 +336,18 @@ fi
 chown -R 9999:root /data/dockpilot 2>/dev/null || true
 chmod -R 700 /data/dockpilot 2>/dev/null || true
 echo " Done."
+
+# Setup auto-update cron job (disabled by default, users enable via Settings)
+log "Setting up auto-update cron job..."
+CRON_JOB="0 0 * * * ${SOURCE_DIR}/auto-update.sh >> ${SOURCE_DIR}/auto-update.log 2>&1"
+# Remove any existing DockPilot auto-update cron entries
+(crontab -l 2>/dev/null | grep -v "auto-update.sh" | grep -v "# DockPilot") > /tmp/crontab.tmp 2>/dev/null || true
+# Add the new cron entry
+echo "# DockPilot auto-update check (runs daily at 00:00 UTC, only updates if enabled in Settings)" >> /tmp/crontab.tmp
+echo "$CRON_JOB" >> /tmp/crontab.tmp
+crontab /tmp/crontab.tmp 2>/dev/null || true
+rm -f /tmp/crontab.tmp
+echo " - Auto-update cron job installed (disabled by default, enable in Settings)."
 
 # Check if WEB_PORT is available before starting containers
 # Only dockpilot-web uses WEB_PORT (default 8000); other services use 3000, 3001, 3002 (internal)
