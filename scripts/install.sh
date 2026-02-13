@@ -5,7 +5,7 @@
 # Installs DockPilot with a single command.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/main/scripts/install.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/master/scripts/install.sh | sudo bash
 #
 # Source: https://github.com/marweb/DockerPilot
 

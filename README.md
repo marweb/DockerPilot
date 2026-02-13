@@ -127,7 +127,7 @@ dockpilot/
 Instala DockPilot con un solo comando. Soporta AMD64 y ARM64 (64-bit).
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/master/scripts/install.sh | sudo bash
 ```
 
 El script instala Docker (si no está presente), descarga las imágenes y arranca los servicios. Al finalizar, abre `http://TU_IP:80` para crear tu cuenta de administrador.

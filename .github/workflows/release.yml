@@ -152,7 +152,7 @@ jobs:
             ### Installation
 
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/main/scripts/install.sh | sudo bash
+            curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/master/scripts/install.sh | sudo bash
             ```
           draft: false
           prerelease: false

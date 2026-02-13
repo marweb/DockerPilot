@@ -183,8 +183,20 @@ export async function createApp(config: Config) {
           stderr: true,
         });
 
-        socket.on('message', (data) => {
-          execStream.write((data as Buffer).toString());
+        socket.on('message', (data: unknown) => {
+          const message =
+            typeof data === 'string'
+              ? data
+              : Buffer.isBuffer(data)
+                ? data.toString()
+                : Array.isArray(data)
+                  ? Buffer.concat(data.filter(Buffer.isBuffer)).toString()
+                  : data instanceof ArrayBuffer
+                    ? Buffer.from(data).toString()
+                    : '';
+          if (message) {
+            execStream.write(message);
+          }
         });
 
         execStream.on('data', (chunk: Buffer) => {

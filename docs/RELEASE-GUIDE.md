@@ -104,7 +104,7 @@ The output should show both `linux/amd64` and `linux/arm64` in the manifest.
 On a clean server:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/main/scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/marweb/DockerPilot/master/scripts/install.sh | sudo bash
 ```
 
 ---
