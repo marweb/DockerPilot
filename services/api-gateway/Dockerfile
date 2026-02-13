@@ -16,8 +16,10 @@ COPY packages/types ./packages/types
 COPY services/api-gateway ./services/api-gateway
 COPY tsconfig.json ./
 
-# Install dependencies with hoisted linker for runtime module resolution
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted
+# Install only service + workspace dependencies
+RUN pnpm install --frozen-lockfile --config.node-linker=hoisted \
+  --filter @dockpilot/api-gateway... \
+  --filter @dockpilot/types...
 
 # Build types package first
 RUN pnpm --filter @dockpilot/types build

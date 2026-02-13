@@ -16,8 +16,10 @@ COPY packages/types ./packages/types
 COPY services/docker-control ./services/docker-control
 COPY tsconfig.json ./
 
-# Install dependencies with hoisted linker for runtime module resolution
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted
+# Install only service + workspace dependencies to speed up CI and avoid unrelated native builds
+RUN pnpm install --frozen-lockfile --config.node-linker=hoisted \
+  --filter @dockpilot/docker-control... \
+  --filter @dockpilot/types...
 
 # Build types package first
 RUN pnpm --filter @dockpilot/types build
