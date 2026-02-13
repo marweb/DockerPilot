@@ -132,18 +132,18 @@ El punto de entrada único para todas las peticiones.
 
 ```javascript
 // Auth
-POST   /api/v1/auth/login
-POST   /api/v1/auth/logout
-POST   /api/v1/auth/refresh
+POST   /api/auth/login
+POST   /api/auth/logout
+POST   /api/auth/refresh
 
 // Docker (proxied)
-GET    /api/v1/containers/*
-GET    /api/v1/images/*
-GET    /api/v1/volumes/*
-GET    /api/v1/networks/*
+GET    /api/containers/*
+GET    /api/images/*
+GET    /api/volumes/*
+GET    /api/networks/*
 
 // Tunnels (proxied)
-GET    /api/v1/tunnels/*
+GET    /api/tunnels/*
 
 // WebSocket
 WS     /ws/*
@@ -282,8 +282,9 @@ ws.on('message', (data) => {
 ### Health Checks
 
 ```javascript
-// Cada servicio expone /health
-GET /health
+// Health checks principales
+GET /healthz
+GET /api/health
 
 // Respuesta
 {

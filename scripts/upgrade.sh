@@ -13,6 +13,7 @@
 #   ./upgrade.sh latest ghcr.io
 
 set -e
+set -o pipefail
 
 CDN="${CDN:-https://raw.githubusercontent.com/marweb/DockerPilot/master/scripts}"
 SOURCE_DIR="${SOURCE_DIR:-/data/dockpilot/source}"
@@ -48,6 +49,46 @@ wait_for_healthy() {
     sleep 5
     waited=$((waited + 5))
   done
+  return 1
+}
+
+wait_for_required_containers() {
+  local max_wait="${1:-150}"
+  local waited=0
+  local containers="dockpilot-docker-control dockpilot-tunnel-control dockpilot-api-gateway dockpilot-web"
+
+  while [ $waited -lt $max_wait ]; do
+    local all_healthy=true
+
+    for c in $containers; do
+      local state_status
+      local health_status
+      state_status=$(docker inspect --format='{{.State.Status}}' "$c" 2>/dev/null || echo "unknown")
+      health_status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$c" 2>/dev/null || echo "unknown")
+
+      if [ "$state_status" = "exited" ] || [ "$state_status" = "dead" ]; then
+        log "Container ${c} failed (state=${state_status})"
+        return 1
+      fi
+
+      if [ "$health_status" = "unhealthy" ]; then
+        log "Container ${c} failed (health=unhealthy)"
+        return 1
+      fi
+
+      if [ "$health_status" != "healthy" ]; then
+        all_healthy=false
+      fi
+    done
+
+    if [ "$all_healthy" = true ]; then
+      return 0
+    fi
+
+    sleep 5
+    waited=$((waited + 5))
+  done
+
   return 1
 }
 
@@ -199,6 +240,16 @@ if ! docker compose -f "$COMPOSE_FILE" -f "$COMPOSE_PROD" up -d --remove-orphans
   fi
 else
   write_status "5" "Containers recreated"
+fi
+
+log "Waiting for containers to become healthy..."
+if ! wait_for_required_containers 150; then
+  log "Container health check failed after compose up."
+  docker compose -f "$COMPOSE_FILE" -f "$COMPOSE_PROD" ps || true
+  docker compose -f "$COMPOSE_FILE" -f "$COMPOSE_PROD" logs --tail=120 \
+    docker-control tunnel-control api-gateway web || true
+  write_status "5" "Containers failed health check"
+  exit 1
 fi
 
 # Step 7: Cleanup old images

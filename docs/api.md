@@ -19,8 +19,10 @@ Documentación completa de la API REST de DockPilot.
 ## 🌐 Base URL
 
 ```
-http://localhost:3000/api/v1
+http://localhost:3000/api
 ```
+
+> Nota: la API actual del código usa prefijo `/api` (no `/api/v1`).
 
 ### Headers por defecto
 
@@ -50,8 +52,8 @@ Content-Type: application/json
 
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
   "token_type": "Bearer",
   "expires_in": 3600
 }
@@ -81,7 +83,7 @@ POST /auth/refresh
 Content-Type: application/json
 
 {
-  "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
 }
 ```
 
@@ -105,7 +107,7 @@ Autentica un usuario y devuelve tokens JWT.
 **Ejemplo Request:**
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/auth/login \
+curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
@@ -117,8 +119,8 @@ curl -X POST http://localhost:3000/api/v1/auth/login \
 
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
   "token_type": "Bearer",
   "expires_in": 3600,
   "user": {
@@ -154,7 +156,7 @@ Configuración inicial (primer uso).
 **Ejemplo Request:**
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/auth/setup \
+curl -X POST http://localhost:3000/api/auth/setup \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
@@ -185,7 +187,7 @@ Lista todos los contenedores.
 **Ejemplo Request:**
 
 ```bash
-curl -X GET "http://localhost:3000/api/v1/containers?all=true" \
+curl -X GET "http://localhost:3000/api/containers?all=true" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -236,7 +238,7 @@ Obtiene detalles de un contenedor específico.
 **Ejemplo Request:**
 
 ```bash
-curl -X GET http://localhost:3000/api/v1/containers/abc123def456 \
+curl -X GET http://localhost:3000/api/containers/abc123def456 \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -319,7 +321,7 @@ Crea un nuevo contenedor.
 **Ejemplo Request:**
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/containers \
+curl -X POST http://localhost:3000/api/containers \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -360,7 +362,7 @@ curl -X POST http://localhost:3000/api/v1/containers \
 Inicia un contenedor.
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/containers/abc123/start \
+curl -X POST http://localhost:3000/api/containers/abc123/start \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -377,7 +379,7 @@ Detiene un contenedor.
 | timeout | integer | 10      | Segundos antes de forzar |
 
 ```bash
-curl -X POST "http://localhost:3000/api/v1/containers/abc123/stop?timeout=30" \
+curl -X POST "http://localhost:3000/api/containers/abc123/stop?timeout=30" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -405,7 +407,7 @@ Elimina un contenedor.
 | volumes | boolean | false   | Eliminar volúmenes asociados |
 
 ```bash
-curl -X DELETE "http://localhost:3000/api/v1/containers/abc123?force=true" \
+curl -X DELETE "http://localhost:3000/api/containers/abc123?force=true" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -426,7 +428,7 @@ Obtiene logs de un contenedor.
 | follow     | boolean | false   | Seguir en tiempo real (WS) |
 
 ```bash
-curl -X GET "http://localhost:3000/api/v1/containers/abc123/logs?tail=50&timestamps=true" \
+curl -X GET "http://localhost:3000/api/containers/abc123/logs?tail=50&timestamps=true" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -443,7 +445,7 @@ curl -X GET "http://localhost:3000/api/v1/containers/abc123/logs?tail=50&timesta
 Obtiene estadísticas de un contenedor.
 
 ```bash
-curl -X GET http://localhost:3000/api/v1/containers/abc123/stats \
+curl -X GET http://localhost:3000/api/containers/abc123/stats \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -566,7 +568,7 @@ Descarga una imagen desde un registro.
 | password | string | No        | Password para auth    |
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/images/pull \
+curl -X POST http://localhost:3000/api/images/pull \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -624,7 +626,7 @@ Construye una imagen desde un Dockerfile.
 | nocache    | boolean | No        | No usar cache              |
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/images/build \
+curl -X POST http://localhost:3000/api/images/build \
   -H "Authorization: Bearer <token>" \
   -F "dockerfile=@./Dockerfile" \
   -F "context=@./context.tar.gz" \
@@ -682,7 +684,7 @@ Crea un nuevo volumen.
 | labels      | object | No        | Labels                  |
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/volumes \
+curl -X POST http://localhost:3000/api/volumes \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -766,7 +768,7 @@ Crea una nueva red.
 | labels      | object  | No        | Labels                   |
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/networks \
+curl -X POST http://localhost:3000/api/networks \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -789,11 +791,11 @@ Elimina una red.
 
 ## 🔨 Builds
 
-### POST /build
+### POST /builds
 
 Construye una imagen (alias de POST /images/build).
 
-### GET /build/history
+### GET /builds
 
 Historial de builds.
 
@@ -813,7 +815,7 @@ Historial de builds.
 ]
 ```
 
-### GET /build/:id/logs
+### GET /builds/:id/logs
 
 Logs de un build.
 
@@ -851,7 +853,7 @@ Inicia servicios definidos en un archivo compose.
 | build   | boolean | No        | Build antes de iniciar        |
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/compose/up \
+curl -X POST http://localhost:3000/api/compose/up \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -958,7 +960,7 @@ Crea un nuevo túnel.
 | auto_start     | boolean | No        | Iniciar automáticamente    |
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/tunnels \
+curl -X POST http://localhost:3000/api/tunnels \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -990,7 +992,7 @@ Elimina un túnel.
 
 ## ⚙️ System
 
-### GET /system/info
+### GET /info
 
 Información del sistema Docker.
 
@@ -1075,7 +1077,7 @@ Información del sistema Docker.
 }
 ```
 
-### GET /system/df
+### GET /df
 
 Uso de disco.
 
@@ -1112,45 +1114,31 @@ Uso de disco.
 }
 ```
 
-### POST /system/prune
+### POST /containers/prune
 
-Limpieza del sistema.
+Limpia contenedores detenidos. Para imágenes/volúmenes/redes se usan endpoints específicos:
 
-**Body Parameters:**
-
-| Nombre      | Tipo    | Default | Descripción            |
-| ----------- | ------- | ------- | ---------------------- |
-| containers  | boolean | false   | Eliminar contenedores  |
-| images      | boolean | false   | Eliminar imágenes      |
-| volumes     | boolean | false   | Eliminar volúmenes     |
-| networks    | boolean | false   | Eliminar redes         |
-| build_cache | boolean | false   | Limpiar cache de build |
+- `POST /images/prune`
+- `POST /volumes/prune`
+- `POST /networks/prune`
 
 **Respuesta (200 OK):**
 
 ```json
 {
-  "containers_deleted": ["abc123", "def456"],
-  "images_deleted": [{ "deleted": "sha256:abc..." }],
-  "networks_deleted": ["unused-network"],
-  "volumes_deleted": ["unused-volume"],
-  "space_reclaimed": 987654321
+  "success": true,
+  "data": {
+    "containersDeleted": ["abc123", "def456"],
+    "spaceReclaimed": 987654321
+  }
 }
 ```
 
-### GET /system/events
+### Eventos Docker
 
-Eventos del sistema Docker.
+Actualmente no hay endpoint REST dedicado para eventos en `docker-control`; para diagnóstico usar `docker events` en el host.
 
-**Query Parameters:**
-
-| Nombre  | Tipo   | Descripción     |
-| ------- | ------ | --------------- |
-| since   | string | Desde timestamp |
-| until   | string | Hasta timestamp |
-| filters | string | Filtros JSON    |
-
-### GET /health
+### GET /healthz
 
 Health check.
 
@@ -1159,12 +1147,7 @@ Health check.
 ```json
 {
   "status": "healthy",
-  "version": "1.0.0",
-  "timestamp": "2026-02-11T10:00:00Z",
-  "services": {
-    "docker": "connected",
-    "database": "connected"
-  }
+  "version": "1.0.20"
 }
 ```
 
@@ -1225,10 +1208,10 @@ Health check.
 ```bash
 #!/bin/bash
 
-API="http://localhost:3000/api/v1"
+API="http://localhost:3000/api"
 TOKEN=$(curl -s -X POST "$API/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}' | jq -r '.access_token')
+  -d '{"username":"admin","password":"admin123"}' | jq -r '.data.tokens.accessToken')
 
 # 1. Crear red
 curl -X POST "$API/networks" \

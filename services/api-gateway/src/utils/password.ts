@@ -1,4 +1,11 @@
-import * as argon2 from 'argon2';
+import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import type * as Argon2Module from 'argon2';
+
+const SCRYPT_PREFIX = '$scrypt$';
+const SCRYPT_N = 16384;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const SCRYPT_KEYLEN = 32;
 
 export interface PasswordHashOptions {
   memoryCost?: number;
@@ -8,14 +15,128 @@ export interface PasswordHashOptions {
   saltLength?: number;
 }
 
+export interface PasswordVerificationResult {
+  valid: boolean;
+  backendUnavailable: boolean;
+  reason?: string;
+}
+
+export interface PasswordBackendStatus {
+  preferred: 'argon2';
+  active: 'argon2' | 'scrypt-fallback';
+  degraded: boolean;
+  reason?: string;
+}
+
 // Secure default configuration for Argon2id
 const DEFAULT_OPTIONS: Required<PasswordHashOptions> = {
-  memoryCost: 65536, // 64 MB
-  timeCost: 3, // 3 iterations
-  parallelism: 4, // 4 parallel threads
+  memoryCost: process.env.ARGON2_MEMORY_COST ? parseInt(process.env.ARGON2_MEMORY_COST, 10) : 19456,
+  timeCost: process.env.ARGON2_TIME_COST ? parseInt(process.env.ARGON2_TIME_COST, 10) : 2,
+  parallelism: process.env.ARGON2_PARALLELISM ? parseInt(process.env.ARGON2_PARALLELISM, 10) : 1,
   hashLength: 32, // 32 bytes output
   saltLength: 16, // 16 bytes salt
 };
+
+let warnedArgon2Fallback = false;
+let cachedArgon2: typeof Argon2Module | null | undefined;
+let argon2UnavailableReason: string | undefined;
+
+function warnArgon2Fallback(reason: string): void {
+  if (warnedArgon2Fallback) return;
+  warnedArgon2Fallback = true;
+  argon2UnavailableReason = reason;
+  console.warn(`[auth] argon2 unavailable (${reason}), falling back to scrypt`);
+}
+
+async function scryptAsync(
+  password: string,
+  salt: Buffer,
+  keyLength: number,
+  options: { N: number; r: number; p: number }
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scrypt(password, salt, keyLength, options, (error, derivedKey) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(derivedKey as Buffer);
+    });
+  });
+}
+
+async function loadArgon2(): Promise<typeof Argon2Module | null> {
+  if (cachedArgon2 !== undefined) {
+    return cachedArgon2;
+  }
+
+  try {
+    cachedArgon2 = await import('argon2');
+    argon2UnavailableReason = undefined;
+    return cachedArgon2;
+  } catch (error) {
+    cachedArgon2 = null;
+    warnArgon2Fallback((error as Error).message);
+    return null;
+  }
+}
+
+async function hashWithScrypt(password: string): Promise<string> {
+  const salt = randomBytes(16);
+  const derived = await scryptAsync(password, salt, SCRYPT_KEYLEN, {
+    N: SCRYPT_N,
+    r: SCRYPT_R,
+    p: SCRYPT_P,
+  });
+
+  return `${SCRYPT_PREFIX}${SCRYPT_N}$${SCRYPT_R}$${SCRYPT_P}$${salt.toString('base64')}$${derived.toString('base64')}`;
+}
+
+function isArgon2Hash(hash: string): boolean {
+  return hash.startsWith('$argon2');
+}
+
+function isScryptHash(hash: string): boolean {
+  return hash.startsWith(SCRYPT_PREFIX);
+}
+
+async function verifyScryptHash(password: string, hash: string): Promise<boolean> {
+  const parts = hash.split('$');
+  if (parts.length !== 7 || parts[1] !== 'scrypt') {
+    return false;
+  }
+
+  const N = parseInt(parts[2], 10);
+  const r = parseInt(parts[3], 10);
+  const p = parseInt(parts[4], 10);
+  const salt = Buffer.from(parts[5], 'base64');
+  const expected = Buffer.from(parts[6], 'base64');
+
+  if (!Number.isFinite(N) || !Number.isFinite(r) || !Number.isFinite(p) || expected.length === 0) {
+    return false;
+  }
+
+  const actual = await scryptAsync(password, salt, expected.length, { N, r, p });
+  return timingSafeEqual(actual, expected);
+}
+
+export async function getPasswordBackendStatus(): Promise<PasswordBackendStatus> {
+  const argon2 = await loadArgon2();
+  if (argon2) {
+    return {
+      preferred: 'argon2',
+      active: 'argon2',
+      degraded: false,
+    };
+  }
+
+  return {
+    preferred: 'argon2',
+    active: 'scrypt-fallback',
+    degraded: true,
+    reason: argon2UnavailableReason || 'argon2 module unavailable',
+  };
+}
 
 /**
  * Hash a password using Argon2id
@@ -28,19 +149,25 @@ export async function hashPassword(
   options: PasswordHashOptions = {}
 ): Promise<string> {
   const config = { ...DEFAULT_OPTIONS, ...options };
+  const argon2 = await loadArgon2();
+
+  if (argon2) {
+    try {
+      return await argon2.hash(password, {
+        type: argon2.argon2id,
+        memoryCost: config.memoryCost,
+        timeCost: config.timeCost,
+        parallelism: config.parallelism,
+      });
+    } catch (error) {
+      warnArgon2Fallback((error as Error).message);
+    }
+  }
 
   try {
-    // Keep options minimal for broad runtime compatibility across native argon2 builds.
-    const hash = await argon2.hash(password, {
-      type: argon2.argon2id,
-      memoryCost: config.memoryCost,
-      timeCost: config.timeCost,
-      parallelism: config.parallelism,
-    });
-
-    return hash;
-  } catch (error) {
-    throw new Error(`Failed to hash password: ${(error as Error).message}`);
+    return await hashWithScrypt(password);
+  } catch (fallbackError) {
+    throw new Error(`Failed to hash password: ${(fallbackError as Error).message}`);
   }
 }
 
@@ -51,11 +178,49 @@ export async function hashPassword(
  * @returns Promise resolving to true if password matches, false otherwise
  */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const result = await verifyPasswordWithStatus(password, hash);
+  return result.valid;
+}
+
+export async function verifyPasswordWithStatus(
+  password: string,
+  hash: string
+): Promise<PasswordVerificationResult> {
+  if (isScryptHash(hash)) {
+    try {
+      return {
+        valid: await verifyScryptHash(password, hash),
+        backendUnavailable: false,
+      };
+    } catch {
+      return {
+        valid: false,
+        backendUnavailable: false,
+      };
+    }
+  }
+
+  const argon2 = await loadArgon2();
+  if (!argon2) {
+    return {
+      valid: false,
+      backendUnavailable: isArgon2Hash(hash),
+      reason: isArgon2Hash(hash)
+        ? argon2UnavailableReason || 'argon2 backend unavailable for stored hash'
+        : undefined,
+    };
+  }
+
   try {
-    return await argon2.verify(hash, password);
-  } catch (error) {
-    // Invalid hash format or verification error
-    return false;
+    return {
+      valid: await argon2.verify(hash, password),
+      backendUnavailable: false,
+    };
+  } catch {
+    return {
+      valid: false,
+      backendUnavailable: false,
+    };
   }
 }
 
@@ -72,10 +237,22 @@ export async function verifyAndRehash(
   hash: string,
   options: PasswordHashOptions = {}
 ): Promise<{ valid: boolean; newHash?: string }> {
-  const valid = await verifyPassword(password, hash);
+  const verification = await verifyPasswordWithStatus(password, hash);
+  const valid = verification.valid;
 
   if (!valid) {
     return { valid: false };
+  }
+
+  if (isScryptHash(hash)) {
+    const newHash = await hashPassword(password, options);
+    return { valid: true, newHash };
+  }
+
+  const argon2 = await loadArgon2();
+  if (!argon2) {
+    const newHash = await hashWithScrypt(password);
+    return { valid: true, newHash };
   }
 
   // Check if rehashing is needed

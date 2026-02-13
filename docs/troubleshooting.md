@@ -523,15 +523,15 @@ docker events
 
 ```bash
 # Probar endpoint con curl
-curl -v http://localhost:3000/health
+curl -v http://localhost:3000/healthz
 
 # Probar con autenticación
-curl -v http://localhost:3000/api/v1/containers \
+curl -v http://localhost:3000/api/containers \
   -H "Authorization: Bearer $TOKEN" \
   -H "Accept: application/json"
 
 # Ver headers de respuesta
-curl -I http://localhost:3000/health
+curl -I http://localhost:3000/healthz
 
 # Debug de WebSocket
 wscat -c ws://localhost:3000/ws/containers/abc123/logs \

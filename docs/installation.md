@@ -175,7 +175,7 @@ services:
       - docker-control
       - tunnel-control
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/healthz']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -195,7 +195,7 @@ services:
     networks:
       - dockpilot-backend
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/healthz']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -407,10 +407,10 @@ CLOUDFLARED_PATH=/usr/bin/cloudflared
 
 | Servicio    | URL                   | Descripción    |
 | ----------- | --------------------- | -------------- |
-| Web UI      | http://localhost:3000 | Interfaz web   |
-| API Gateway | http://localhost:3001 | API REST       |
-| Docker Ctrl | http://localhost:3002 | Docker service |
-| Tunnel Ctrl | http://localhost:3003 | Tunnel service |
+| Web UI      | http://localhost:5173 | Interfaz web   |
+| API Gateway | http://localhost:3000 | API REST       |
+| Docker Ctrl | http://localhost:3001 | Docker service |
+| Tunnel Ctrl | http://localhost:3002 | Tunnel service |
 
 ---
 
@@ -442,7 +442,7 @@ CLOUDFLARED_PATH=/usr/bin/cloudflared
 **Vía API:**
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/auth/setup \
+curl -X POST http://localhost:3000/api/auth/setup \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
@@ -608,14 +608,14 @@ docker-compose ps
 docker-compose logs --tail=100
 
 # 3. Health check
-curl http://localhost:3000/health
+curl http://localhost:3000/healthz
 
 # 4. Verificar conexión a Docker
-curl http://localhost:3000/api/v1/system/info \
+curl http://localhost:3000/api/info \
   -H "Authorization: Bearer <token>"
 
 # 5. Probar autenticación
-curl -X POST http://localhost:3000/api/v1/auth/login \
+curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"tu-password"}'
 ```

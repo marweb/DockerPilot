@@ -46,17 +46,17 @@ Variables para el servicio de API Gateway.
 
 | Variable             | Descripción              | Default                    | Ejemplo               |
 | -------------------- | ------------------------ | -------------------------- | --------------------- |
-| `DOCKER_CONTROL_URL` | URL del servicio Docker  | http://docker-control:3001 | http://localhost:3002 |
-| `TUNNEL_CONTROL_URL` | URL del servicio Tunnels | http://tunnel-control:3002 | http://localhost:3003 |
+| `DOCKER_CONTROL_URL` | URL del servicio Docker  | http://docker-control:3001 | http://localhost:3001 |
+| `TUNNEL_CONTROL_URL` | URL del servicio Tunnels | http://tunnel-control:3002 | http://localhost:3002 |
 | `WEB_URL`            | URL del frontend         | http://web:80              | http://localhost:3000 |
 
 ### Base de Datos (SQLite)
 
 El API Gateway usa SQLite (`better-sqlite3`) para usuarios y logs de auditoría. El archivo se almacena en el volumen montado.
 
-| Variable     | Descripción                           | Default | Ejemplo               |
-| ------------ | ------------------------------------- | ------- | --------------------- |
-| `DATA_DIR`   | Directorio para datos (incluye la DB) | /data   | /var/lib/dockpilot    |
+| Variable   | Descripción                           | Default | Ejemplo            |
+| ---------- | ------------------------------------- | ------- | ------------------ |
+| `DATA_DIR` | Directorio para datos (incluye la DB) | /data   | /var/lib/dockpilot |
 
 El archivo SQLite se crea en `{DATA_DIR}/dockpilot.db`. Si existe `db.json` en el mismo directorio, se migra automáticamente a SQLite al arrancar.
 
@@ -164,7 +164,7 @@ Variables para el frontend.
 | Variable     | Descripción                  | Default                 | Ejemplo               |
 | ------------ | ---------------------------- | ----------------------- | --------------------- |
 | `WEB_PORT`   | Puerto HTTP                  | 8000                    | 3000                  |
-| `API_URL`    | URL de la API                | http://api-gateway:3000 | http://localhost:3001 |
+| `API_URL`    | URL de la API                | http://api-gateway:3000 | http://localhost:3000 |
 | `WS_URL`     | URL de WebSocket             | ws://api-gateway:3000   | wss://api.example.com |
 | `ENABLE_HMR` | Hot Module Replacement (dev) | false                   | true                  |
 
@@ -332,7 +332,7 @@ LOG_FILE_MAX_FILES=10
   "service": "api-gateway",
   "requestId": "req-abc123",
   "method": "GET",
-  "path": "/api/v1/containers",
+  "path": "/api/containers",
   "status": 200,
   "duration": 45,
   "userId": 1
@@ -518,20 +518,16 @@ API_URL=http://api-gateway:3000
 
 ## 🔄 Recargar Configuración
 
-### Sin Reiniciar (Hot Reload)
+### Aplicar cambios de configuración
 
-Algunas variables pueden recargarse sin reinicio:
+Actualmente DockPilot aplica configuración por reinicio de servicios. Para cambios en `.env` usa:
 
 ```bash
-# Enviar señal SIGHUP
-docker kill --signal=HUP dockpilot-api
-
-# O via API
-curl -X POST http://localhost:3000/api/v1/admin/reload-config \
-  -H "Authorization: Bearer <token>"
+# Reiniciar servicios para aplicar cambios
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
-### Variables Recargables
+### Variables comunes
 
 - `LOG_LEVEL`
 - `RATE_LIMIT_MAX`

@@ -398,12 +398,30 @@ CONTAINERS="dockpilot-docker-control dockpilot-tunnel-control dockpilot-api-gate
 HEALTH_WAIT=150
 HEALTH_WAITED=0
 ALL_HEALTHY=false
+FAILED_CONTAINER=""
+FAILED_REASON=""
 
 while [ $HEALTH_WAITED -lt $HEALTH_WAIT ]; do
   ALL_HEALTHY=true
   for c in $CONTAINERS; do
-    status=$(docker inspect --format='{{.State.Health.Status}}' "$c" 2>/dev/null || echo "unknown")
-    if [ "$status" != "healthy" ]; then
+    health_status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$c" 2>/dev/null || echo "unknown")
+    state_status=$(docker inspect --format='{{.State.Status}}' "$c" 2>/dev/null || echo "unknown")
+
+    if [ "$state_status" = "exited" ] || [ "$state_status" = "dead" ]; then
+      ALL_HEALTHY=false
+      FAILED_CONTAINER="$c"
+      FAILED_REASON="state=$state_status"
+      break
+    fi
+
+    if [ "$health_status" = "unhealthy" ]; then
+      ALL_HEALTHY=false
+      FAILED_CONTAINER="$c"
+      FAILED_REASON="health=unhealthy"
+      break
+    fi
+
+    if [ "$health_status" != "healthy" ]; then
       ALL_HEALTHY=false
       break
     fi
@@ -419,13 +437,36 @@ while [ $HEALTH_WAITED -lt $HEALTH_WAIT ]; do
   fi
 done
 
+if [ -n "$FAILED_CONTAINER" ]; then
+  echo ""
+  echo -e "${RED}ERROR: Container failed during installation (${FAILED_CONTAINER}: ${FAILED_REASON}).${NC}"
+  echo ""
+  echo "Container status:"
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml ps || true
+  echo ""
+  echo "Recent logs (${FAILED_CONTAINER}):"
+  docker logs --tail=120 "$FAILED_CONTAINER" 2>&1 || true
+  echo ""
+  echo "Installation aborted. Please fix the container error and re-run install."
+  exit 1
+fi
+
 if [ "$ALL_HEALTHY" != true ]; then
-  echo " - WARNING: Some containers may still be starting. Status:"
+  echo ""
+  echo -e "${RED}ERROR: DockPilot did not become healthy after ${HEALTH_WAIT}s.${NC}"
+  echo ""
+  echo "Container status:"
   for c in $CONTAINERS; do
-    status=$(docker inspect --format='{{.State.Health.Status}}' "$c" 2>/dev/null || echo "unknown")
-    echo "   - $c: $status"
+    health_status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$c" 2>/dev/null || echo "unknown")
+    state_status=$(docker inspect --format='{{.State.Status}}' "$c" 2>/dev/null || echo "unknown")
+    echo "   - $c: state=${state_status}, health=${health_status}"
   done
-  echo "   Check with: docker ps"
+  echo ""
+  echo "Recent api-gateway logs:"
+  docker logs --tail=120 dockpilot-api-gateway 2>&1 || true
+  echo ""
+  echo "Installation aborted."
+  exit 1
 fi
 
 # Get IPs

@@ -13,14 +13,10 @@ import { logAuditEntry } from '../middleware/audit.js';
 import { strictRateLimitMiddleware } from '../middleware/rateLimit.js';
 import {
   hashPassword,
-  verifyPassword,
+  verifyPasswordWithStatus,
   validatePasswordStrength,
 } from '../utils/password.js';
-import {
-  generateTokenPair,
-  verifyRefreshToken,
-  rotateRefreshToken,
-} from '../utils/jwt.js';
+import { generateTokenPair, verifyRefreshToken, rotateRefreshToken } from '../utils/jwt.js';
 
 // Validation schemas
 const loginSchema = z.object({
@@ -220,9 +216,26 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Verify password using utility
-        const validPassword = await verifyPassword(password, user.passwordHash);
+        const passwordVerification = await verifyPasswordWithStatus(password, user.passwordHash);
 
-        if (!validPassword) {
+        if (passwordVerification.backendUnavailable) {
+          fastify.log.error(
+            {
+              username,
+              reason: passwordVerification.reason,
+            },
+            'Password backend unavailable for stored hash during login'
+          );
+
+          return handleAuthError(
+            reply,
+            503,
+            'AUTH_BACKEND_UNAVAILABLE',
+            'Authentication backend is temporarily unavailable. Please try again later.'
+          );
+        }
+
+        if (!passwordVerification.valid) {
           await logAuditEntry({
             userId: user.id,
             username: user.username,
@@ -440,9 +453,29 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Verify current password
-        const validPassword = await verifyPassword(currentPassword, user.passwordHash);
+        const passwordVerification = await verifyPasswordWithStatus(
+          currentPassword,
+          user.passwordHash
+        );
 
-        if (!validPassword) {
+        if (passwordVerification.backendUnavailable) {
+          fastify.log.error(
+            {
+              userId: (request.user as { id: string }).id,
+              reason: passwordVerification.reason,
+            },
+            'Password backend unavailable for stored hash during password change'
+          );
+
+          return handleAuthError(
+            reply,
+            503,
+            'AUTH_BACKEND_UNAVAILABLE',
+            'Authentication backend is temporarily unavailable. Please try again later.'
+          );
+        }
+
+        if (!passwordVerification.valid) {
           await logAuditEntry({
             userId: (request.user as { id: string }).id,
             username: (request.user as { username: string }).username,
@@ -496,5 +529,4 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
       }
     }
   );
-
 }
