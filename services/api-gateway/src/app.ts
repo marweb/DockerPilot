@@ -4,6 +4,7 @@ import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import websocket from '@fastify/websocket';
+import { validatorCompiler, serializerCompiler } from 'fastify-type-provider-zod';
 import type { Config } from './config/index.js';
 import { initDatabase } from './services/database.js';
 import { authRoutes } from './routes/auth.js';
@@ -38,6 +39,10 @@ export async function createApp(config: Config) {
 
   // Store config
   fastify.decorate('config', config);
+
+  // Enable Zod schemas in route `schema` blocks
+  fastify.setValidatorCompiler(validatorCompiler);
+  fastify.setSerializerCompiler(serializerCompiler);
 
   // Initialize database
   initDatabase(config.dataDir);
