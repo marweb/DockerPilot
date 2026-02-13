@@ -16,8 +16,10 @@ COPY packages/types ./packages/types
 COPY services/tunnel-control ./services/tunnel-control
 COPY tsconfig.json ./
 
-# Install only service + workspace dependencies to speed up CI and avoid unrelated native builds
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted \
+# Install only service + workspace dependencies; --ignore-scripts prevents
+# native module compilation (argon2, better-sqlite3, ssh2) that crashes under
+# QEMU ARM64 emulation. tunnel-control has no native dependencies at runtime.
+RUN pnpm install --frozen-lockfile --config.node-linker=hoisted --ignore-scripts \
   --filter @dockpilot/tunnel-control... \
   --filter @dockpilot/types...
 
