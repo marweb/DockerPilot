@@ -1,16 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import {
-  Search,
-  RefreshCw,
-  Trash2,
-  Plus,
-  Network,
-  AlertCircle,
-  Link as LinkIcon,
-  Unlink,
-} from 'lucide-react';
+import { Search, RefreshCw, Plus } from 'lucide-react';
 import type { Network as NetworkType } from '@dockpilot/types';
 import api from '../api/client';
 import NetworkList from '../components/networks/NetworkList';

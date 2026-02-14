@@ -15,7 +15,7 @@ const configSchema = z.object({
   metricsPort: z.number().optional(),
 
   // Security
-  encryptionKey: z.string().optional(),
+  masterKey: z.string().optional(),
 
   // Cloudflare API
   cloudflareApiUrl: z.string().default('https://api.cloudflare.com/client/v4'),
@@ -38,7 +38,7 @@ export function loadConfig(): Config {
     maxRestarts: process.env.MAX_RESTARTS ? parseInt(process.env.MAX_RESTARTS, 10) : undefined,
     restartDelay: process.env.RESTART_DELAY ? parseInt(process.env.RESTART_DELAY, 10) : undefined,
     metricsPort: process.env.METRICS_PORT ? parseInt(process.env.METRICS_PORT, 10) : undefined,
-    encryptionKey: process.env.ENCRYPTION_KEY,
+    masterKey: process.env.MASTER_KEY || process.env.ENCRYPTION_KEY,
     cloudflareApiUrl: process.env.CLOUDFLARE_API_URL,
     logFile: process.env.LOG_FILE,
     logMaxSize: process.env.LOG_MAX_SIZE,

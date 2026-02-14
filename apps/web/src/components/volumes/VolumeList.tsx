@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Volume } from '@dockpilot/types';
-import { HardDrive, Database, Clock, Layers, Trash2, Copy, Check, AlertCircle } from 'lucide-react';
+import { HardDrive, Database, Layers, Trash2, Copy, Check, AlertCircle } from 'lucide-react';
 
 interface VolumeListProps {
   volumes: Volume[];
@@ -132,10 +132,7 @@ export default function VolumeList({
                         {volume.usageData?.refCount || 0}
                       </span>
                       {volume.usageData && volume.usageData.refCount > 0 && (
-                        <AlertCircle
-                          className="h-3 w-3 text-yellow-500"
-                          title={t('volumes.inUse')}
-                        />
+                        <AlertCircle className="h-3 w-3 text-yellow-500" />
                       )}
                     </div>
                   </td>

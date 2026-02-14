@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { usei18n } from 'react-i18next';
 import type { Image } from '@dockpilot/types';
-import { Trash2, Image as ImageIcon, Tag, Clock, Layers, Copy, Check } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Clock, Layers, Copy, Check } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import type { Locale } from 'date-fns';
 import { enUS, es, fr, de, zhCN, ru, ja } from 'date-fns/locale';
 import { useState } from 'react';
 

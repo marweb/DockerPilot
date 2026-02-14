@@ -1,13 +1,5 @@
 import { useState, useMemo, ReactNode } from 'react';
-import {
-  ChevronUp,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Loader2,
-  PackageX,
-} from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, PackageX } from 'lucide-react';
 import clsx from 'clsx';
 
 interface Column<T> {

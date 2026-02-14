@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { RefreshCw, Play, Square, Trash2, LogIn, LogOut, Plus } from 'lucide-react';
+import { RefreshCw, Play, Square, Trash2, LogIn, LogOut, Plus, Bug } from 'lucide-react';
 import api from '../api/client';
 
 type Tunnel = {
@@ -17,18 +17,50 @@ type TunnelAuthStatus = {
   accountId?: string;
   accountName?: string;
   hasStoredCredentials?: boolean;
+  availableAccounts?: Array<{ id: string; name: string }>;
 };
+
+type AuthDebugEntry = {
+  timestamp: string;
+  action: string;
+  success: boolean;
+  message: string;
+  details?: Record<string, unknown>;
+};
+
+type ApiLikeError = {
+  message?: string;
+  details?: unknown;
+  code?: string;
+};
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  const err = error as ApiLikeError;
+  const details = err?.details;
+
+  if (Array.isArray(details) && details.length > 0) {
+    const first = details[0] as { message?: string; path?: string[] };
+    if (first?.message) {
+      const path = Array.isArray(first.path) ? first.path.join('.') : '';
+      return path ? `${first.message} (${path})` : first.message;
+    }
+  }
+
+  return err?.message || fallback;
+}
 
 export default function Tunnels() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [apiToken, setApiToken] = useState('');
   const [accountId, setAccountId] = useState('');
+  const [selectedAccountId, setSelectedAccountId] = useState('');
   const [zoneId, setZoneId] = useState('');
   const [tunnelName, setTunnelName] = useState('');
   const [oauthUrl, setOauthUrl] = useState('');
   const [authError, setAuthError] = useState('');
   const [createError, setCreateError] = useState('');
+  const [showDebugLogs, setShowDebugLogs] = useState(true);
 
   const {
     data: authStatus,
@@ -41,6 +73,19 @@ export default function Tunnels() {
       return response.data?.data as TunnelAuthStatus;
     },
     refetchInterval: 10000,
+  });
+
+  const {
+    data: authDebugLogs,
+    isFetching: loadingAuthLogs,
+    refetch: refetchAuthLogs,
+  } = useQuery({
+    queryKey: ['tunnel-auth-debug-logs'],
+    queryFn: async () => {
+      const response = await api.get('/tunnels/auth/logs', { params: { limit: 120 } });
+      return (response.data?.data?.logs || []) as AuthDebugEntry[];
+    },
+    refetchInterval: 5000,
   });
 
   const {
@@ -63,26 +108,27 @@ export default function Tunnels() {
       setOauthUrl('');
       const response = await api.post('/tunnels/auth/login', {
         apiToken,
-        accountId,
+        accountId: accountId || undefined,
       });
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (payload) => {
       setApiToken('');
+      setSelectedAccountId(payload?.data?.accountId || '');
       queryClient.invalidateQueries({ queryKey: ['tunnel-auth-status'] });
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      const message =
-        (err as { message?: string })?.message || 'No se pudo autenticar con Cloudflare';
+      const message = getErrorMessage(err, 'No se pudo autenticar con Cloudflare');
       setAuthError(message);
+      refetchAuthLogs();
     },
   });
 
   const oauthLoginMutation = useMutation({
     mutationFn: async () => {
       setAuthError('');
-      const response = await api.post('/tunnels/auth/login/oauth', {});
+      const response = await api.post('/tunnels/auth/login/oauth', { method: 'oauth' });
       return response.data;
     },
     onSuccess: (payload) => {
@@ -90,8 +136,9 @@ export default function Tunnels() {
       setOauthUrl(url);
     },
     onError: (err: unknown) => {
-      const message = (err as { message?: string })?.message || 'No se pudo iniciar OAuth';
+      const message = getErrorMessage(err, 'No se pudo iniciar OAuth');
       setAuthError(message);
+      refetchAuthLogs();
     },
   });
 
@@ -109,7 +156,7 @@ export default function Tunnels() {
       setCreateError('');
       const response = await api.post('/tunnels', {
         name: tunnelName,
-        accountId: accountId || authStatus?.accountId,
+        accountId: selectedAccountId || authStatus?.accountId,
         zoneId: zoneId || undefined,
       });
       return response.data;
@@ -120,10 +167,28 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      const message = (err as { message?: string })?.message || 'No se pudo crear el tunel';
+      const message = getErrorMessage(err, 'No se pudo crear el tunel');
       setCreateError(message);
     },
   });
+
+  const selectAccountMutation = useMutation({
+    mutationFn: async (nextAccountId: string) => {
+      const response = await api.post('/tunnels/auth/account/select', { accountId: nextAccountId });
+      return response.data;
+    },
+    onSuccess: (payload) => {
+      const next = payload?.data?.accountId || '';
+      setSelectedAccountId(next);
+      queryClient.invalidateQueries({ queryKey: ['tunnel-auth-status'] });
+      queryClient.invalidateQueries({ queryKey: ['tunnels'] });
+    },
+    onError: (err: unknown) => {
+      setAuthError(getErrorMessage(err, 'No se pudo cambiar la cuenta activa'));
+    },
+  });
+
+  const accountOptions = authStatus?.availableAccounts || [];
 
   const startMutation = useMutation({
     mutationFn: (id: string) => api.post(`/tunnels/${id}/start`),
@@ -159,6 +224,79 @@ export default function Tunnels() {
       </div>
 
       <div className="card">
+        <div className="card-header flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bug className="h-4 w-4 text-primary-600" />
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+              Diagnostico de login Cloudflare
+            </h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="btn btn-secondary btn-sm" onClick={() => refetchAuthLogs()}>
+              <RefreshCw className={`h-4 w-4 ${loadingAuthLogs ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setShowDebugLogs((s) => !s)}
+              type="button"
+            >
+              {showDebugLogs ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
+        </div>
+        {showDebugLogs && (
+          <div className="card-body">
+            {(authDebugLogs?.length || 0) === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Sin eventos aun. Intenta login y recarga para ver detalles.
+              </p>
+            ) : (
+              <div className="max-h-[320px] overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-700/50">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Hora</th>
+                      <th className="px-3 py-2 text-left">Accion</th>
+                      <th className="px-3 py-2 text-left">Estado</th>
+                      <th className="px-3 py-2 text-left">Mensaje</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(authDebugLogs || []).map((log, idx) => (
+                      <tr
+                        key={`${log.timestamp}-${idx}`}
+                        className="border-t border-gray-100 dark:border-gray-700"
+                      >
+                        <td className="px-3 py-2 whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs">{log.action}</td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`badge text-xs ${log.success ? 'badge-success' : 'badge-neutral'}`}
+                          >
+                            {log.success ? 'ok' : 'error'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="text-gray-700 dark:text-gray-300">{log.message}</div>
+                          {log.details && (
+                            <pre className="mt-1 text-xs text-gray-500 dark:text-gray-400 whitespace-pre-wrap">
+                              {JSON.stringify(log.details, null, 2)}
+                            </pre>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
         <div className="card-header">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">Cloudflare Auth</h2>
         </div>
@@ -166,20 +304,46 @@ export default function Tunnels() {
           {authError && <div className="text-sm text-red-600 dark:text-red-400">{authError}</div>}
 
           {authStatus?.authenticated ? (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col gap-3">
               <div className="text-sm text-gray-700 dark:text-gray-300">
                 Conectado con cuenta{' '}
                 <span className="font-medium">{authStatus.accountId || '-'}</span> via{' '}
                 <span className="font-medium">{authStatus.method || 'unknown'}</span>
               </div>
-              <button
-                className="btn btn-secondary btn-sm"
-                onClick={() => logoutMutation.mutate()}
-                disabled={logoutMutation.isLoading}
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                Cerrar sesion Cloudflare
-              </button>
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600 dark:text-gray-400">Cuenta activa</label>
+                  <select
+                    className="input py-2"
+                    value={selectedAccountId || authStatus.accountId || ''}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setSelectedAccountId(next);
+                      if (next) {
+                        selectAccountMutation.mutate(next);
+                      }
+                    }}
+                    disabled={selectAccountMutation.isLoading || accountOptions.length === 0}
+                  >
+                    {(accountOptions.length > 0
+                      ? accountOptions
+                      : [{ id: authStatus.accountId || '', name: authStatus.accountId || '-' }]
+                    ).map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name} ({account.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isLoading}
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Cerrar sesion Cloudflare
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -189,7 +353,7 @@ export default function Tunnels() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   className="input"
-                  placeholder="Cloudflare Account ID"
+                  placeholder="Cloudflare Account ID (opcional)"
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
                 />
@@ -205,7 +369,7 @@ export default function Tunnels() {
                 <button
                   className="btn btn-primary btn-sm"
                   onClick={() => tokenLoginMutation.mutate()}
-                  disabled={!apiToken || !accountId || tokenLoginMutation.isLoading}
+                  disabled={!apiToken || tokenLoginMutation.isLoading}
                 >
                   <LogIn className="h-4 w-4 mr-1" />
                   Login con API Token
@@ -256,8 +420,8 @@ export default function Tunnels() {
                 <input
                   className="input"
                   placeholder="Account ID (opcional)"
-                  value={accountId}
-                  onChange={(e) => setAccountId(e.target.value)}
+                  value={selectedAccountId || authStatus?.accountId || ''}
+                  onChange={(e) => setSelectedAccountId(e.target.value)}
                 />
                 <input
                   className="input"

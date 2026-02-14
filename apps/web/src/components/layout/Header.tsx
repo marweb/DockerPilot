@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, Globe, Moon, Sun, Monitor, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { Menu, Globe, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth';
-import { useThemeStore } from '../../stores/theme';
 import ThemeToggle from '../common/ThemeToggle';
 
 interface HeaderProps {
@@ -23,9 +22,7 @@ const languages = [
 
 export default function Header({ onMenuClick, showMenuButton = true }: HeaderProps) {
   const { t, i18n } = useTranslation();
-  const location = useLocation();
   const { user, logout } = useAuthStore();
-  const { theme, setTheme } = useThemeStore();
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const langMenuRef = useRef<HTMLDivElement>(null);

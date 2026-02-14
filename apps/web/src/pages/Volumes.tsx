@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { Search, RefreshCw, Trash2, Plus, HardDrive, AlertTriangle, Check } from 'lucide-react';
+import { Search, RefreshCw, Plus, AlertTriangle, Check } from 'lucide-react';
 import type { Volume } from '@dockpilot/types';
 import api from '../api/client';
 import VolumeList from '../components/volumes/VolumeList';

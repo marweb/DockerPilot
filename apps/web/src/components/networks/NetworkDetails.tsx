@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from 'react-query';
-import { X, Network, Link as LinkIcon, Unlink, Copy, Check, Trash2 } from 'lucide-react';
-import type { Network } from '@dockpilot/types';
+import { X, Network as NetworkIcon, Link as LinkIcon, Unlink, Copy, Check } from 'lucide-react';
+import type { Network as NetworkType } from '@dockpilot/types';
 import api from '../../api/client';
 
 interface NetworkDetailsProps {
-  network: Network;
+  network: NetworkType;
   onClose: () => void;
 }
 
@@ -97,7 +97,7 @@ export default function NetworkDetails({ network, onClose }: NetworkDetailsProps
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <Network className="h-5 w-5 text-purple-500" />
+            <NetworkIcon className="h-5 w-5 text-purple-500" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {network.name}
             </h3>

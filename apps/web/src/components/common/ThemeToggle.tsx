@@ -53,7 +53,6 @@ export default function ThemeToggle({
 
   if (variant === 'icon') {
     const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
-    const NextIcon = themes.find((t) => t.value === nextTheme)?.icon || Sun;
 
     return (
       <button

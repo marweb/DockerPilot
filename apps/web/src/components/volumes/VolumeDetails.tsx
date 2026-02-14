@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from 'react-query';
-import { X, Database, HardDrive, Layers, Copy, Check } from 'lucide-react';
+import { X, Database, Layers, Copy, Check } from 'lucide-react';
 import type { Volume } from '@dockpilot/types';
 import api from '../../api/client';
 

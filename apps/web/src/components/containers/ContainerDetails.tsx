@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from 'react-query';
-import { Box, Hash, Calendar, Command, Network, HardDrive, Tag, Copy, Check } from 'lucide-react';
+import { Box, Hash, Command, HardDrive, Tag, Copy, Check } from 'lucide-react';
 import type { ContainerInspect } from '@dockpilot/types';
 import api from '../../api/client';
 

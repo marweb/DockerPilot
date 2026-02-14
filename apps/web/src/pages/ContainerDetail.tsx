@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Box, Play, Square, Trash2, RefreshCw } from 'lucide-react';
 
@@ -7,7 +6,6 @@ import { ArrowLeft, Box, Play, Square, Trash2, RefreshCw } from 'lucide-react';
  * Muestra información detallada de un contenedor específico
  */
 export default function ContainerDetail() {
-  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 

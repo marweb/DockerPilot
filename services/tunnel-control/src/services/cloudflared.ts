@@ -7,6 +7,16 @@ import type { Config } from '../config/index.js';
 import type { Tunnel, TunnelStatus, IngressRule } from '@dockpilot/types';
 import { getLogger } from '../utils/logger.js';
 import { loadCredentials, getDefaultAccount } from './credentials.js';
+import {
+  createTunnel as createCloudflareTunnel,
+  deleteTunnel as deleteCloudflareTunnel,
+  getTunnelToken,
+  getTunnelConfiguration,
+  updateTunnelConfiguration,
+  isAuthenticated,
+  authenticate,
+  CloudflareAPIError,
+} from './cloudflare-api.js';
 
 const logger = getLogger();
 
@@ -24,6 +34,7 @@ interface TunnelConfig {
   restartCount: number;
   lastRestartAt?: Date;
   createdAt: Date;
+  containerIds: string[];
 }
 
 interface StoredTunnel {
@@ -35,6 +46,7 @@ interface StoredTunnel {
   ingress: IngressRule[];
   createdAt: string;
   cloudflareTunnelId?: string;
+  containerIds?: string[];
 }
 
 // Store active tunnels
@@ -80,6 +92,15 @@ async function executeCloudflared(
 
     let stdout = '';
     let stderr = '';
+    let settled = false;
+
+    const finalize = (result: { stdout: string; stderr: string; exitCode: number }) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      resolve(result);
+    };
 
     proc.stdout.on('data', (data) => {
       stdout += data.toString();
@@ -89,8 +110,16 @@ async function executeCloudflared(
       stderr += data.toString();
     });
 
+    proc.on('error', (error) => {
+      finalize({
+        stdout,
+        stderr: `${stderr}${stderr ? '\n' : ''}${(error as Error).message}`,
+        exitCode: 1,
+      });
+    });
+
     proc.on('close', (code) => {
-      resolve({
+      finalize({
         stdout,
         stderr,
         exitCode: code || 0,
@@ -121,7 +150,7 @@ export async function listTunnels(): Promise<Tunnel[]> {
       createdAt: tunnel.createdAt,
       publicUrl: tunnel.publicUrl,
       ingressRules: tunnel.ingress,
-      connectedServices: tunnel.ingress.map((i) => i.service),
+      connectedServices: tunnel.containerIds,
     });
   }
 
@@ -145,7 +174,7 @@ export async function getTunnel(id: string): Promise<Tunnel> {
     createdAt: tunnel.createdAt,
     publicUrl: tunnel.publicUrl,
     ingressRules: tunnel.ingress,
-    connectedServices: tunnel.ingress.map((i) => i.service),
+    connectedServices: tunnel.containerIds,
   };
 }
 
@@ -179,6 +208,7 @@ async function loadStoredTunnels(): Promise<void> {
           logs: [],
           restartCount: 0,
           createdAt: new Date(stored.createdAt),
+          containerIds: stored.containerIds || [],
         });
       }
     } catch (error) {
@@ -187,12 +217,41 @@ async function loadStoredTunnels(): Promise<void> {
   }
 }
 
+async function persistTunnelConfig(tunnel: TunnelConfig): Promise<void> {
+  const tunnelDir = path.dirname(tunnel.credentialsFile);
+  const configFile = path.join(tunnelDir, 'config.json');
+
+  const stored: StoredTunnel = {
+    id: tunnel.id,
+    name: tunnel.name,
+    accountId: tunnel.accountId,
+    zoneId: tunnel.zoneId,
+    credentialsPath: tunnel.credentialsFile,
+    ingress: tunnel.ingress,
+    createdAt: tunnel.createdAt.toISOString(),
+    cloudflareTunnelId: tunnel.id,
+    containerIds: tunnel.containerIds,
+  };
+
+  await writeFile(configFile, JSON.stringify(stored, null, 2));
+}
+
+async function ensureCloudflareSession(accountId: string): Promise<void> {
+  const credentials = await loadCredentials(accountId);
+  if (!credentials) {
+    throw new Error(`No stored Cloudflare credentials for account ${accountId}`);
+  }
+
+  await authenticate(credentials.apiToken, accountId);
+}
+
 export async function createTunnel(
   name: string,
   accountId?: string,
   zoneId?: string
 ): Promise<Tunnel> {
   await ensureCredentialsDir();
+  await loadStoredTunnels();
 
   // Check if tunnel with this name already exists
   for (const tunnel of tunnels.values()) {
@@ -201,14 +260,19 @@ export async function createTunnel(
     }
   }
 
-  // Get credentials
-  let credentials = accountId ? await loadCredentials(accountId) : await getDefaultAccount();
+  const credentials = accountId ? await loadCredentials(accountId) : await getDefaultAccount();
+  const useAccountId = accountId || credentials?.accountId;
+  if (!useAccountId) {
+    throw new Error('No active Cloudflare account selected');
+  }
 
   if (!credentials) {
     throw new Error('No Cloudflare credentials found. Please authenticate first.');
   }
 
-  const useAccountId = accountId || credentials.accountId;
+  if (!isAuthenticated()) {
+    await authenticate(credentials.apiToken, useAccountId);
+  }
 
   // Create tunnel using cloudflared CLI
   const tunnelDir = path.join(config.credentialsDir, name);
@@ -217,38 +281,11 @@ export async function createTunnel(
   const credentialsFile = path.join(tunnelDir, 'credentials.json');
 
   try {
-    // Execute cloudflared tunnel create
-    const result = await executeCloudflared([
-      'tunnel',
-      '--credentials-file',
-      credentialsFile,
-      'create',
-      name,
-    ]);
+    const remoteTunnel = await createCloudflareTunnel(name, useAccountId);
+    const tokenPayload = await getTunnelToken(remoteTunnel.id, useAccountId);
+    await writeFile(credentialsFile, JSON.stringify(tokenPayload, null, 2), { mode: 0o600 });
 
-    if (result.exitCode !== 0) {
-      // Check if it's an auth error
-      if (result.stderr.includes('not logged in') || result.stderr.includes('authentication')) {
-        throw new Error('Not authenticated with Cloudflare. Please login first.');
-      }
-      throw new Error(`Failed to create tunnel: ${result.stderr || result.stdout}`);
-    }
-
-    // Read the generated credentials to get the actual tunnel ID
-    let tunnelId: string;
-    let cloudflareTunnelId: string;
-
-    try {
-      const credsContent = await readFile(credentialsFile, 'utf-8');
-      const creds = JSON.parse(credsContent);
-      cloudflareTunnelId = creds.TunnelID || creds.tunnelId;
-      tunnelId = cloudflareTunnelId;
-    } catch {
-      // Extract tunnel ID from output as fallback
-      const idMatch = result.stdout.match(/Tunnel credentials written to.*?([a-f0-9-]{36})/i);
-      tunnelId = idMatch ? idMatch[1] : crypto.randomUUID();
-      cloudflareTunnelId = tunnelId;
-    }
+    const tunnelId = remoteTunnel.id;
 
     // Store tunnel config
     const stored: StoredTunnel = {
@@ -259,7 +296,8 @@ export async function createTunnel(
       credentialsPath: credentialsFile,
       ingress: [],
       createdAt: new Date().toISOString(),
-      cloudflareTunnelId,
+      cloudflareTunnelId: tunnelId,
+      containerIds: [],
     };
 
     await writeFile(path.join(tunnelDir, 'config.json'), JSON.stringify(stored, null, 2));
@@ -276,6 +314,7 @@ export async function createTunnel(
       logs: [],
       restartCount: 0,
       createdAt: new Date(),
+      containerIds: [],
     };
 
     tunnels.set(tunnelId, newTunnel);
@@ -304,6 +343,7 @@ export async function createTunnel(
 }
 
 export async function deleteTunnel(id: string): Promise<void> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -318,11 +358,16 @@ export async function deleteTunnel(id: string): Promise<void> {
 
   // Delete from cloudflare
   try {
-    await executeCloudflared(['tunnel', 'delete', id]);
+    await ensureCloudflareSession(tunnel.accountId);
+    await deleteCloudflareTunnel(id, tunnel.accountId);
   } catch (error) {
+    if (error instanceof CloudflareAPIError && error.statusCode !== 404) {
+      throw error;
+    }
+
     logger.warn(
       { error, tunnelId: id },
-      'Failed to delete tunnel from Cloudflare, continuing with local cleanup'
+      'Cloudflare tunnel delete failed, continuing local cleanup'
     );
   }
 
@@ -340,6 +385,7 @@ export async function deleteTunnel(id: string): Promise<void> {
 }
 
 export async function startTunnel(id: string, restartOnCrash = true): Promise<void> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -517,6 +563,7 @@ export async function startTunnel(id: string, restartOnCrash = true): Promise<vo
 }
 
 export async function stopTunnel(id: string): Promise<void> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -561,6 +608,7 @@ export async function stopTunnel(id: string): Promise<void> {
 export async function getTunnelStatus(
   id: string
 ): Promise<{ status: TunnelStatus; pid?: number; restartCount: number }> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -574,6 +622,7 @@ export async function getTunnelStatus(
 }
 
 export async function getTunnelLogs(id: string, lines = 100): Promise<string[]> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -587,6 +636,7 @@ export async function streamTunnelLogs(
   id: string,
   callback: (log: { type: string; message: string; timestamp: string }) => void
 ): Promise<() => void> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -611,6 +661,7 @@ export async function streamTunnelLogs(
 }
 
 export async function updateIngressRules(id: string, ingress: IngressRule[]): Promise<void> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -618,23 +669,34 @@ export async function updateIngressRules(id: string, ingress: IngressRule[]): Pr
 
   logger.info({ tunnelId: id, rulesCount: ingress.length }, 'Updating ingress rules');
 
+  await ensureCloudflareSession(tunnel.accountId);
+  await updateTunnelConfiguration(id, tunnel.accountId, {
+    config: {
+      ingress,
+    },
+  });
+
+  const remoteConfig = await getTunnelConfiguration(id, tunnel.accountId);
+
   tunnel.ingress = ingress;
+  if (Array.isArray(remoteConfig.ingress)) {
+    tunnel.ingress = remoteConfig.ingress
+      .filter(
+        (rule): rule is { hostname: string; service: string; path?: string; port?: number } =>
+          typeof rule === 'object' &&
+          rule !== null &&
+          typeof rule.hostname === 'string' &&
+          typeof rule.service === 'string'
+      )
+      .map((rule) => ({
+        hostname: rule.hostname,
+        service: rule.service,
+        path: rule.path,
+        port: typeof rule.port === 'number' ? rule.port : 80,
+      }));
+  }
 
-  // Update stored config
-  const tunnelDir = path.dirname(tunnel.credentialsFile);
-  const configFile = path.join(tunnelDir, 'config.json');
-
-  const stored: StoredTunnel = {
-    id: tunnel.id,
-    name: tunnel.name,
-    accountId: tunnel.accountId,
-    zoneId: tunnel.zoneId,
-    credentialsPath: tunnel.credentialsFile,
-    ingress,
-    createdAt: tunnel.createdAt.toISOString(),
-  };
-
-  await writeFile(configFile, JSON.stringify(stored, null, 2));
+  await persistTunnelConfig(tunnel);
 
   // If tunnel is running, restart it to apply new config
   if (tunnel.status === 'active') {
@@ -645,6 +707,7 @@ export async function updateIngressRules(id: string, ingress: IngressRule[]): Pr
 }
 
 export async function getIngressRules(id: string): Promise<IngressRule[]> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -654,6 +717,7 @@ export async function getIngressRules(id: string): Promise<IngressRule[]> {
 }
 
 export async function deleteIngressRule(id: string, hostname: string): Promise<void> {
+  await loadStoredTunnels();
   const tunnel = tunnels.get(id);
   if (!tunnel) {
     throw new Error('Tunnel not found');
@@ -666,21 +730,14 @@ export async function deleteIngressRule(id: string, hostname: string): Promise<v
     throw new Error(`Ingress rule for hostname "${hostname}" not found`);
   }
 
-  // Update stored config
-  const tunnelDir = path.dirname(tunnel.credentialsFile);
-  const configFile = path.join(tunnelDir, 'config.json');
+  await ensureCloudflareSession(tunnel.accountId);
+  await updateTunnelConfiguration(id, tunnel.accountId, {
+    config: {
+      ingress: tunnel.ingress,
+    },
+  });
 
-  const stored: StoredTunnel = {
-    id: tunnel.id,
-    name: tunnel.name,
-    accountId: tunnel.accountId,
-    zoneId: tunnel.zoneId,
-    credentialsPath: tunnel.credentialsFile,
-    ingress: tunnel.ingress,
-    createdAt: tunnel.createdAt.toISOString(),
-  };
-
-  await writeFile(configFile, JSON.stringify(stored, null, 2));
+  await persistTunnelConfig(tunnel);
 
   // If tunnel is running, restart it
   if (tunnel.status === 'active') {
@@ -689,6 +746,46 @@ export async function deleteIngressRule(id: string, hostname: string): Promise<v
   }
 
   logger.info({ tunnelId: id, hostname }, 'Ingress rule deleted');
+}
+
+export async function getTunnelContainerAssociations(id: string): Promise<string[]> {
+  await loadStoredTunnels();
+  const tunnel = tunnels.get(id);
+  if (!tunnel) {
+    throw new Error('Tunnel not found');
+  }
+  return tunnel.containerIds;
+}
+
+export async function setTunnelContainerAssociations(
+  id: string,
+  containerIds: string[]
+): Promise<string[]> {
+  await loadStoredTunnels();
+  const tunnel = tunnels.get(id);
+  if (!tunnel) {
+    throw new Error('Tunnel not found');
+  }
+
+  tunnel.containerIds = Array.from(new Set(containerIds));
+  await persistTunnelConfig(tunnel);
+
+  return tunnel.containerIds;
+}
+
+export async function removeTunnelContainerAssociation(
+  id: string,
+  containerId: string
+): Promise<string[]> {
+  await loadStoredTunnels();
+  const tunnel = tunnels.get(id);
+  if (!tunnel) {
+    throw new Error('Tunnel not found');
+  }
+
+  tunnel.containerIds = tunnel.containerIds.filter((current) => current !== containerId);
+  await persistTunnelConfig(tunnel);
+  return tunnel.containerIds;
 }
 
 export async function listActiveTunnels(): Promise<string[]> {

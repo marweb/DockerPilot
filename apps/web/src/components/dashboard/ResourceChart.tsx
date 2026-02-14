@@ -75,17 +75,31 @@ const formatTimestamp = (timestamp: number, range: TimeRange): string => {
   }
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayloadEntry {
+  color: string;
+  name: string;
+  value: number | string;
+}
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string;
+}) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-lg">
         <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index: number) => (
           <div key={index} className="flex items-center gap-2 text-sm">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-gray-600 dark:text-gray-400 capitalize">{entry.name}:</span>
             <span className="font-medium text-gray-900 dark:text-white">
-              {entry.value.toFixed(1)}%
+              {Number(entry.value).toFixed(1)}%
             </span>
           </div>
         ))}
@@ -310,7 +324,7 @@ const ResourceChart: React.FC<ResourceChartProps> = ({
                   border: '1px solid #e5e7eb',
                   borderRadius: '6px',
                 }}
-                formatter={(value: number | string | Array<number | string>) => [
+                formatter={(value: number | string | Array<number | string> | undefined) => [
                   `${Number(value).toFixed(1)} MB/s`,
                   '',
                 ]}

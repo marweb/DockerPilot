@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import {
   CreateTunnelSchema,
   ListTunnelsQuerySchema,
@@ -15,6 +16,9 @@ import {
   stopTunnel,
   getTunnelStatus,
   getTunnelLogs,
+  getTunnelContainerAssociations,
+  setTunnelContainerAssociations,
+  removeTunnelContainerAssociation,
 } from '../services/cloudflared.js';
 import { CloudflareAPIError } from '../services/cloudflare-api.js';
 import { getLogger } from '../utils/logger.js';
@@ -336,6 +340,131 @@ export async function tunnelRoutes(fastify: FastifyInstance) {
         return reply.send({
           success: true,
           data: { tunnelId: id, ...status },
+        });
+      } catch (error) {
+        if ((error as Error).message === 'Tunnel not found') {
+          return reply.status(404).send({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Tunnel not found' },
+          });
+        }
+
+        return reply.status(500).send({
+          success: false,
+          error: { code: 'INTERNAL_ERROR', message: (error as Error).message },
+        });
+      }
+    }
+  );
+
+  // List associated containers
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    '/tunnels/:id/containers',
+    {
+      schema: {
+        params: TunnelIdParamSchema,
+      },
+    },
+    async (request, reply) => {
+      try {
+        const containerIds = await getTunnelContainerAssociations(request.params.id);
+        return reply.send({
+          success: true,
+          data: {
+            tunnelId: request.params.id,
+            containerIds,
+          },
+        });
+      } catch (error) {
+        if ((error as Error).message === 'Tunnel not found') {
+          return reply.status(404).send({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Tunnel not found' },
+          });
+        }
+
+        return reply.status(500).send({
+          success: false,
+          error: { code: 'INTERNAL_ERROR', message: (error as Error).message },
+        });
+      }
+    }
+  );
+
+  // Replace associated containers
+  fastify.put<{
+    Params: { id: string };
+    Body: { containerIds: string[] };
+  }>(
+    '/tunnels/:id/containers',
+    {
+      schema: {
+        params: TunnelIdParamSchema,
+        body: z.object({
+          containerIds: z.array(z.string().min(1)).default([]),
+        }),
+      },
+    },
+    async (request, reply) => {
+      try {
+        const containerIds = await setTunnelContainerAssociations(
+          request.params.id,
+          request.body.containerIds
+        );
+
+        return reply.send({
+          success: true,
+          message: 'Container associations updated',
+          data: {
+            tunnelId: request.params.id,
+            containerIds,
+          },
+        });
+      } catch (error) {
+        if ((error as Error).message === 'Tunnel not found') {
+          return reply.status(404).send({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Tunnel not found' },
+          });
+        }
+
+        return reply.status(500).send({
+          success: false,
+          error: { code: 'INTERNAL_ERROR', message: (error as Error).message },
+        });
+      }
+    }
+  );
+
+  // Remove one associated container
+  fastify.delete<{
+    Params: { id: string; containerId: string };
+  }>(
+    '/tunnels/:id/containers/:containerId',
+    {
+      schema: {
+        params: z.object({
+          id: z.string().uuid(),
+          containerId: z.string().min(1),
+        }),
+      },
+    },
+    async (request, reply) => {
+      try {
+        const containerIds = await removeTunnelContainerAssociation(
+          request.params.id,
+          request.params.containerId
+        );
+
+        return reply.send({
+          success: true,
+          message: 'Container association removed',
+          data: {
+            tunnelId: request.params.id,
+            containerIds,
+          },
         });
       } catch (error) {
         if ((error as Error).message === 'Tunnel not found') {

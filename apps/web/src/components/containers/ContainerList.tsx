@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import type { Container } from '@dockpilot/types';
 import { Play, Square, RotateCw, Trash2, Box, Clock, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import type { Locale } from 'date-fns';
 import { enUS, es, fr, de, zhCN, ru, ja } from 'date-fns/locale';
-import { usei18n } from 'react-i18next';
 
 interface ContainerListProps {
   containers: Container[];

@@ -58,7 +58,7 @@ export default function Settings() {
     try {
       const response = await api.get('/system/check-update');
       setVersionInfo(response.data.data);
-    } catch (err) {
+    } catch {
       setError(t('settings.updateCheckFailed'));
     } finally {
       setChecking(false);

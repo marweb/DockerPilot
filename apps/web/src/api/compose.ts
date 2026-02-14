@@ -2,8 +2,6 @@ import api, { extractData } from './client';
 import type {
   ComposeStack,
   ComposeService,
-  ComposeUpOptions,
-  ComposeDownOptions,
   ApiResponse,
   PaginatedResponse,
 } from '@dockpilot/types';

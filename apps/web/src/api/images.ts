@@ -3,7 +3,6 @@ import type {
   Image,
   ImageInspect,
   ImageHistory,
-  ImagePullOptions,
   ApiResponse,
   PaginatedResponse,
 } from '@dockpilot/types';

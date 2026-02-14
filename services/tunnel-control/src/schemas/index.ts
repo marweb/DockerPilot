@@ -83,11 +83,12 @@ export const CloudflareAuthSchema = z.object({
   accountId: z
     .string()
     .min(1, 'Account ID is required')
-    .regex(/^[a-f0-9]{32}$/, 'Invalid Account ID format'),
+    .regex(/^[a-f0-9]{32}$/, 'Invalid Account ID format')
+    .optional(),
 });
 
 export const CloudflareLoginSchema = z.object({
-  method: z.enum(['api_token', 'oauth']),
+  method: z.enum(['api_token', 'oauth']).optional().default('oauth'),
   apiToken: z.string().optional(),
   accountId: z.string().optional(),
 });

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -139,25 +139,13 @@ export default function Containers() {
     }
   }, [containerId, containers, viewParam]);
 
-  const statusOptions: { value: ContainerStatus | 'all'; label: string; color: string }[] = [
-    { value: 'all', label: t('containers.filter.all'), color: 'bg-gray-100 text-gray-800' },
-    {
-      value: 'running',
-      label: t('containers.status.running'),
-      color: 'bg-green-100 text-green-800',
-    },
-    { value: 'exited', label: t('containers.status.exited'), color: 'bg-red-100 text-red-800' },
-    {
-      value: 'paused',
-      label: t('containers.status.paused'),
-      color: 'bg-yellow-100 text-yellow-800',
-    },
-    { value: 'created', label: t('containers.status.created'), color: 'bg-blue-100 text-blue-800' },
-    {
-      value: 'restarting',
-      label: t('containers.status.restarting'),
-      color: 'bg-purple-100 text-purple-800',
-    },
+  const statusOptions: { value: ContainerStatus | 'all'; label: string }[] = [
+    { value: 'all', label: t('containers.filter.all') },
+    { value: 'running', label: t('containers.status.running') },
+    { value: 'exited', label: t('containers.status.exited') },
+    { value: 'paused', label: t('containers.status.paused') },
+    { value: 'created', label: t('containers.status.created') },
+    { value: 'restarting', label: t('containers.status.restarting') },
   ];
 
   // Show container details view

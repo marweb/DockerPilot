@@ -41,8 +41,8 @@ export async function saveCredentials(accountId: string, data: CredentialsData):
 
   let content: string;
 
-  if (config.encryptionKey) {
-    const encrypted = encryptCredentials(dataToSave, config.encryptionKey);
+  if (config.masterKey) {
+    const encrypted = encryptCredentials(dataToSave, config.masterKey);
     content = JSON.stringify(encrypted, null, 2);
   } else {
     content = JSON.stringify(dataToSave, null, 2);
@@ -65,10 +65,10 @@ export async function loadCredentials(accountId: string): Promise<CredentialsDat
   const data = JSON.parse(content);
 
   if (data.encrypted) {
-    if (!config.encryptionKey) {
-      throw new Error('Cannot decrypt credentials: ENCRYPTION_KEY not set');
+    if (!config.masterKey) {
+      throw new Error('Cannot decrypt credentials: MASTER_KEY not set');
     }
-    return decryptCredentials(data as EncryptedCredentials, config.encryptionKey);
+    return decryptCredentials(data as EncryptedCredentials, config.masterKey);
   }
 
   return data as CredentialsData;
@@ -97,7 +97,9 @@ export async function listStoredAccounts(): Promise<string[]> {
   const { readdir } = await import('fs/promises');
   const entries = await readdir(credentialsDir);
 
-  return entries.filter((f: string) => f.endsWith('.json')).map((f: string) => f.replace('.json', ''));
+  return entries
+    .filter((f: string) => f.endsWith('.json'))
+    .map((f: string) => f.replace('.json', ''));
 }
 
 export async function getDefaultAccount(): Promise<CredentialsData | null> {
@@ -108,9 +110,16 @@ export async function getDefaultAccount(): Promise<CredentialsData | null> {
   return loadCredentials(accounts[0]);
 }
 
-function encryptCredentials(data: CredentialsData, key: string): EncryptedCredentials {
+function normalizeMasterKey(key: string): Buffer {
+  if (!key || key.trim().length < 16) {
+    throw new Error('MASTER_KEY must be at least 16 characters');
+  }
+  return crypto.createHash('sha256').update(key, 'utf8').digest();
+}
+
+export function encryptCredentials(data: CredentialsData, key: string): EncryptedCredentials {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key.padEnd(32).slice(0, 32)), iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', normalizeMasterKey(key), iv);
 
   let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -123,10 +132,10 @@ function encryptCredentials(data: CredentialsData, key: string): EncryptedCreden
   };
 }
 
-function decryptCredentials(encrypted: EncryptedCredentials, key: string): CredentialsData {
+export function decryptCredentials(encrypted: EncryptedCredentials, key: string): CredentialsData {
   const decipher = crypto.createDecipheriv(
     'aes-256-gcm',
-    Buffer.from(key.padEnd(32).slice(0, 32)),
+    normalizeMasterKey(key),
     Buffer.from(encrypted.iv, 'hex')
   );
 

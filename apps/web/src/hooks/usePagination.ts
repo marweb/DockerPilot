@@ -128,7 +128,7 @@ export function usePagination({
   const pageRange = useMemo(() => {
     const halfButtons = Math.floor(maxPageButtons / 2);
     let start = Math.max(1, validPage - halfButtons);
-    let end = Math.min(totalPages, start + maxPageButtons - 1);
+    const end = Math.min(totalPages, start + maxPageButtons - 1);
 
     // Adjust if we're near the end
     if (end - start + 1 < maxPageButtons) {

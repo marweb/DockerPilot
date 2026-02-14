@@ -40,7 +40,7 @@ export default function Setup() {
       { key: 'number', pass: /[0-9]/.test(password), label: t('setup.reqNumber') },
       {
         key: 'special',
-        pass: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+        pass: /[^A-Za-z0-9]/.test(password),
         label: t('setup.reqSpecial'),
       },
     ],
