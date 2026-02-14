@@ -1,5 +1,7 @@
 # Build stage
-FROM node:20-alpine AS builder
+# Build on BUILDPLATFORM to avoid QEMU crashes while installing dependencies
+# during multi-arch builds (linux/arm64 under emulation).
+FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -40,9 +42,6 @@ RUN apk add --no-cache curl && \
     CLOUDFLARED_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "amd64") && \
     curl -L "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${CLOUDFLARED_ARCH}" -o /usr/local/bin/cloudflared && \
     chmod +x /usr/local/bin/cloudflared
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 
 # Copy built files
 COPY --from=builder /app/services/tunnel-control/dist ./dist
