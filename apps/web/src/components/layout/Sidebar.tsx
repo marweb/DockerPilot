@@ -53,7 +53,8 @@ export default function Sidebar({
   }, []);
 
   useEffect(() => {
-    api.get('/system/version')
+    api
+      .get('/system/version')
       .then((res) => {
         setAppVersion(res.data?.data?.currentVersion || '...');
       })
@@ -74,9 +75,7 @@ export default function Sidebar({
       <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
         {!collapsed && (
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">D</span>
-            </div>
+            <img src="/logo.png" alt="DockPilot" className="h-8 w-8 rounded-lg object-cover" />
             <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
               DockPilot
             </span>
@@ -84,9 +83,7 @@ export default function Sidebar({
         )}
         {collapsed && (
           <Link to="/" className="mx-auto">
-            <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">D</span>
-            </div>
+            <img src="/logo.png" alt="DockPilot" className="h-8 w-8 rounded-lg object-cover" />
           </Link>
         )}
         {collapsible && !isMobile && (
@@ -131,7 +128,9 @@ export default function Sidebar({
       {!collapsed && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="rounded-lg bg-gray-50 dark:bg-gray-700/50 p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400">{t('sidebar.version')} {appVersion}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {t('sidebar.version')} {appVersion}
+            </p>
           </div>
         </div>
       )}

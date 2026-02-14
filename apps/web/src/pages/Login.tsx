@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, User, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../stores/auth';
 
 export default function Login() {
@@ -63,9 +63,11 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary-600 shadow-lg shadow-primary-600/30 mb-4">
-            <LogIn className="h-8 w-8 text-white" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="DockPilot"
+            className="mx-auto mb-4 h-16 w-16 rounded-2xl object-cover shadow-lg"
+          />
           <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">DockPilot</h1>
         </div>
 
