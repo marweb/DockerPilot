@@ -8,6 +8,7 @@ export const CreateTunnelSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Name must contain only lowercase letters, numbers, and hyphens'),
   accountId: z.string().optional(),
   zoneId: z.string().optional(),
+  autoStart: z.boolean().optional(),
 });
 
 export const UpdateTunnelSchema = z.object({

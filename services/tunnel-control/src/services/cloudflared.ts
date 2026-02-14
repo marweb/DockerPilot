@@ -13,8 +13,11 @@ import {
   getTunnelToken,
   getTunnelConfiguration,
   updateTunnelConfiguration,
+  listZones,
+  upsertTunnelDnsRecord,
   isAuthenticated,
   authenticate,
+  getCurrentAccountId,
   CloudflareAPIError,
 } from './cloudflare-api.js';
 
@@ -35,6 +38,7 @@ interface TunnelConfig {
   lastRestartAt?: Date;
   createdAt: Date;
   containerIds: string[];
+  autoStart: boolean;
 }
 
 interface StoredTunnel {
@@ -47,6 +51,24 @@ interface StoredTunnel {
   createdAt: string;
   cloudflareTunnelId?: string;
   containerIds?: string[];
+  autoStart?: boolean;
+}
+
+interface ProvisionTunnelOptions {
+  name?: string;
+  accountId?: string;
+  zoneId?: string;
+  serviceContainerId: string;
+  serviceName: string;
+  hostname: string;
+  localPort: number;
+  autoStart?: boolean;
+}
+
+interface ProvisionTunnelResult {
+  tunnel: Tunnel;
+  dnsTarget: string;
+  zoneId: string;
 }
 
 // Store active tunnels
@@ -141,7 +163,7 @@ export async function listTunnels(): Promise<Tunnel[]> {
   const result: Tunnel[] = [];
 
   for (const [, tunnel] of tunnels) {
-    result.push({
+    const item = {
       id: tunnel.id,
       name: tunnel.name,
       accountId: tunnel.accountId,
@@ -151,7 +173,10 @@ export async function listTunnels(): Promise<Tunnel[]> {
       publicUrl: tunnel.publicUrl,
       ingressRules: tunnel.ingress,
       connectedServices: tunnel.containerIds,
-    });
+      autoStart: tunnel.autoStart,
+    };
+
+    result.push(item as Tunnel);
   }
 
   return result;
@@ -175,7 +200,8 @@ export async function getTunnel(id: string): Promise<Tunnel> {
     publicUrl: tunnel.publicUrl,
     ingressRules: tunnel.ingress,
     connectedServices: tunnel.containerIds,
-  };
+    autoStart: tunnel.autoStart,
+  } as Tunnel;
 }
 
 async function loadStoredTunnels(): Promise<void> {
@@ -209,6 +235,7 @@ async function loadStoredTunnels(): Promise<void> {
           restartCount: 0,
           createdAt: new Date(stored.createdAt),
           containerIds: stored.containerIds || [],
+          autoStart: stored.autoStart ?? false,
         });
       }
     } catch (error) {
@@ -231,6 +258,7 @@ async function persistTunnelConfig(tunnel: TunnelConfig): Promise<void> {
     createdAt: tunnel.createdAt.toISOString(),
     cloudflareTunnelId: tunnel.id,
     containerIds: tunnel.containerIds,
+    autoStart: tunnel.autoStart,
   };
 
   await writeFile(configFile, JSON.stringify(stored, null, 2));
@@ -245,10 +273,95 @@ async function ensureCloudflareSession(accountId: string): Promise<void> {
   await authenticate(credentials.apiToken, accountId);
 }
 
+async function resolveZoneIdForHostname(
+  hostname: string,
+  explicitZoneId?: string
+): Promise<string> {
+  if (explicitZoneId) {
+    return explicitZoneId;
+  }
+
+  const zones = await listZones(getCurrentAccountIdSafe());
+  const sorted = [...zones].sort((a, b) => b.name.length - a.name.length);
+
+  const match = sorted.find((zone) => hostname === zone.name || hostname.endsWith(`.${zone.name}`));
+  if (!match) {
+    throw new Error(
+      `No se encontro una zona de Cloudflare para ${hostname}. Proporciona Zone ID o usa un dominio dentro de una zona del token.`
+    );
+  }
+
+  return match.id;
+}
+
+function getCurrentAccountIdSafe(): string {
+  const accountId = getCurrentAccountId();
+  if (!accountId) {
+    throw new Error('No active Cloudflare account selected');
+  }
+  return accountId;
+}
+
+function sanitizeTunnelName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 63);
+}
+
+export async function provisionTunnelForService(
+  options: ProvisionTunnelOptions
+): Promise<ProvisionTunnelResult> {
+  const normalizedName = sanitizeTunnelName(options.name || options.serviceName);
+  if (!normalizedName) {
+    throw new Error('No se pudo generar un nombre de tunel valido');
+  }
+
+  const autoStart = options.autoStart ?? true;
+  const tunnel = await createTunnel(normalizedName, options.accountId, options.zoneId, autoStart);
+
+  try {
+    await setTunnelContainerAssociations(tunnel.id, [options.serviceContainerId]);
+
+    const ingressRule: IngressRule = {
+      hostname: options.hostname,
+      service: `http://${options.serviceName}:${options.localPort}`,
+      port: options.localPort,
+    };
+    await updateIngressRules(tunnel.id, [ingressRule]);
+
+    const zoneId = await resolveZoneIdForHostname(options.hostname, options.zoneId);
+    await upsertTunnelDnsRecord(zoneId, options.hostname, tunnel.id);
+
+    if (autoStart) {
+      await startTunnel(tunnel.id);
+    }
+
+    await setTunnelAutoStart(tunnel.id, autoStart);
+
+    const updatedTunnel = await getTunnel(tunnel.id);
+    return {
+      tunnel: updatedTunnel,
+      dnsTarget: `${tunnel.id}.cfargotunnel.com`,
+      zoneId,
+    };
+  } catch (error) {
+    try {
+      await deleteTunnel(tunnel.id);
+    } catch (cleanupError) {
+      logger.warn({ cleanupError, tunnelId: tunnel.id }, 'Failed to rollback provisioned tunnel');
+    }
+    throw error;
+  }
+}
+
 export async function createTunnel(
   name: string,
   accountId?: string,
-  zoneId?: string
+  zoneId?: string,
+  autoStart = false
 ): Promise<Tunnel> {
   await ensureCredentialsDir();
   await loadStoredTunnels();
@@ -298,6 +411,7 @@ export async function createTunnel(
       createdAt: new Date().toISOString(),
       cloudflareTunnelId: tunnelId,
       containerIds: [],
+      autoStart,
     };
 
     await writeFile(path.join(tunnelDir, 'config.json'), JSON.stringify(stored, null, 2));
@@ -315,6 +429,7 @@ export async function createTunnel(
       restartCount: 0,
       createdAt: new Date(),
       containerIds: [],
+      autoStart,
     };
 
     tunnels.set(tunnelId, newTunnel);
@@ -332,7 +447,8 @@ export async function createTunnel(
       createdAt: new Date(),
       ingressRules: [],
       connectedServices: [],
-    };
+      autoStart,
+    } as Tunnel;
   } catch (error) {
     // Cleanup on failure
     if (existsSync(tunnelDir)) {
@@ -767,7 +883,23 @@ export async function setTunnelContainerAssociations(
     throw new Error('Tunnel not found');
   }
 
-  tunnel.containerIds = Array.from(new Set(containerIds));
+  const uniqueContainerIds = Array.from(new Set(containerIds));
+
+  for (const containerId of uniqueContainerIds) {
+    for (const [otherTunnelId, otherTunnel] of tunnels.entries()) {
+      if (otherTunnelId === id) {
+        continue;
+      }
+
+      if (otherTunnel.containerIds.includes(containerId)) {
+        throw new Error(
+          `Container ${containerId} is already linked to tunnel ${otherTunnel.name}. One tunnel per service is allowed.`
+        );
+      }
+    }
+  }
+
+  tunnel.containerIds = uniqueContainerIds;
   await persistTunnelConfig(tunnel);
 
   return tunnel.containerIds;
@@ -786,6 +918,35 @@ export async function removeTunnelContainerAssociation(
   tunnel.containerIds = tunnel.containerIds.filter((current) => current !== containerId);
   await persistTunnelConfig(tunnel);
   return tunnel.containerIds;
+}
+
+export async function setTunnelAutoStart(id: string, autoStart: boolean): Promise<void> {
+  await loadStoredTunnels();
+  const tunnel = tunnels.get(id);
+  if (!tunnel) {
+    throw new Error('Tunnel not found');
+  }
+
+  tunnel.autoStart = autoStart;
+  await persistTunnelConfig(tunnel);
+}
+
+export async function startConfiguredAutoStartTunnels(): Promise<void> {
+  await ensureCredentialsDir();
+  await loadStoredTunnels();
+
+  for (const [id, tunnel] of tunnels.entries()) {
+    if (!tunnel.autoStart || tunnel.status === 'active') {
+      continue;
+    }
+
+    try {
+      logger.info({ tunnelId: id, name: tunnel.name }, 'Auto-starting configured tunnel');
+      await startTunnel(id, true);
+    } catch (error) {
+      logger.error({ error, tunnelId: id }, 'Failed to auto-start tunnel on service boot');
+    }
+  }
 }
 
 export async function listActiveTunnels(): Promise<string[]> {

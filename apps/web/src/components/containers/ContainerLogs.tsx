@@ -22,21 +22,36 @@ export default function ContainerLogs({ containerId }: ContainerLogsProps) {
 
   // Connect to WebSocket
   useEffect(() => {
-    const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/containers/${containerId}/logs?follow=${isFollowing}&timestamps=${showTimestamps}&tail=${tail}`;
+    const query = new URLSearchParams({
+      follow: String(isFollowing),
+      timestamps: String(showTimestamps),
+      tail: String(tail),
+      ...(token ? { token } : {}),
+    });
+
+    const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/containers/${containerId}/logs?${query.toString()}`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
       setIsConnected(true);
-      // Send auth token
-      ws.send(JSON.stringify({ token }));
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'log') {
-        setLogs((prev) => [...prev, data.message]);
+      try {
+        const data = JSON.parse(event.data as string) as {
+          type?: string;
+          data?: string;
+          message?: string;
+          error?: string;
+        };
+
+        if (data.type === 'log') {
+          setLogs((prev) => [...prev, data.data || data.message || '']);
+        }
+      } catch {
+        setLogs((prev) => [...prev, String(event.data)]);
       }
     };
 

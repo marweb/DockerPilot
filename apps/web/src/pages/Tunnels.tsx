@@ -9,6 +9,16 @@ type Tunnel = {
   name: string;
   status: 'active' | 'inactive' | 'error' | 'creating';
   publicUrl?: string;
+  ingressRules?: Array<{ hostname?: string; service?: string }>;
+  connectedServices?: string[];
+  autoStart?: boolean;
+};
+
+type ContainerSummary = {
+  id: string;
+  name: string;
+  status: string;
+  ports: Array<{ containerPort: number }>;
 };
 
 type TunnelAuthStatus = {
@@ -57,9 +67,14 @@ export default function Tunnels() {
   const [selectedAccountId, setSelectedAccountId] = useState('');
   const [zoneId, setZoneId] = useState('');
   const [tunnelName, setTunnelName] = useState('');
+  const [serviceContainerId, setServiceContainerId] = useState('');
+  const [hostname, setHostname] = useState('');
+  const [servicePort, setServicePort] = useState('');
+  const [autoStartOnBoot, setAutoStartOnBoot] = useState(true);
   const [oauthUrl, setOauthUrl] = useState('');
   const [authError, setAuthError] = useState('');
   const [createError, setCreateError] = useState('');
+  const [actionError, setActionError] = useState('');
   const [showDebugLogs, setShowDebugLogs] = useState(true);
 
   const {
@@ -99,6 +114,15 @@ export default function Tunnels() {
       return (response.data?.data || []) as Tunnel[];
     },
     refetchInterval: 10000,
+    enabled: Boolean(authStatus?.authenticated),
+  });
+
+  const { data: containers } = useQuery({
+    queryKey: ['containers-for-tunnels'],
+    queryFn: async () => {
+      const response = await api.get('/containers');
+      return (response.data?.data || []) as ContainerSummary[];
+    },
     enabled: Boolean(authStatus?.authenticated),
   });
 
@@ -154,16 +178,74 @@ export default function Tunnels() {
   const createTunnelMutation = useMutation({
     mutationFn: async () => {
       setCreateError('');
-      const response = await api.post('/tunnels', {
-        name: tunnelName,
+      setActionError('');
+
+      if (!serviceContainerId) {
+        throw new Error('Selecciona un microservicio para enlazar el tunel');
+      }
+
+      if (!hostname.trim()) {
+        throw new Error('Ingresa un hostname publico (ej: api.midominio.com)');
+      }
+
+      const selectedContainer = (containers || []).find(
+        (container) => container.id === serviceContainerId
+      );
+      if (!selectedContainer) {
+        throw new Error('No se encontro el microservicio seleccionado');
+      }
+
+      const linkedTunnel = (tunnels || []).find((tunnel) =>
+        (tunnel.connectedServices || []).includes(serviceContainerId)
+      );
+      if (linkedTunnel) {
+        throw new Error(
+          `El microservicio ya esta enlazado al tunel "${linkedTunnel.name}". Solo se permite 1 tunel por microservicio.`
+        );
+      }
+
+      const resolvedPort = Number(servicePort) || selectedContainer.ports?.[0]?.containerPort || 80;
+      const normalizedCustomName = tunnelName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 63);
+
+      const effectiveTunnelName =
+        normalizedCustomName ||
+        `${selectedContainer.name}`
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '')
+          .slice(0, 63);
+
+      if (!effectiveTunnelName) {
+        throw new Error('No se pudo generar un nombre de tunel valido para el microservicio');
+      }
+
+      const response = await api.post('/tunnels/provision', {
+        name: effectiveTunnelName,
         accountId: selectedAccountId || authStatus?.accountId,
         zoneId: zoneId || undefined,
+        serviceContainerId,
+        serviceName: selectedContainer.name,
+        hostname: hostname.trim(),
+        localPort: resolvedPort,
+        autoStart: autoStartOnBoot,
       });
+
       return response.data;
     },
     onSuccess: () => {
       setTunnelName('');
       setZoneId('');
+      setServiceContainerId('');
+      setHostname('');
+      setServicePort('');
+      setAutoStartOnBoot(true);
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
@@ -192,18 +274,54 @@ export default function Tunnels() {
 
   const startMutation = useMutation({
     mutationFn: (id: string) => api.post(`/tunnels/${id}/start`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tunnels'] }),
+    onSuccess: () => {
+      setActionError('');
+      queryClient.invalidateQueries({ queryKey: ['tunnels'] });
+    },
+    onError: (err: unknown) => {
+      setActionError(getErrorMessage(err, 'No se pudo iniciar el tunel'));
+    },
   });
 
   const stopMutation = useMutation({
     mutationFn: (id: string) => api.post(`/tunnels/${id}/stop`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tunnels'] }),
+    onSuccess: () => {
+      setActionError('');
+      queryClient.invalidateQueries({ queryKey: ['tunnels'] });
+    },
+    onError: (err: unknown) => {
+      setActionError(getErrorMessage(err, 'No se pudo detener el tunel'));
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/tunnels/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tunnels'] }),
+    onSuccess: () => {
+      setActionError('');
+      queryClient.invalidateQueries({ queryKey: ['tunnels'] });
+    },
+    onError: (err: unknown) => {
+      setActionError(getErrorMessage(err, 'No se pudo eliminar el tunel'));
+    },
   });
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: async ({ id, autoStart }: { id: string; autoStart: boolean }) => {
+      const response = await api.patch(`/tunnels/${id}/settings`, { autoStart });
+      return response.data;
+    },
+    onSuccess: () => {
+      setActionError('');
+      queryClient.invalidateQueries({ queryKey: ['tunnels'] });
+    },
+    onError: (err: unknown) => {
+      setActionError(getErrorMessage(err, 'No se pudo actualizar auto-inicio del tunel'));
+    },
+  });
+
+  const selectedContainer = (containers || []).find(
+    (container) => container.id === serviceContainerId
+  );
 
   return (
     <div className="space-y-6">
@@ -410,18 +528,65 @@ export default function Tunnels() {
               {createError && (
                 <div className="text-sm text-red-600 dark:text-red-400">{createError}</div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {actionError && (
+                <div className="text-sm text-red-600 dark:text-red-400">{actionError}</div>
+              )}
+
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-600 dark:text-gray-300">
+                Flujo recomendado: 1) selecciona microservicio, 2) hostname publico, 3) crear.
+                DockPilot enlaza servicio + ingress, crea DNS CNAME y opcionalmente inicia tunel.
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <select
+                  className="input"
+                  value={serviceContainerId}
+                  onChange={(e) => {
+                    const nextId = e.target.value;
+                    setServiceContainerId(nextId);
+                    const nextContainer = (containers || []).find(
+                      (container) => container.id === nextId
+                    );
+                    if (nextContainer) {
+                      setServicePort(String(nextContainer.ports?.[0]?.containerPort || 80));
+                      if (!tunnelName) {
+                        setTunnelName(
+                          nextContainer.name
+                            .toLowerCase()
+                            .replace(/[^a-z0-9-]/g, '-')
+                            .replace(/-+/g, '-')
+                            .replace(/^-|-$/g, '')
+                            .slice(0, 63)
+                        );
+                      }
+                    }
+                  }}
+                >
+                  <option value="">Microservicio</option>
+                  {(containers || []).map((container) => (
+                    <option key={container.id} value={container.id}>
+                      {container.name} ({container.status})
+                    </option>
+                  ))}
+                </select>
+
                 <input
                   className="input"
-                  placeholder="Nombre del tunel"
-                  value={tunnelName}
-                  onChange={(e) => setTunnelName(e.target.value)}
+                  placeholder="Hostname publico (ej: api.midominio.com)"
+                  value={hostname}
+                  onChange={(e) => setHostname(e.target.value)}
                 />
                 <input
                   className="input"
-                  placeholder="Account ID (opcional)"
-                  value={selectedAccountId || authStatus?.accountId || ''}
-                  onChange={(e) => setSelectedAccountId(e.target.value)}
+                  placeholder="Puerto interno servicio"
+                  value={servicePort}
+                  onChange={(e) => setServicePort(e.target.value.replace(/[^0-9]/g, ''))}
+                />
+                <input
+                  className="input"
+                  placeholder="Nombre del tunel (opcional)"
+                  value={tunnelName}
+                  onChange={(e) => setTunnelName(e.target.value)}
                 />
                 <input
                   className="input"
@@ -430,13 +595,34 @@ export default function Tunnels() {
                   onChange={(e) => setZoneId(e.target.value)}
                 />
               </div>
+
+              {selectedContainer && (
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Servicio destino:{' '}
+                  <span className="font-mono">
+                    http://{selectedContainer.name}:
+                    {servicePort || selectedContainer.ports?.[0]?.containerPort || 80}
+                  </span>
+                </div>
+              )}
+
+              <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={autoStartOnBoot}
+                  onChange={(e) => setAutoStartOnBoot(e.target.checked)}
+                  className="rounded"
+                />
+                Auto iniciar tunel al crear y cuando DockPilot reinicie
+              </label>
+
               <button
                 className="btn btn-primary btn-sm"
                 onClick={() => createTunnelMutation.mutate()}
-                disabled={!tunnelName || createTunnelMutation.isLoading}
+                disabled={!serviceContainerId || !hostname || createTunnelMutation.isLoading}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Crear tunel
+                Crear, enlazar e iniciar
               </button>
             </div>
           )}
@@ -461,6 +647,15 @@ export default function Tunnels() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       URL
                     </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Microservicio
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Hostname
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Auto inicio
+                    </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                       {t('tunnels.actions')}
                     </th>
@@ -477,6 +672,36 @@ export default function Tunnels() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                         {tunnel.publicUrl || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        {(() => {
+                          const linkedId = tunnel.connectedServices?.[0];
+                          if (!linkedId) return '-';
+                          return (
+                            (containers || []).find((container) => container.id === linkedId)
+                              ?.name || `${linkedId.slice(0, 12)}...`
+                          );
+                        })()}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        {tunnel.ingressRules?.[0]?.hostname || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        <label className="inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(tunnel.autoStart)}
+                            onChange={(e) =>
+                              updateSettingsMutation.mutate({
+                                id: tunnel.id,
+                                autoStart: e.target.checked,
+                              })
+                            }
+                            className="rounded"
+                            disabled={updateSettingsMutation.isLoading}
+                          />
+                          <span>{tunnel.autoStart ? 'Si' : 'No'}</span>
+                        </label>
                       </td>
                       <td className="px-4 py-3 text-right space-x-2">
                         {tunnel.status !== 'active' ? (

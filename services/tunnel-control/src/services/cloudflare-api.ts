@@ -40,6 +40,19 @@ interface CloudflareTunnelConfig {
   [key: string]: unknown;
 }
 
+export interface CloudflareZone {
+  id: string;
+  name: string;
+}
+
+interface CloudflareDnsRecord {
+  id: string;
+  type: string;
+  name: string;
+  content: string;
+  proxied?: boolean;
+}
+
 interface TunnelCredentials {
   AccountTag: string;
   TunnelSecret: string;
@@ -191,6 +204,58 @@ export async function getAccountInfo(accountId: string): Promise<{ id: string; n
   return { id: result.id, name: result.name };
 }
 
+export async function listZones(accountId?: string): Promise<CloudflareZone[]> {
+  checkRateLimit('listZones');
+  const query = new URLSearchParams();
+  if (accountId) {
+    query.set('account.id', accountId);
+  }
+
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return request<CloudflareZone[]>(`/zones${suffix}`, { method: 'GET' });
+}
+
+export async function upsertTunnelDnsRecord(
+  zoneId: string,
+  hostname: string,
+  tunnelId: string
+): Promise<void> {
+  checkRateLimit('upsertTunnelDnsRecord');
+
+  const target = `${tunnelId}.cfargotunnel.com`;
+  const encodedHostname = encodeURIComponent(hostname);
+
+  const existing = await request<CloudflareDnsRecord[]>(
+    `/zones/${zoneId}/dns_records?type=CNAME&name=${encodedHostname}`,
+    { method: 'GET' }
+  );
+
+  if (existing.length > 0) {
+    await request(`/zones/${zoneId}/dns_records/${existing[0].id}`, {
+      method: 'PUT',
+      body: {
+        type: 'CNAME',
+        name: hostname,
+        content: target,
+        proxied: true,
+        ttl: 1,
+      },
+    });
+    return;
+  }
+
+  await request(`/zones/${zoneId}/dns_records`, {
+    method: 'POST',
+    body: {
+      type: 'CNAME',
+      name: hostname,
+      content: target,
+      proxied: true,
+      ttl: 1,
+    },
+  });
+}
+
 function ensureAuthenticated(): void {
   if (!currentToken || !currentAccountId) {
     throw new CloudflareAPIError('Not authenticated with Cloudflare', 401, 1000);
@@ -199,7 +264,7 @@ function ensureAuthenticated(): void {
 
 async function request<T = unknown>(
   path: string,
-  options: { method: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: unknown }
+  options: { method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'; body?: unknown }
 ): Promise<T> {
   ensureAuthenticated();
 
@@ -261,7 +326,7 @@ function mapCloudflareErrorMessage(statusCode: number, fallback: string): string
     return 'Cloudflare authentication failed. Verify the API token.';
   }
   if (statusCode === 403) {
-    return 'Cloudflare access denied. The token needs Tunnel Edit permission on this account.';
+    return 'Cloudflare access denied. The token needs required permissions (Tunnel Edit and DNS Edit for automatic hostname setup).';
   }
   if (statusCode === 404) {
     return 'Cloudflare resource not found. Verify account_id or tunnel_id.';

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useSearchParams } from 'react-router-dom';
 import { Search, RefreshCw, Download } from 'lucide-react';
 import type { Image as DockerImage } from '@dockpilot/types';
 import api from '../api/client';
@@ -10,11 +11,22 @@ import ImagePull from '../components/images/ImagePull';
 export default function Images() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showPullModal, setShowPullModal] = useState(false);
   const [imageToDelete, setImageToDelete] = useState<DockerImage | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'pull') {
+      setShowPullModal(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('action');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // Fetch images
   const {

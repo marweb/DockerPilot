@@ -16,7 +16,7 @@ export default function ContainerDetails({ containerId }: ContainerDetailsProps)
   const { data: details, isLoading } = useQuery({
     queryKey: ['container', containerId],
     queryFn: async () => {
-      const response = await api.get(`/containers/${containerId}/inspect`);
+      const response = await api.get(`/containers/${containerId}`);
       return response.data.data as ContainerInspect;
     },
     refetchInterval: 5000,

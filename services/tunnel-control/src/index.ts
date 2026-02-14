@@ -1,7 +1,10 @@
 import { loadConfig } from './config/index.js';
 import { createApp } from './app.js';
 import { getLogger } from './utils/logger.js';
-import { checkCloudflaredInstalled } from './services/cloudflared.js';
+import {
+  checkCloudflaredInstalled,
+  startConfiguredAutoStartTunnels,
+} from './services/cloudflared.js';
 
 async function main() {
   const config = loadConfig();
@@ -18,6 +21,8 @@ async function main() {
   try {
     await app.listen({ port: config.port, host: config.host });
     logger.info(`Tunnel Control service listening on http://${config.host}:${config.port}`);
+
+    await startConfiguredAutoStartTunnels();
   } catch (err) {
     logger.error(err);
     process.exit(1);

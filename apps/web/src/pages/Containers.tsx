@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -20,6 +20,7 @@ import ContainerList from '../components/containers/ContainerList';
 import ContainerDetails from '../components/containers/ContainerDetails';
 import ContainerLogs from '../components/containers/ContainerLogs';
 import ContainerExec from '../components/containers/ContainerExec';
+import ContainerStats from '../components/containers/ContainerStats';
 
 export default function Containers() {
   const { t } = useTranslation();
@@ -35,6 +36,28 @@ export default function Containers() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [containerToDelete, setContainerToDelete] = useState<Container | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'logs' | 'exec' | 'stats'>('overview');
+  const [statsHistory, setStatsHistory] = useState<
+    Array<{
+      timestamp: number;
+      cpuPercent: number;
+      cpuCores: number;
+      memoryUsed: number;
+      memoryTotal: number;
+      memoryPercent: number;
+      networkRx: number;
+      networkTx: number;
+      diskRead: number;
+      diskWrite: number;
+      pids: number;
+    }>
+  >([]);
+  const previousStatsRef = useRef<{
+    networkRx: number;
+    networkTx: number;
+    blockRead: number;
+    blockWrite: number;
+    timestamp: number;
+  } | null>(null);
 
   // Fetch containers
   const {
@@ -85,6 +108,25 @@ export default function Containers() {
         navigate('/containers');
       }
     },
+  });
+
+  const containerStatsQuery = useQuery({
+    queryKey: ['container-stats', containerId],
+    queryFn: async () => {
+      const response = await api.get(`/containers/${containerId}/stats`);
+      return response.data.data as {
+        cpuPercent: number;
+        memoryUsage: number;
+        memoryLimit: number;
+        memoryPercent: number;
+        networkRx: number;
+        networkTx: number;
+        blockRead: number;
+        blockWrite: number;
+      };
+    },
+    enabled: Boolean(containerId && activeTab === 'stats'),
+    refetchInterval: 5000,
   });
 
   // Filter containers
@@ -138,6 +180,74 @@ export default function Containers() {
       setActiveTab(viewParam as 'overview' | 'logs' | 'exec' | 'stats');
     }
   }, [containerId, containers, viewParam]);
+
+  useEffect(() => {
+    if (!containerId) {
+      setStatsHistory([]);
+      previousStatsRef.current = null;
+      return;
+    }
+
+    setStatsHistory([]);
+    previousStatsRef.current = null;
+  }, [containerId]);
+
+  useEffect(() => {
+    if (!containerStatsQuery.data) {
+      return;
+    }
+
+    const now = Date.now();
+    const prev = previousStatsRef.current;
+
+    let networkRxPerSec = 0;
+    let networkTxPerSec = 0;
+    let diskReadPerSec = 0;
+    let diskWritePerSec = 0;
+
+    if (prev) {
+      const seconds = Math.max((now - prev.timestamp) / 1000, 1);
+      networkRxPerSec = Math.max(
+        (containerStatsQuery.data.networkRx - prev.networkRx) / seconds,
+        0
+      );
+      networkTxPerSec = Math.max(
+        (containerStatsQuery.data.networkTx - prev.networkTx) / seconds,
+        0
+      );
+      diskReadPerSec = Math.max((containerStatsQuery.data.blockRead - prev.blockRead) / seconds, 0);
+      diskWritePerSec = Math.max(
+        (containerStatsQuery.data.blockWrite - prev.blockWrite) / seconds,
+        0
+      );
+    }
+
+    previousStatsRef.current = {
+      networkRx: containerStatsQuery.data.networkRx,
+      networkTx: containerStatsQuery.data.networkTx,
+      blockRead: containerStatsQuery.data.blockRead,
+      blockWrite: containerStatsQuery.data.blockWrite,
+      timestamp: now,
+    };
+
+    setStatsHistory((prevHistory) => {
+      const nextPoint = {
+        timestamp: now,
+        cpuPercent: containerStatsQuery.data.cpuPercent,
+        cpuCores: Math.max(containerStatsQuery.data.cpuPercent / 100, 0.01),
+        memoryUsed: containerStatsQuery.data.memoryUsage / (1024 * 1024),
+        memoryTotal: containerStatsQuery.data.memoryLimit / (1024 * 1024),
+        memoryPercent: containerStatsQuery.data.memoryPercent,
+        networkRx: networkRxPerSec,
+        networkTx: networkTxPerSec,
+        diskRead: diskReadPerSec,
+        diskWrite: diskWritePerSec,
+        pids: 0,
+      };
+
+      return [...prevHistory.slice(-287), nextPoint];
+    });
+  }, [containerStatsQuery.data]);
 
   const statusOptions: { value: ContainerStatus | 'all'; label: string }[] = [
     { value: 'all', label: t('containers.filter.all') },
@@ -249,9 +359,13 @@ export default function Containers() {
           {activeTab === 'logs' && <ContainerLogs containerId={selectedContainer.id} />}
           {activeTab === 'exec' && <ContainerExec containerId={selectedContainer.id} />}
           {activeTab === 'stats' && (
-            <div className="card p-6">
-              <p className="text-gray-500 dark:text-gray-400">{t('containers.stats.comingSoon')}</p>
-            </div>
+            <ContainerStats
+              containerId={selectedContainer.id}
+              containerName={selectedContainer.name}
+              data={statsHistory}
+              isLoading={containerStatsQuery.isLoading && statsHistory.length === 0}
+              isRealTime
+            />
           )}
         </div>
       </div>

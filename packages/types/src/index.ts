@@ -31,7 +31,14 @@ export interface SetupRequest {
 }
 
 // Container Types
-export type ContainerStatus = 'created' | 'running' | 'paused' | 'restarting' | 'removing' | 'exited' | 'dead';
+export type ContainerStatus =
+  | 'created'
+  | 'running'
+  | 'paused'
+  | 'restarting'
+  | 'removing'
+  | 'exited'
+  | 'dead';
 
 export interface Container {
   id: string;
@@ -236,13 +243,16 @@ export interface Network {
       gateway?: string;
     }>;
   };
-  containers?: Record<string, {
-    name: string;
-    endpointId: string;
-    macAddress: string;
-    ipv4Address: string;
-    ipv6Address: string;
-  }>;
+  containers?: Record<
+    string,
+    {
+      name: string;
+      endpointId: string;
+      macAddress: string;
+      ipv4Address: string;
+      ipv6Address: string;
+    }
+  >;
   labels: Record<string, string>;
 }
 
@@ -320,6 +330,7 @@ export interface Tunnel {
   publicUrl?: string;
   ingressRules: IngressRule[];
   connectedServices: string[];
+  autoStart?: boolean;
 }
 
 export interface IngressRule {

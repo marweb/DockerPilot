@@ -19,6 +19,8 @@ import {
   getTunnelContainerAssociations,
   setTunnelContainerAssociations,
   removeTunnelContainerAssociation,
+  setTunnelAutoStart,
+  provisionTunnelForService,
 } from '../services/cloudflared.js';
 import { CloudflareAPIError } from '../services/cloudflare-api.js';
 import { getLogger } from '../utils/logger.js';
@@ -26,6 +28,21 @@ import { getLogger } from '../utils/logger.js';
 const logger = getLogger();
 
 export async function tunnelRoutes(fastify: FastifyInstance) {
+  const TunnelProvisionSchema = z.object({
+    name: z.string().min(1).max(63).optional(),
+    accountId: z.string().optional(),
+    zoneId: z.string().optional(),
+    serviceContainerId: z.string().min(1),
+    serviceName: z.string().min(1),
+    hostname: z.string().min(3),
+    localPort: z.number().int().min(1).max(65535),
+    autoStart: z.boolean().default(true),
+  });
+
+  const TunnelSettingsSchema = z.object({
+    autoStart: z.boolean(),
+  });
+
   // List tunnels
   fastify.get<{
     Querystring: ListTunnelsQuery;
@@ -92,8 +109,8 @@ export async function tunnelRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { name, accountId, zoneId } = request.body;
-        const tunnel = await createTunnel(name, accountId, zoneId);
+        const { name, accountId, zoneId, autoStart } = request.body;
+        const tunnel = await createTunnel(name, accountId, zoneId, autoStart ?? false);
 
         logger.info({ tunnelId: tunnel.id, name }, 'Tunnel created via API');
 
@@ -127,6 +144,33 @@ export async function tunnelRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // Provision tunnel for a service in one step
+  fastify.post<{
+    Body: z.infer<typeof TunnelProvisionSchema>;
+  }>(
+    '/tunnels/provision',
+    {
+      schema: {
+        body: TunnelProvisionSchema,
+      },
+    },
+    async (request, reply) => {
+      try {
+        const result = await provisionTunnelForService(request.body);
+        return reply.status(201).send({
+          success: true,
+          message: 'Tunnel created, linked, DNS configured and started',
+          data: result,
+        });
+      } catch (error) {
+        return reply.status(400).send({
+          success: false,
+          error: { code: 'PROVISION_ERROR', message: (error as Error).message },
+        });
+      }
+    }
+  );
+
   // Get tunnel
   fastify.get<{
     Params: { id: string };
@@ -151,6 +195,52 @@ export async function tunnelRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({
             success: false,
             error: { code: 'NOT_FOUND', message: 'Tunnel not found' },
+          });
+        }
+
+        return reply.status(500).send({
+          success: false,
+          error: { code: 'INTERNAL_ERROR', message: (error as Error).message },
+        });
+      }
+    }
+  );
+
+  // Update tunnel settings
+  fastify.patch<{
+    Params: { id: string };
+    Body: z.infer<typeof TunnelSettingsSchema>;
+  }>(
+    '/tunnels/:id/settings',
+    {
+      schema: {
+        params: TunnelIdParamSchema,
+        body: TunnelSettingsSchema,
+      },
+    },
+    async (request, reply) => {
+      try {
+        await setTunnelAutoStart(request.params.id, request.body.autoStart);
+        return reply.send({
+          success: true,
+          message: 'Tunnel settings updated',
+          data: {
+            tunnelId: request.params.id,
+            autoStart: request.body.autoStart,
+          },
+        });
+      } catch (error) {
+        if ((error as Error).message === 'Tunnel not found') {
+          return reply.status(404).send({
+            success: false,
+            error: { code: 'NOT_FOUND', message: 'Tunnel not found' },
+          });
+        }
+
+        if ((error as Error).message.includes('One tunnel per service is allowed')) {
+          return reply.status(409).send({
+            success: false,
+            error: { code: 'CONFLICT', message: (error as Error).message },
           });
         }
 

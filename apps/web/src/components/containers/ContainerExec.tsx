@@ -23,20 +23,22 @@ export default function ContainerExec({ containerId }: ContainerExecProps) {
   const [messages, setMessages] = useState<ExecMessage[]>([]);
   const [command, setCommand] = useState('');
   const [isConnected, setIsConnected] = useState(false);
-  const [isExecuting, setIsExecuting] = useState(false);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
   // Connect to WebSocket
   useEffect(() => {
-    const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/containers/${containerId}/exec`;
+    const query = new URLSearchParams({
+      cmd: '/bin/sh',
+      ...(token ? { token } : {}),
+    });
+    const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/containers/${containerId}/exec?${query.toString()}`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
       setIsConnected(true);
-      ws.send(JSON.stringify({ token }));
       addMessage('status', t('containers.exec.connected'));
     };
 
@@ -45,7 +47,7 @@ export default function ContainerExec({ containerId }: ContainerExecProps) {
       if (data.type === 'output') {
         addMessage('output', data.data);
       } else if (data.type === 'error') {
-        addMessage('error', data.data);
+        addMessage('error', data.error || data.data || t('containers.exec.error'));
       }
     };
 
@@ -100,10 +102,9 @@ export default function ContainerExec({ containerId }: ContainerExecProps) {
       wsRef.current.send(
         JSON.stringify({
           type: 'exec',
-          command: trimmedCommand,
+          data: `${trimmedCommand}\n`,
         })
       );
-      setIsExecuting(true);
     }
 
     setCommand('');
@@ -212,7 +213,7 @@ export default function ContainerExec({ containerId }: ContainerExecProps) {
               onChange={(e) => setCommand(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('containers.exec.placeholder')}
-              disabled={!isConnected || isExecuting}
+              disabled={!isConnected}
               className="flex-1 bg-transparent text-gray-100 font-mono text-sm focus:outline-none placeholder-gray-600"
               autoComplete="off"
               spellCheck={false}
