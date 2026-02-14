@@ -207,7 +207,9 @@ export function decodeToken(fastify: FastifyInstance, token: string): JWTPayload
 export function rotateRefreshToken(
   fastify: FastifyInstance,
   refreshToken: string,
-  user: { id: string; username: string; role: UserRole }
+  user: { id: string; username: string; role: UserRole },
+  accessExpiresIn: string = '15m',
+  refreshExpiresIn: string = '7d'
 ): TokenPair | null {
   const verification = verifyRefreshToken(fastify, refreshToken);
 
@@ -216,7 +218,7 @@ export function rotateRefreshToken(
   }
 
   // Generate new token pair
-  return generateTokenPair(fastify, user);
+  return generateTokenPair(fastify, user, accessExpiresIn, refreshExpiresIn);
 }
 
 /**

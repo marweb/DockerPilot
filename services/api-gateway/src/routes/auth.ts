@@ -14,6 +14,8 @@ import {
   strictRateLimitMiddleware,
   setupRateLimitMiddleware,
   refreshRateLimitMiddleware,
+  clearAuthLoginRateLimit,
+  clearAuthSetupRateLimit,
 } from '../middleware/rateLimit.js';
 import {
   hashPassword,
@@ -140,11 +142,16 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
         fastify.log.info('Setup: generating tokens...');
         // Generate tokens using utility
-        const tokens = generateTokenPair(fastify, {
-          id: user.id,
-          username: user.username,
-          role: user.role,
-        });
+        const tokens = generateTokenPair(
+          fastify,
+          {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+          },
+          fastify.config.jwtExpiresIn,
+          fastify.config.refreshTokenExpiresIn
+        );
         fastify.log.info('Setup: tokens generated');
 
         // Store refresh token
@@ -163,6 +170,8 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         });
 
         fastify.log.info('Setup: complete!');
+        clearAuthSetupRateLimit(request);
+
         return reply.status(201).send({
           success: true,
           data: {
@@ -257,11 +266,16 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Generate tokens using utility
-        const tokens = generateTokenPair(fastify, {
-          id: user.id,
-          username: user.username,
-          role: user.role,
-        });
+        const tokens = generateTokenPair(
+          fastify,
+          {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+          },
+          fastify.config.jwtExpiresIn,
+          fastify.config.refreshTokenExpiresIn
+        );
 
         // Store refresh token
         await updateUser(user.id, { refreshToken: tokens.refreshToken });
@@ -275,6 +289,8 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
           userAgent: request.headers['user-agent'] || 'unknown',
           success: true,
         });
+
+        clearAuthLoginRateLimit(request);
 
         return reply.send({
           success: true,
@@ -373,11 +389,17 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Rotate tokens using utility
-        const newTokens = rotateRefreshToken(fastify, refreshToken, {
-          id: user.id,
-          username: user.username,
-          role: user.role,
-        });
+        const newTokens = rotateRefreshToken(
+          fastify,
+          refreshToken,
+          {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+          },
+          fastify.config.jwtExpiresIn,
+          fastify.config.refreshTokenExpiresIn
+        );
 
         if (!newTokens) {
           return handleAuthError(reply, 401, 'ROTATION_FAILED', 'Token rotation failed');

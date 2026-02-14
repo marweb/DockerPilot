@@ -56,20 +56,26 @@ const defaultAnonymousConfig: RateLimitConfig = {
 };
 
 const strictLoginConfig: RateLimitConfig = {
-  windowMs: parseEnvInt(process.env.AUTH_LOGIN_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
-  maxRequests: parseEnvInt(process.env.AUTH_LOGIN_RATE_LIMIT_MAX, 5),
+  windowMs: parseEnvInt(process.env.AUTH_LOGIN_RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000),
+  maxRequests: parseEnvInt(process.env.AUTH_LOGIN_RATE_LIMIT_MAX, 20),
+  skipSuccessfulRequests: false,
+};
+
+const strictLoginIdentityConfig: RateLimitConfig = {
+  windowMs: parseEnvInt(process.env.AUTH_LOGIN_IDENTITY_RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000),
+  maxRequests: parseEnvInt(process.env.AUTH_LOGIN_IDENTITY_RATE_LIMIT_MAX, 10),
   skipSuccessfulRequests: false,
 };
 
 const setupConfig: RateLimitConfig = {
-  windowMs: parseEnvInt(process.env.AUTH_SETUP_RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000),
-  maxRequests: parseEnvInt(process.env.AUTH_SETUP_RATE_LIMIT_MAX, 10),
+  windowMs: parseEnvInt(process.env.AUTH_SETUP_RATE_LIMIT_WINDOW_MS, 30 * 60 * 1000),
+  maxRequests: parseEnvInt(process.env.AUTH_SETUP_RATE_LIMIT_MAX, 20),
   skipSuccessfulRequests: false,
 };
 
 const refreshConfig: RateLimitConfig = {
   windowMs: parseEnvInt(process.env.AUTH_REFRESH_RATE_LIMIT_WINDOW_MS, 5 * 60 * 1000),
-  maxRequests: parseEnvInt(process.env.AUTH_REFRESH_RATE_LIMIT_MAX, 30),
+  maxRequests: parseEnvInt(process.env.AUTH_REFRESH_RATE_LIMIT_MAX, 120),
   skipSuccessfulRequests: false,
 };
 
@@ -84,6 +90,10 @@ const heavyOperationConfig: RateLimitConfig = {
  */
 function generateKey(identifier: string, type: 'ip' | 'user'): string {
   return `${type}:${identifier}`;
+}
+
+function generateScopedKey(scope: string, identifier: string, type: 'ip' | 'user'): string {
+  return `${scope}:${generateKey(identifier, type)}`;
 }
 
 /**
@@ -258,12 +268,11 @@ export async function strictRateLimitMiddleware(
       ? ((request.body as { username?: string }).username || '').toLowerCase().trim()
       : '';
 
-  const perIpEntry = incrementCount(generateKey(request.ip, 'ip'), strictLoginConfig.windowMs);
+  const perIpKey = generateScopedKey('auth-login-ip', request.ip, 'ip');
+  const perIpEntry = incrementCount(perIpKey, strictLoginConfig.windowMs);
   const compositeKey = username ? `${request.ip}:${username}` : request.ip;
-  const perIdentityEntry = incrementCount(
-    generateKey(compositeKey, 'ip'),
-    strictLoginConfig.windowMs
-  );
+  const perIdentityKey = generateScopedKey('auth-login-identity', compositeKey, 'ip');
+  const perIdentityEntry = incrementCount(perIdentityKey, strictLoginIdentityConfig.windowMs);
 
   const counted = Math.max(perIpEntry.count, perIdentityEntry.count);
   const resetTime = Math.max(perIpEntry.resetTime, perIdentityEntry.resetTime);
@@ -276,24 +285,36 @@ export async function strictRateLimitMiddleware(
   }
 
   // Check if limit exceeded
-  if (entry.count > strictLoginConfig.maxRequests) {
+  if (
+    perIpEntry.count > strictLoginConfig.maxRequests ||
+    perIdentityEntry.count > strictLoginIdentityConfig.maxRequests
+  ) {
+    void reply.header('Retry-After', Math.ceil((entry.resetTime - Date.now()) / 1000));
     reply.status(429).send({
       success: false,
       error: {
         code: 'RATE_LIMIT_EXCEEDED',
-        message: 'Too many login attempts. Please try again later.',
+        message: 'Too many login attempts. Please wait and try again.',
         retryAfter: Math.ceil((entry.resetTime - Date.now()) / 1000),
       },
     });
     return;
   }
+
+  (request as unknown as Record<string, unknown>).authLoginRateLimitKeys = {
+    perIpKey,
+    perIdentityKey,
+    username,
+    ip: request.ip,
+  };
 }
 
 export async function setupRateLimitMiddleware(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<void> {
-  const entry = incrementCount(generateKey(request.ip, 'ip'), setupConfig.windowMs);
+  const key = generateScopedKey('auth-setup', request.ip, 'ip');
+  const entry = incrementCount(key, setupConfig.windowMs);
   const headers = getRateLimitHeaders(entry, setupConfig.maxRequests);
 
   for (const [header, value] of Object.entries(headers)) {
@@ -301,6 +322,7 @@ export async function setupRateLimitMiddleware(
   }
 
   if (entry.count > setupConfig.maxRequests) {
+    void reply.header('Retry-After', Math.ceil((entry.resetTime - Date.now()) / 1000));
     reply.status(429).send({
       success: false,
       error: {
@@ -311,6 +333,8 @@ export async function setupRateLimitMiddleware(
     });
     return;
   }
+
+  (request as unknown as Record<string, unknown>).authSetupRateLimitKey = key;
 }
 
 export async function refreshRateLimitMiddleware(
@@ -319,7 +343,8 @@ export async function refreshRateLimitMiddleware(
 ): Promise<void> {
   const identifier = (request.user as { id?: string } | undefined)?.id || request.ip;
   const keyType = request.user ? 'user' : 'ip';
-  const entry = incrementCount(generateKey(identifier, keyType), refreshConfig.windowMs);
+  const key = generateScopedKey('auth-refresh', identifier, keyType);
+  const entry = incrementCount(key, refreshConfig.windowMs);
   const headers = getRateLimitHeaders(entry, refreshConfig.maxRequests);
 
   for (const [header, value] of Object.entries(headers)) {
@@ -327,6 +352,7 @@ export async function refreshRateLimitMiddleware(
   }
 
   if (entry.count > refreshConfig.maxRequests) {
+    void reply.header('Retry-After', Math.ceil((entry.resetTime - Date.now()) / 1000));
     reply.status(429).send({
       success: false,
       error: {
@@ -356,7 +382,8 @@ export async function heavyOperationRateLimitMiddleware(
 
   const identifier = (request.user as { id?: string } | undefined)?.id || request.ip;
   const keyType = request.user ? 'user' : 'ip';
-  const entry = incrementCount(generateKey(identifier, keyType), heavyOperationConfig.windowMs);
+  const key = generateScopedKey('heavy-op', identifier, keyType);
+  const entry = incrementCount(key, heavyOperationConfig.windowMs);
   const headers = getRateLimitHeaders(entry, heavyOperationConfig.maxRequests);
 
   for (const [header, value] of Object.entries(headers)) {
@@ -373,6 +400,34 @@ export async function heavyOperationRateLimitMiddleware(
       },
     });
     return;
+  }
+}
+
+export function clearAuthLoginRateLimit(request: FastifyRequest): void {
+  const keys = (request as unknown as Record<string, unknown>).authLoginRateLimitKeys as
+    | { perIpKey?: string; perIdentityKey?: string }
+    | undefined;
+
+  if (!keys) {
+    return;
+  }
+
+  if (keys.perIpKey) {
+    delete store[keys.perIpKey];
+  }
+
+  if (keys.perIdentityKey) {
+    delete store[keys.perIdentityKey];
+  }
+}
+
+export function clearAuthSetupRateLimit(request: FastifyRequest): void {
+  const key = (request as unknown as Record<string, unknown>).authSetupRateLimitKey as
+    | string
+    | undefined;
+
+  if (key) {
+    delete store[key];
   }
 }
 

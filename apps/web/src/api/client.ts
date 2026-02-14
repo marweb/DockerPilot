@@ -44,6 +44,18 @@ const api = axios.create({
   },
 });
 
+let refreshPromise: Promise<void> | null = null;
+
+function isAuthEndpoint(url?: string): boolean {
+  if (!url) return false;
+  return (
+    url.includes('/auth/login') ||
+    url.includes('/auth/setup') ||
+    url.includes('/auth/setup-status') ||
+    url.includes('/auth/refresh')
+  );
+}
+
 /**
  * Request interceptor - adds JWT token to all requests
  */
@@ -85,13 +97,33 @@ api.interceptors.response.use(
 
     const { status, data } = error.response;
 
+    // Never try token refresh for auth endpoints themselves
+    if (isAuthEndpoint(originalRequest?.url)) {
+      const apiError: ApiError = {
+        code: data?.error?.code || 'UNAUTHORIZED',
+        message: data?.error?.message || 'Authentication failed.',
+        statusCode: status,
+        details: data?.error?.details,
+      };
+      return Promise.reject(apiError);
+    }
+
     // Handle 401 Unauthorized - attempt token refresh
     if (status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Attempt to refresh tokens
-        await useAuthStore.getState().refreshTokens();
+        // Single-flight refresh: avoid parallel refresh storms
+        if (!refreshPromise) {
+          refreshPromise = useAuthStore
+            .getState()
+            .refreshTokens()
+            .finally(() => {
+              refreshPromise = null;
+            });
+        }
+
+        await refreshPromise;
 
         // Get new token and retry original request
         const newToken = useAuthStore.getState().token;
@@ -135,6 +167,17 @@ api.interceptors.response.use(
         code: data?.error?.code || 'VALIDATION_ERROR',
         message: data?.error?.message || 'Validation failed.',
         statusCode: 422,
+        details: data?.error?.details,
+      };
+      return Promise.reject(apiError);
+    }
+
+    // Handle 429 Too Many Requests
+    if (status === 429) {
+      const apiError: ApiError = {
+        code: data?.error?.code || 'RATE_LIMIT_EXCEEDED',
+        message: data?.error?.message || 'Too many requests. Please try again later.',
+        statusCode: 429,
         details: data?.error?.details,
       };
       return Promise.reject(apiError);
