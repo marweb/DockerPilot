@@ -92,6 +92,7 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
       '/api/auth/logout',
       '/api/health',
       '/healthz',
+      '/ws/',
     ];
 
     if (skipAuthPaths.some((p) => request.url.startsWith(p))) {
@@ -265,7 +266,12 @@ export async function routePermissionMiddleware(
   reply: FastifyReply
 ): Promise<void> {
   // Skip for auth routes
-  if (request.url.startsWith('/api/auth') || request.url.startsWith('/api/health') || request.url === '/healthz') {
+  if (
+    request.url.startsWith('/api/auth') ||
+    request.url.startsWith('/api/health') ||
+    request.url === '/healthz' ||
+    request.url.startsWith('/ws/')
+  ) {
     return;
   }
 
@@ -299,7 +305,7 @@ export async function routePermissionMiddleware(
     }
   }
 
-    if (permission && !hasPermission(getUser(request)!.role, permission)) {
+  if (permission && !hasPermission(getUser(request)!.role, permission)) {
     reply.status(403).send({
       success: false,
       error: 'Insufficient permissions',
