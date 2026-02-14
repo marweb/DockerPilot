@@ -1,7 +1,7 @@
 {
-  "version": "1.0.37",
-  "api-gateway": "1.0.37",
-  "docker-control": "1.0.37",
-  "tunnel-control": "1.0.37",
-  "web": "1.0.37"
+  "version": "1.0.38",
+  "api-gateway": "1.0.38",
+  "docker-control": "1.0.38",
+  "tunnel-control": "1.0.38",
+  "web": "1.0.38"
 }
