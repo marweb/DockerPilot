@@ -31,8 +31,6 @@ COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-dockpilot}"
 
 # Colors for output
 RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
@@ -85,9 +83,9 @@ EOF
 # Check if Docker Compose is available
 check_compose() {
     if command -v docker-compose &> /dev/null; then
-        COMPOSE_CMD="docker-compose"
+        COMPOSE_CMD=(docker-compose)
     elif docker compose version &> /dev/null; then
-        COMPOSE_CMD="docker compose"
+        COMPOSE_CMD=(docker compose)
     else
         log_error "Docker Compose is not installed"
         exit 1
@@ -143,19 +141,19 @@ show_logs() {
         exit 1
     fi
     
-    local log_args=""
+    local -a log_args=()
     
     # Build log arguments
     if [[ "$FOLLOW" == true ]]; then
-        log_args="$log_args --follow"
+        log_args+=(--follow)
     fi
     
     if [[ "$TAIL_LINES" -gt 0 ]]; then
-        log_args="$log_args --tail $TAIL_LINES"
+        log_args+=(--tail "$TAIL_LINES")
     fi
     
     if [[ "$SHOW_TIMESTAMPS" == true ]]; then
-        log_args="$log_args --timestamps"
+        log_args+=(--timestamps)
     fi
     
     cd "$PROJECT_ROOT"
@@ -172,9 +170,9 @@ show_logs() {
     
     # Run docker compose logs
     if [[ -n "$service_name" ]]; then
-        $COMPOSE_CMD -f "$compose_file" logs $log_args "$service_name"
+        "${COMPOSE_CMD[@]}" -f "$compose_file" logs "${log_args[@]}" "$service_name"
     else
-        $COMPOSE_CMD -f "$compose_file" logs $log_args
+        "${COMPOSE_CMD[@]}" -f "$compose_file" logs "${log_args[@]}"
     fi
 }
 

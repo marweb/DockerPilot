@@ -8,7 +8,8 @@
     "builds": "构建",
     "compose": "Compose",
     "tunnels": "隧道",
-    "settings": "设置"
+    "settings": "设置",
+    "repositories": "存储库"
   },
   "theme": {
     "light": "浅色",
@@ -66,275 +67,275 @@
   "containers": {
     "title": "容器",
     "comingSoon": "容器管理即将推出...",
-    "create": "Create",
-    "searchPlaceholder": "Search by name, image or id...",
-    "containers": "containers",
+    "create": "创造",
+    "searchPlaceholder": "按名称、图像或 ID 搜索...",
+    "containers": "容器",
     "filter": {
-      "all": "All"
+      "all": "全部"
     },
     "status": {
-      "running": "Running",
-      "exited": "Exited",
-      "paused": "Paused",
-      "created": "Created",
-      "restarting": "Restarting"
+      "running": "跑步",
+      "exited": "退出",
+      "paused": "已暂停",
+      "created": "已创建",
+      "restarting": "正在重启"
     },
     "tabs": {
-      "overview": "Overview",
-      "logs": "Logs",
+      "overview": "概述",
+      "logs": "日志",
       "exec": "Terminal",
-      "stats": "Stats"
+      "stats": "统计数据"
     },
     "actions": {
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "remove": "Remove",
-      "view": "View"
+      "start": "开始",
+      "stop": "停止",
+      "restart": "重新启动",
+      "remove": "消除",
+      "view": "看法"
     },
     "list": {
-      "name": "Name",
-      "image": "Image",
-      "status": "Status",
-      "ports": "Ports",
-      "created": "Created",
-      "actions": "Actions"
+      "name": "姓名",
+      "image": "图像",
+      "status": "地位",
+      "ports": "港口",
+      "created": "已创建",
+      "actions": "行动"
     },
     "empty": {
-      "title": "No containers found",
-      "description": "Create a container or adjust your filters"
+      "title": "未找到容器",
+      "description": "创建容器或调整过滤器"
     },
     "delete": {
-      "title": "Remove container",
-      "message": "Are you sure you want to remove {{name}}?"
+      "title": "取出容器",
+      "message": "您确定要删除 {{name}} 吗？"
     },
     "stats": {
-      "comingSoon": "Statistics view is coming soon"
+      "comingSoon": "统计视图即将推出"
     },
     "logs": {
-      "title": "Container logs",
-      "pause": "Pause",
-      "follow": "Follow",
-      "following": "Following",
-      "timestamps": "Timestamps",
-      "clear": "Clear",
-      "download": "Download",
-      "filterPlaceholder": "Filter logs...",
-      "empty": "No logs yet",
-      "showing": "Showing {{count}} of {{total}} lines",
-      "connected": "Connected",
-      "disconnected": "Disconnected"
+      "title": "集装箱日志",
+      "pause": "暂停",
+      "follow": "跟随",
+      "following": "下列的",
+      "timestamps": "时间戳",
+      "clear": "清除",
+      "download": "下载",
+      "filterPlaceholder": "过滤日志...",
+      "empty": "还没有日志",
+      "showing": "显示 {{count}} 行（共 {{total}} 行）",
+      "connected": "已连接",
+      "disconnected": "已断开连接"
     },
     "exec": {
       "title": "Terminal",
-      "connected": "Terminal connected",
-      "disconnected": "Terminal disconnected",
-      "error": "Terminal connection error",
-      "clear": "Clear",
-      "description": "Run commands inside the container",
-      "welcome": "Connected. Type a command and press Enter.",
-      "placeholder": "Type command...",
-      "ready": "Ready",
-      "shortcuts": "Shortcuts: Enter to run"
+      "connected": "Terminal 已连接",
+      "disconnected": "Terminal 已断开连接",
+      "error": "Terminal 连接错误",
+      "clear": "清除",
+      "description": "在容器内运行命令",
+      "welcome": "已连接。键入命令并按 Enter 键。",
+      "placeholder": "键入命令...",
+      "ready": "准备好",
+      "shortcuts": "快捷键：输入运行"
     },
     "details": {
-      "notFound": "Container details not found",
-      "basicInfo": "Basic information",
+      "notFound": "未找到容器详细信息",
+      "basicInfo": "基本信息",
       "id": "ID",
-      "image": "Image",
-      "command": "Command",
-      "created": "Created",
-      "status": "Status",
-      "state": "State",
-      "running": "Running",
+      "image": "图像",
+      "command": "命令",
+      "created": "已创建",
+      "status": "地位",
+      "state": "状态",
+      "running": "跑步",
       "pid": "PID",
-      "exitCode": "Exit code",
-      "startedAt": "Started at",
-      "configuration": "Configuration",
-      "hostname": "Hostname",
-      "workingDir": "Working directory",
-      "user": "User",
+      "exitCode": "退出代码",
+      "startedAt": "开始于",
+      "configuration": "配置",
+      "hostname": "主机名",
+      "workingDir": "工作目录",
+      "user": "用户",
       "tty": "TTY",
-      "environment": "Environment",
-      "mounts": "Mounts",
-      "labels": "Labels"
+      "environment": "环境",
+      "mounts": "坐骑",
+      "labels": "标签"
     },
     "mounts": {
-      "type": "Type",
-      "source": "Source",
-      "destination": "Destination",
-      "mode": "Mode"
+      "type": "类型",
+      "source": "来源",
+      "destination": "目的地",
+      "mode": "模式"
     }
   },
   "images": {
     "title": "镜像",
     "comingSoon": "镜像管理即将推出...",
-    "totalSize": "Total size: {{size}}",
-    "pullButton": "Pull image",
-    "searchPlaceholder": "Search by repository, tag or id...",
-    "containers": "containers",
+    "totalSize": "总大小：{{size}}",
+    "pullButton": "拉取镜像",
+    "searchPlaceholder": "按存储库、标签或 ID 搜索...",
+    "containers": "容器",
     "empty": {
-      "title": "No images found",
-      "description": "Pull an image to get started"
+      "title": "没有找到图片",
+      "description": "拉取镜像即可开始"
     },
     "list": {
-      "repository": "Repository",
-      "tag": "Tag",
+      "repository": "存储库",
+      "tag": "标签",
       "id": "ID",
-      "size": "Size",
-      "created": "Created",
-      "containers": "Containers",
-      "actions": "Actions"
+      "size": "尺寸",
+      "created": "已创建",
+      "containers": "集装箱",
+      "actions": "行动"
     },
     "actions": {
-      "remove": "Remove"
+      "remove": "消除"
     },
     "delete": {
-      "title": "Remove image",
-      "message": "Are you sure you want to remove {{repository}}:{{tag}}?",
-      "warning": "This image is used by {{count}} containers"
+      "title": "删除图像",
+      "message": "您确定要删除 {{repository}}:{{tag}} 吗？",
+      "warning": "该图像由 {{count}} 容器使用"
     },
     "pull": {
-      "title": "Pull image",
-      "imageName": "Image",
-      "imagePlaceholder": "e.g. nginx",
-      "tag": "Tag",
-      "registry": "Registry",
-      "defaultRegistry": "Default registry",
-      "button": "Pull",
-      "pulling": "Pulling...",
-      "success": "Image pulled successfully",
-      "redirecting": "Refreshing list...",
-      "error": "Failed to pull image"
+      "title": "拉取镜像",
+      "imageName": "图像",
+      "imagePlaceholder": "例如nginx",
+      "tag": "标签",
+      "registry": "登记处",
+      "defaultRegistry": "默认注册表",
+      "button": "拉",
+      "pulling": "拉...",
+      "success": "镜像拉取成功",
+      "redirecting": "正在刷新列表...",
+      "error": "拉取镜像失败"
     }
   },
   "volumes": {
     "title": "卷",
     "comingSoon": "卷管理即将推出...",
-    "create": "Create volume",
-    "createTitle": "Create new volume",
-    "createButton": "Create",
-    "searchPlaceholder": "Search by volume name or driver...",
-    "name": "Name",
-    "namePlaceholder": "my-volume",
-    "driver": "Driver",
-    "containers": "containers",
-    "inUse": "Volume is in use",
-    "notFound": "Volume not found",
-    "prune": "Prune",
-    "pruneTitle": "Prune unused volumes",
-    "pruneMessage": "{{count}} unused volumes will be removed.",
-    "pruneWarning": "This action cannot be undone.",
-    "pruneButton": "Prune volumes",
-    "pruneComplete": "Cleanup completed",
-    "pruneResult": "Removed {{count}} volumes and reclaimed {{space}}.",
-    "deleteInUseConfirm": "Volume {{name}} is being used by containers. Remove it anyway?",
+    "create": "创建卷",
+    "createTitle": "创建新卷",
+    "createButton": "创造",
+    "searchPlaceholder": "按卷名称或驱动程序搜索...",
+    "name": "姓名",
+    "namePlaceholder": "我的卷",
+    "driver": "司机",
+    "containers": "容器",
+    "inUse": "音量正在使用中",
+    "notFound": "找不到卷",
+    "prune": "修剪",
+    "pruneTitle": "修剪未使用的卷",
+    "pruneMessage": "{{count}} 未使用的卷将被删除。",
+    "pruneWarning": "此操作无法撤消。",
+    "pruneButton": "修剪体积",
+    "pruneComplete": "清理完成",
+    "pruneResult": "删除了 {{count}} 卷并回收了 {{space}}。",
+    "deleteInUseConfirm": "容器正在使用卷 {{name}}。还是删除它吗？",
     "empty": {
-      "title": "No volumes found",
-      "description": "Create a volume to persist data"
+      "title": "未找到卷",
+      "description": "创建一个卷来保存数据"
     },
     "list": {
-      "name": "Name",
-      "driver": "Driver",
-      "scope": "Scope",
-      "mountpoint": "Mountpoint",
-      "size": "Size",
-      "usage": "Usage",
-      "actions": "Actions"
+      "name": "姓名",
+      "driver": "司机",
+      "scope": "范围",
+      "mountpoint": "挂载点",
+      "size": "尺寸",
+      "usage": "用法",
+      "actions": "行动"
     },
     "actions": {
-      "remove": "Remove"
+      "remove": "消除"
     },
     "details": {
-      "driver": "Driver",
-      "scope": "Scope",
-      "mountpoint": "Mountpoint",
-      "created": "Created",
-      "usage": "Usage",
-      "size": "Size",
-      "refCount": "References",
-      "labels": "Labels",
-      "options": "Options"
+      "driver": "司机",
+      "scope": "范围",
+      "mountpoint": "挂载点",
+      "created": "已创建",
+      "usage": "用法",
+      "size": "尺寸",
+      "refCount": "参考",
+      "labels": "标签",
+      "options": "选项"
     }
   },
   "networks": {
     "title": "网络",
     "comingSoon": "网络管理即将推出...",
-    "create": "Create network",
-    "createTitle": "Create new network",
-    "createButton": "Create",
-    "searchPlaceholder": "Search by network name or driver...",
-    "name": "Name",
-    "namePlaceholder": "my-network",
-    "driver": "Driver",
-    "subnet": "Subnet",
-    "gateway": "Gateway",
-    "connect": "Connect",
-    "disconnect": "Disconnect",
-    "disconnectConfirm": "Are you sure you want to disconnect this container?",
-    "deleteInUseConfirm": "Network {{name}} has {{count}} connected containers. Remove it anyway?",
-    "containerIdPlaceholder": "Container ID or name",
-    "noContainers": "No connected containers",
-    "noSubnet": "Not configured",
+    "create": "创建网络",
+    "createTitle": "创建新网络",
+    "createButton": "创造",
+    "searchPlaceholder": "按网络名称或驱动程序搜索...",
+    "name": "姓名",
+    "namePlaceholder": "我的网络",
+    "driver": "司机",
+    "subnet": "子网",
+    "gateway": "网关",
+    "connect": "连接",
+    "disconnect": "断开",
+    "disconnectConfirm": "您确定要断开此容器的连接吗？",
+    "deleteInUseConfirm": "网络 {{name}} 有 {{count}} 连接的容器。还是删除它吗？",
+    "containerIdPlaceholder": "容器 ID 或名称",
+    "noContainers": "没有连接的容器",
+    "noSubnet": "未配置",
     "empty": {
-      "title": "No networks found",
-      "description": "Create a network to connect your containers"
+      "title": "未找到网络",
+      "description": "创建网络来连接您的容器"
     },
     "list": {
-      "name": "Name",
+      "name": "姓名",
       "id": "ID",
-      "driver": "Driver",
-      "scope": "Scope",
-      "subnet": "Subnet",
-      "containers": "Containers",
-      "actions": "Actions"
+      "driver": "司机",
+      "scope": "范围",
+      "subnet": "子网",
+      "containers": "集装箱",
+      "actions": "行动"
     },
     "actions": {
-      "view": "View",
-      "remove": "Remove"
+      "view": "看法",
+      "remove": "消除"
     },
     "details": {
-      "basicInfo": "Basic information",
+      "basicInfo": "基本信息",
       "id": "ID",
-      "driver": "Driver",
-      "scope": "Scope",
-      "subnet": "Subnet",
-      "gateway": "Gateway",
-      "connectedContainers": "Connected containers",
-      "labels": "Labels"
+      "driver": "司机",
+      "scope": "范围",
+      "subnet": "子网",
+      "gateway": "网关",
+      "connectedContainers": "互联容器",
+      "labels": "标签"
     }
   },
   "builds": {
     "title": "构建",
     "comingSoon": "构建管理即将推出...",
-    "empty": "No builds running",
-    "status": "Status",
-    "tags": "Tags",
-    "startedAt": "Started at",
-    "actions": "Actions",
-    "cancel": "Cancel"
+    "empty": "没有正在运行的构建",
+    "status": "地位",
+    "tags": "标签",
+    "startedAt": "开始于",
+    "actions": "行动",
+    "cancel": "取消"
   },
   "compose": {
     "title": "Compose堆栈",
     "comingSoon": "Compose管理即将推出...",
-    "empty": "No compose stacks found",
-    "name": "Name",
-    "status": "Status",
-    "services": "Services",
-    "actions": "Actions",
-    "stop": "Stop",
-    "delete": "Delete"
+    "empty": "未找到撰写堆栈",
+    "name": "姓名",
+    "status": "地位",
+    "services": "服务",
+    "actions": "行动",
+    "stop": "停止",
+    "delete": "删除"
   },
   "tunnels": {
     "title": "Cloudflare隧道",
     "comingSoon": "隧道管理即将推出...",
-    "empty": "No tunnels found",
-    "name": "Name",
-    "status": "Status",
-    "actions": "Actions",
-    "start": "Start",
-    "stop": "Stop",
-    "delete": "Delete"
+    "empty": "未找到隧道",
+    "name": "姓名",
+    "status": "地位",
+    "actions": "行动",
+    "start": "开始",
+    "stop": "停止",
+    "delete": "删除"
   },
   "settings": {
     "title": "设置",
@@ -372,17 +373,17 @@
     "updateSchedule": "更新计划",
     "dailyAtMidnight": "每天 UTC 00:00",
     "manualOnly": "仅手动",
-    "changePassword": "Change Password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "saveNewPassword": "Save new password",
-    "changingPassword": "Changing password...",
-    "passwordChanged": "Password changed successfully",
-    "passwordChangeFailed": "Could not change password",
-    "passwordMismatch": "New passwords do not match",
-    "passwordMinLength": "New password must be at least 8 characters",
-    "passwordAllRequired": "Please complete all password fields"
+    "changePassword": "更改密码",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmNewPassword": "确认新密码",
+    "saveNewPassword": "保存新密码",
+    "changingPassword": "更改密码...",
+    "passwordChanged": "密码修改成功",
+    "passwordChangeFailed": "无法更改密码",
+    "passwordMismatch": "新密码不匹配",
+    "passwordMinLength": "新密码必须至少 8 个字符",
+    "passwordAllRequired": "请填写所有密码字段"
   },
   "errors": {
     "pageNotFound": "页面未找到",
@@ -410,17 +411,17 @@
     "moreOptions": "更多选项",
     "expand": "展开",
     "collapse": "收起",
-    "select_language": "Select language",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "view": "View",
-    "back": "Back",
-    "optional": "optional",
-    "ok": "OK",
-    "yes": "Yes",
-    "no": "No",
-    "enabled": "Enabled",
-    "disabled": "Disabled"
+    "select_language": "选择语言",
+    "cancel": "取消",
+    "delete": "删除",
+    "view": "看法",
+    "back": "后退",
+    "optional": "选修的",
+    "ok": "好的",
+    "yes": "是的",
+    "no": "不",
+    "enabled": "启用",
+    "disabled": "残疾人"
   },
-  "select_language": "Select language"
+  "select_language": "选择语言"
 }

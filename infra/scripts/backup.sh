@@ -136,13 +136,11 @@ backup_volume() {
     log_info "Backing up volume: $volume_name"
     
     # Create a temporary container to access the volume
-    docker run --rm \
+    if docker run --rm \
         -v "${volume_name}:/data:ro" \
         -v "${OUTPUT_DIR}:/backup" \
         alpine:latest \
-        tar -czf "/backup/${backup_file}.tar.gz" -C /data .
-    
-    if [[ $? -eq 0 ]]; then
+        tar -czf "/backup/${backup_file}.tar.gz" -C /data .; then
         log_success "Volume $volume_name backed up successfully"
     else
         log_error "Failed to backup volume: $volume_name"

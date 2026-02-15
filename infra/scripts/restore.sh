@@ -146,8 +146,14 @@ resolve_backup_root() {
         log_info "Extracting backup archive to temporary directory"
         tar -xzf "$source" -C "$TEMP_DIR"
 
+        local first_entry_path
         local first_entry
-        first_entry="$(ls -1 "$TEMP_DIR" | head -n 1)"
+        first_entry_path="$(find "$TEMP_DIR" -mindepth 1 -maxdepth 1 -print -quit)"
+        if [[ -z "$first_entry_path" ]]; then
+            log_error "Backup archive appears empty"
+            exit 1
+        fi
+        first_entry="$(basename "$first_entry_path")"
         if [[ -z "$first_entry" ]]; then
             log_error "Backup archive appears empty"
             exit 1

@@ -8,7 +8,8 @@
     "builds": "Constructions",
     "compose": "Compose",
     "tunnels": "Tunnels",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "repositories": "Dépôts"
   },
   "theme": {
     "light": "Clair",
@@ -54,7 +55,7 @@
     "networks": "Réseaux",
     "running": "en cours d'exécution",
     "systemInfo": "Informations Système",
-    "cpus": "CPUs",
+    "cpus": "Processeurs",
     "memory": "Mémoire",
     "os": "Système d'exploitation",
     "version": "Version Docker",
@@ -66,101 +67,101 @@
   "containers": {
     "title": "Conteneurs",
     "comingSoon": "Gestion des conteneurs à venir...",
-    "create": "Create",
-    "searchPlaceholder": "Search by name, image or id...",
-    "containers": "containers",
+    "create": "Créer",
+    "searchPlaceholder": "Recherchez par nom, image ou identifiant...",
+    "containers": "conteneurs",
     "filter": {
-      "all": "All"
+      "all": "Tous"
     },
     "status": {
-      "running": "Running",
-      "exited": "Exited",
-      "paused": "Paused",
-      "created": "Created",
-      "restarting": "Restarting"
+      "running": "En cours d'exécution",
+      "exited": "Quitté",
+      "paused": "En pause",
+      "created": "Créé",
+      "restarting": "Redémarrage"
     },
     "tabs": {
-      "overview": "Overview",
-      "logs": "Logs",
+      "overview": "Aperçu",
+      "logs": "Journaux",
       "exec": "Terminal",
-      "stats": "Stats"
+      "stats": "Statistiques"
     },
     "actions": {
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "remove": "Remove",
-      "view": "View"
+      "start": "Commencer",
+      "stop": "Arrêt",
+      "restart": "Redémarrage",
+      "remove": "Retirer",
+      "view": "Voir"
     },
     "list": {
-      "name": "Name",
+      "name": "Nom",
       "image": "Image",
-      "status": "Status",
+      "status": "Statut",
       "ports": "Ports",
-      "created": "Created",
-      "actions": "Actions"
+      "created": "Créé",
+      "actions": "Actes"
     },
     "empty": {
-      "title": "No containers found",
-      "description": "Create a container or adjust your filters"
+      "title": "Aucun conteneur trouvé",
+      "description": "Créez un conteneur ou ajustez vos filtres"
     },
     "delete": {
-      "title": "Remove container",
-      "message": "Are you sure you want to remove {{name}}?"
+      "title": "Supprimer le conteneur",
+      "message": "Êtes-vous sûr de vouloir supprimer {{name}} ?"
     },
     "stats": {
-      "comingSoon": "Statistics view is coming soon"
+      "comingSoon": "La vue Statistiques sera bientôt disponible"
     },
     "logs": {
-      "title": "Container logs",
+      "title": "Journaux de conteneur",
       "pause": "Pause",
-      "follow": "Follow",
-      "following": "Following",
-      "timestamps": "Timestamps",
-      "clear": "Clear",
-      "download": "Download",
-      "filterPlaceholder": "Filter logs...",
-      "empty": "No logs yet",
-      "showing": "Showing {{count}} of {{total}} lines",
-      "connected": "Connected",
-      "disconnected": "Disconnected"
+      "follow": "Suivre",
+      "following": "Suivant",
+      "timestamps": "Horodatages",
+      "clear": "Clair",
+      "download": "Télécharger",
+      "filterPlaceholder": "Filtrer les journaux...",
+      "empty": "Aucun journal pour l'instant",
+      "showing": "Affichage de {{count}} sur {{total}} lignes",
+      "connected": "Connecté",
+      "disconnected": "Déconnecté"
     },
     "exec": {
       "title": "Terminal",
-      "connected": "Terminal connected",
-      "disconnected": "Terminal disconnected",
-      "error": "Terminal connection error",
-      "clear": "Clear",
-      "description": "Run commands inside the container",
-      "welcome": "Connected. Type a command and press Enter.",
-      "placeholder": "Type command...",
-      "ready": "Ready",
-      "shortcuts": "Shortcuts: Enter to run"
+      "connected": "Terminal connecté",
+      "disconnected": "Terminal déconnecté",
+      "error": "Terminal erreur de connexion",
+      "clear": "Clair",
+      "description": "Exécuter des commandes à l'intérieur du conteneur",
+      "welcome": "Connecté. Tapez une commande et appuyez sur Entrée.",
+      "placeholder": "Tapez la commande...",
+      "ready": "Prêt",
+      "shortcuts": "Raccourcis : Entrée pour exécuter"
     },
     "details": {
-      "notFound": "Container details not found",
-      "basicInfo": "Basic information",
+      "notFound": "Détails du conteneur introuvables",
+      "basicInfo": "Informations de base",
       "id": "ID",
       "image": "Image",
-      "command": "Command",
-      "created": "Created",
-      "status": "Status",
-      "state": "State",
-      "running": "Running",
+      "command": "Commande",
+      "created": "Créé",
+      "status": "Statut",
+      "state": "État",
+      "running": "En cours d'exécution",
       "pid": "PID",
-      "exitCode": "Exit code",
-      "startedAt": "Started at",
+      "exitCode": "Code de sortie",
+      "startedAt": "Commencé à",
       "configuration": "Configuration",
-      "hostname": "Hostname",
-      "workingDir": "Working directory",
-      "user": "User",
+      "hostname": "Nom d'hôte",
+      "workingDir": "Répertoire de travail",
+      "user": "Utilisateur",
       "tty": "TTY",
-      "environment": "Environment",
-      "mounts": "Mounts",
-      "labels": "Labels"
+      "environment": "Environnement",
+      "mounts": "Montures",
+      "labels": "Étiquettes"
     },
     "mounts": {
-      "type": "Type",
+      "type": "Taper",
       "source": "Source",
       "destination": "Destination",
       "mode": "Mode"
@@ -169,172 +170,172 @@
   "images": {
     "title": "Images",
     "comingSoon": "Gestion des images à venir...",
-    "totalSize": "Total size: {{size}}",
-    "pullButton": "Pull image",
-    "searchPlaceholder": "Search by repository, tag or id...",
-    "containers": "containers",
+    "totalSize": "Taille totale : {{size}}",
+    "pullButton": "Extraire l'image",
+    "searchPlaceholder": "Recherche par référentiel, tag ou identifiant...",
+    "containers": "conteneurs",
     "empty": {
-      "title": "No images found",
-      "description": "Pull an image to get started"
+      "title": "Aucune image trouvée",
+      "description": "Tirez une image pour commencer"
     },
     "list": {
-      "repository": "Repository",
-      "tag": "Tag",
+      "repository": "Dépôt",
+      "tag": "Étiqueter",
       "id": "ID",
-      "size": "Size",
-      "created": "Created",
-      "containers": "Containers",
-      "actions": "Actions"
+      "size": "Taille",
+      "created": "Créé",
+      "containers": "Conteneurs",
+      "actions": "Actes"
     },
     "actions": {
-      "remove": "Remove"
+      "remove": "Retirer"
     },
     "delete": {
-      "title": "Remove image",
-      "message": "Are you sure you want to remove {{repository}}:{{tag}}?",
-      "warning": "This image is used by {{count}} containers"
+      "title": "Supprimer l'image",
+      "message": "Êtes-vous sûr de vouloir supprimer {{repository}}:{{tag}} ?",
+      "warning": "Cette image est utilisée par les conteneurs {{count}}"
     },
     "pull": {
-      "title": "Pull image",
+      "title": "Extraire l'image",
       "imageName": "Image",
-      "imagePlaceholder": "e.g. nginx",
-      "tag": "Tag",
-      "registry": "Registry",
-      "defaultRegistry": "Default registry",
-      "button": "Pull",
-      "pulling": "Pulling...",
-      "success": "Image pulled successfully",
-      "redirecting": "Refreshing list...",
-      "error": "Failed to pull image"
+      "imagePlaceholder": "par ex. nginx",
+      "tag": "Étiqueter",
+      "registry": "Enregistrement",
+      "defaultRegistry": "Registre par défaut",
+      "button": "Tirer",
+      "pulling": "Tirer...",
+      "success": "Image extraite avec succès",
+      "redirecting": "Liste actualisée...",
+      "error": "Échec de l'extraction de l'image"
     }
   },
   "volumes": {
     "title": "Volumes",
     "comingSoon": "Gestion des volumes à venir...",
-    "create": "Create volume",
-    "createTitle": "Create new volume",
-    "createButton": "Create",
-    "searchPlaceholder": "Search by volume name or driver...",
-    "name": "Name",
-    "namePlaceholder": "my-volume",
-    "driver": "Driver",
-    "containers": "containers",
-    "inUse": "Volume is in use",
-    "notFound": "Volume not found",
-    "prune": "Prune",
-    "pruneTitle": "Prune unused volumes",
-    "pruneMessage": "{{count}} unused volumes will be removed.",
-    "pruneWarning": "This action cannot be undone.",
-    "pruneButton": "Prune volumes",
-    "pruneComplete": "Cleanup completed",
-    "pruneResult": "Removed {{count}} volumes and reclaimed {{space}}.",
-    "deleteInUseConfirm": "Volume {{name}} is being used by containers. Remove it anyway?",
+    "create": "Créer du volume",
+    "createTitle": "Créer un nouveau volume",
+    "createButton": "Créer",
+    "searchPlaceholder": "Recherche par nom de volume ou pilote...",
+    "name": "Nom",
+    "namePlaceholder": "mon-volume",
+    "driver": "Conducteur",
+    "containers": "conteneurs",
+    "inUse": "Le volume est en cours d'utilisation",
+    "notFound": "Volume introuvable",
+    "prune": "Élaguer",
+    "pruneTitle": "Élaguer les volumes inutilisés",
+    "pruneMessage": "{{count}} volumes inutilisés seront supprimés.",
+    "pruneWarning": "Cette action ne peut pas être annulée.",
+    "pruneButton": "Tailler les volumes",
+    "pruneComplete": "Nettoyage terminé",
+    "pruneResult": "Suppression de {{count}} volumes et récupération de {{space}}.",
+    "deleteInUseConfirm": "Le volume {{name}} est utilisé par les conteneurs. Le supprimer quand même ?",
     "empty": {
-      "title": "No volumes found",
-      "description": "Create a volume to persist data"
+      "title": "Aucun volume trouvé",
+      "description": "Créer un volume pour conserver les données"
     },
     "list": {
-      "name": "Name",
-      "driver": "Driver",
-      "scope": "Scope",
-      "mountpoint": "Mountpoint",
-      "size": "Size",
+      "name": "Nom",
+      "driver": "Conducteur",
+      "scope": "Portée",
+      "mountpoint": "Point de montage",
+      "size": "Taille",
       "usage": "Usage",
-      "actions": "Actions"
+      "actions": "Actes"
     },
     "actions": {
-      "remove": "Remove"
+      "remove": "Retirer"
     },
     "details": {
-      "driver": "Driver",
-      "scope": "Scope",
-      "mountpoint": "Mountpoint",
-      "created": "Created",
+      "driver": "Conducteur",
+      "scope": "Portée",
+      "mountpoint": "Point de montage",
+      "created": "Créé",
       "usage": "Usage",
-      "size": "Size",
-      "refCount": "References",
-      "labels": "Labels",
-      "options": "Options"
+      "size": "Taille",
+      "refCount": "Références",
+      "labels": "Étiquettes",
+      "options": "Possibilités"
     }
   },
   "networks": {
     "title": "Réseaux",
     "comingSoon": "Gestion des réseaux à venir...",
-    "create": "Create network",
-    "createTitle": "Create new network",
-    "createButton": "Create",
-    "searchPlaceholder": "Search by network name or driver...",
-    "name": "Name",
-    "namePlaceholder": "my-network",
-    "driver": "Driver",
-    "subnet": "Subnet",
-    "gateway": "Gateway",
-    "connect": "Connect",
-    "disconnect": "Disconnect",
-    "disconnectConfirm": "Are you sure you want to disconnect this container?",
-    "deleteInUseConfirm": "Network {{name}} has {{count}} connected containers. Remove it anyway?",
-    "containerIdPlaceholder": "Container ID or name",
-    "noContainers": "No connected containers",
-    "noSubnet": "Not configured",
+    "create": "Créer un réseau",
+    "createTitle": "Créer un nouveau réseau",
+    "createButton": "Créer",
+    "searchPlaceholder": "Rechercher par nom de réseau ou pilote...",
+    "name": "Nom",
+    "namePlaceholder": "mon-réseau",
+    "driver": "Conducteur",
+    "subnet": "Sous-réseau",
+    "gateway": "Porte",
+    "connect": "Connecter",
+    "disconnect": "Déconnecter",
+    "disconnectConfirm": "Êtes-vous sûr de vouloir déconnecter ce conteneur ?",
+    "deleteInUseConfirm": "Le réseau {{name}} comporte {{count}} conteneurs connectés. Le supprimer quand même ?",
+    "containerIdPlaceholder": "Conteneur ID ou nom",
+    "noContainers": "Aucun conteneur connecté",
+    "noSubnet": "Non configuré",
     "empty": {
-      "title": "No networks found",
-      "description": "Create a network to connect your containers"
+      "title": "Aucun réseau trouvé",
+      "description": "Créez un réseau pour connecter vos conteneurs"
     },
     "list": {
-      "name": "Name",
+      "name": "Nom",
       "id": "ID",
-      "driver": "Driver",
-      "scope": "Scope",
-      "subnet": "Subnet",
-      "containers": "Containers",
-      "actions": "Actions"
+      "driver": "Conducteur",
+      "scope": "Portée",
+      "subnet": "Sous-réseau",
+      "containers": "Conteneurs",
+      "actions": "Actes"
     },
     "actions": {
-      "view": "View",
-      "remove": "Remove"
+      "view": "Voir",
+      "remove": "Retirer"
     },
     "details": {
-      "basicInfo": "Basic information",
+      "basicInfo": "Informations de base",
       "id": "ID",
-      "driver": "Driver",
-      "scope": "Scope",
-      "subnet": "Subnet",
-      "gateway": "Gateway",
-      "connectedContainers": "Connected containers",
-      "labels": "Labels"
+      "driver": "Conducteur",
+      "scope": "Portée",
+      "subnet": "Sous-réseau",
+      "gateway": "Porte",
+      "connectedContainers": "Conteneurs connectés",
+      "labels": "Étiquettes"
     }
   },
   "builds": {
     "title": "Constructions",
     "comingSoon": "Gestion des constructions à venir...",
-    "empty": "No builds running",
-    "status": "Status",
-    "tags": "Tags",
-    "startedAt": "Started at",
-    "actions": "Actions",
-    "cancel": "Cancel"
+    "empty": "Aucune build en cours d'exécution",
+    "status": "Statut",
+    "tags": "Balises",
+    "startedAt": "Commencé à",
+    "actions": "Actes",
+    "cancel": "Annuler"
   },
   "compose": {
     "title": "Stacks Compose",
     "comingSoon": "Gestion compose à venir...",
-    "empty": "No compose stacks found",
-    "name": "Name",
-    "status": "Status",
+    "empty": "Aucune pile de composition trouvée",
+    "name": "Nom",
+    "status": "Statut",
     "services": "Services",
-    "actions": "Actions",
-    "stop": "Stop",
-    "delete": "Delete"
+    "actions": "Actes",
+    "stop": "Arrêt",
+    "delete": "Supprimer"
   },
   "tunnels": {
     "title": "Tunnels Cloudflare",
     "comingSoon": "Gestion des tunnels à venir...",
-    "empty": "No tunnels found",
-    "name": "Name",
-    "status": "Status",
-    "actions": "Actions",
-    "start": "Start",
-    "stop": "Stop",
-    "delete": "Delete"
+    "empty": "Aucun tunnel trouvé",
+    "name": "Nom",
+    "status": "Statut",
+    "actions": "Actes",
+    "start": "Commencer",
+    "stop": "Arrêt",
+    "delete": "Supprimer"
   },
   "settings": {
     "title": "Paramètres",
@@ -372,17 +373,17 @@
     "updateSchedule": "Planification des Mises à Jour",
     "dailyAtMidnight": "Quotidien à 00:00 UTC",
     "manualOnly": "Manuel uniquement",
-    "changePassword": "Change Password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "saveNewPassword": "Save new password",
-    "changingPassword": "Changing password...",
-    "passwordChanged": "Password changed successfully",
-    "passwordChangeFailed": "Could not change password",
-    "passwordMismatch": "New passwords do not match",
-    "passwordMinLength": "New password must be at least 8 characters",
-    "passwordAllRequired": "Please complete all password fields"
+    "changePassword": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "saveNewPassword": "Enregistrer le nouveau mot de passe",
+    "changingPassword": "Changer le mot de passe...",
+    "passwordChanged": "Mot de passe modifié avec succès",
+    "passwordChangeFailed": "Impossible de changer le mot de passe",
+    "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
+    "passwordMinLength": "Le nouveau mot de passe doit comporter au moins 8 caractères",
+    "passwordAllRequired": "Veuillez remplir tous les champs de mot de passe"
   },
   "errors": {
     "pageNotFound": "Page Non Trouvée",
@@ -395,7 +396,7 @@
   "footer": {
     "allRightsReserved": "Tous droits réservés.",
     "documentation": "Documentation",
-    "support": "Support",
+    "support": "Soutien",
     "madeWith": "Fait avec",
     "api": "API",
     "github": "GitHub"
@@ -410,17 +411,17 @@
     "moreOptions": "Plus d'Options",
     "expand": "Développer",
     "collapse": "Réduire",
-    "select_language": "Select language",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "view": "View",
-    "back": "Back",
-    "optional": "optional",
-    "ok": "OK",
-    "yes": "Yes",
-    "no": "No",
-    "enabled": "Enabled",
-    "disabled": "Disabled"
+    "select_language": "Sélectionnez la langue",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "view": "Voir",
+    "back": "Dos",
+    "optional": "facultatif",
+    "ok": "D'ACCORD",
+    "yes": "Oui",
+    "no": "Non",
+    "enabled": "Activé",
+    "disabled": "Désactivé"
   },
-  "select_language": "Select language"
+  "select_language": "Sélectionnez la langue"
 }

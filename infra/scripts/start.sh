@@ -95,6 +95,7 @@ check_env() {
     
     # Source the environment file to check required variables
     set -a
+    # shellcheck disable=SC1091
     source "$INFRA_DIR/.env"
     set +a
     

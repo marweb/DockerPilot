@@ -8,7 +8,8 @@
     "builds": "ビルド",
     "compose": "Compose",
     "tunnels": "トンネル",
-    "settings": "設定"
+    "settings": "設定",
+    "repositories": "リポジトリ"
   },
   "theme": {
     "light": "ライト",
@@ -66,275 +67,275 @@
   "containers": {
     "title": "コンテナ",
     "comingSoon": "コンテナ管理は近日公開予定...",
-    "create": "Create",
-    "searchPlaceholder": "Search by name, image or id...",
-    "containers": "containers",
+    "create": "作成する",
+    "searchPlaceholder": "名前、画像、ID で検索...",
+    "containers": "コンテナ",
     "filter": {
-      "all": "All"
+      "all": "全て"
     },
     "status": {
-      "running": "Running",
-      "exited": "Exited",
-      "paused": "Paused",
-      "created": "Created",
-      "restarting": "Restarting"
+      "running": "ランニング",
+      "exited": "終了しました",
+      "paused": "一時停止中",
+      "created": "作成されました",
+      "restarting": "再起動中"
     },
     "tabs": {
-      "overview": "Overview",
-      "logs": "Logs",
+      "overview": "概要",
+      "logs": "ログ",
       "exec": "Terminal",
-      "stats": "Stats"
+      "stats": "統計"
     },
     "actions": {
-      "start": "Start",
-      "stop": "Stop",
-      "restart": "Restart",
-      "remove": "Remove",
-      "view": "View"
+      "start": "始める",
+      "stop": "停止",
+      "restart": "再起動",
+      "remove": "取り除く",
+      "view": "ビュー"
     },
     "list": {
-      "name": "Name",
-      "image": "Image",
-      "status": "Status",
-      "ports": "Ports",
-      "created": "Created",
-      "actions": "Actions"
+      "name": "名前",
+      "image": "画像",
+      "status": "状態",
+      "ports": "ポート",
+      "created": "作成されました",
+      "actions": "アクション"
     },
     "empty": {
-      "title": "No containers found",
-      "description": "Create a container or adjust your filters"
+      "title": "コンテナが見つかりません",
+      "description": "コンテナを作成するか、フィルタを調整します"
     },
     "delete": {
-      "title": "Remove container",
-      "message": "Are you sure you want to remove {{name}}?"
+      "title": "コンテナを削除する",
+      "message": "{{name}} を削除してもよろしいですか?"
     },
     "stats": {
-      "comingSoon": "Statistics view is coming soon"
+      "comingSoon": "統計ビューは近日公開予定です"
     },
     "logs": {
-      "title": "Container logs",
-      "pause": "Pause",
-      "follow": "Follow",
-      "following": "Following",
-      "timestamps": "Timestamps",
-      "clear": "Clear",
-      "download": "Download",
-      "filterPlaceholder": "Filter logs...",
-      "empty": "No logs yet",
-      "showing": "Showing {{count}} of {{total}} lines",
-      "connected": "Connected",
-      "disconnected": "Disconnected"
+      "title": "コンテナログ",
+      "pause": "一時停止",
+      "follow": "フォローする",
+      "following": "続く",
+      "timestamps": "タイムスタンプ",
+      "clear": "クリア",
+      "download": "ダウンロード",
+      "filterPlaceholder": "ログをフィルタリング...",
+      "empty": "まだログがありません",
+      "showing": "{{total}} 行中 {{count}} 行を表示しています",
+      "connected": "接続済み",
+      "disconnected": "切断されました"
     },
     "exec": {
       "title": "Terminal",
-      "connected": "Terminal connected",
-      "disconnected": "Terminal disconnected",
-      "error": "Terminal connection error",
-      "clear": "Clear",
-      "description": "Run commands inside the container",
-      "welcome": "Connected. Type a command and press Enter.",
-      "placeholder": "Type command...",
-      "ready": "Ready",
-      "shortcuts": "Shortcuts: Enter to run"
+      "connected": "Terminal が接続されました",
+      "disconnected": "Terminal が切断されました",
+      "error": "Terminal 接続エラー",
+      "clear": "クリア",
+      "description": "コンテナ内でコマンドを実行する",
+      "welcome": "接続されました。コマンドを入力して Enter キーを押します。",
+      "placeholder": "コマンドを入力...",
+      "ready": "準備ができて",
+      "shortcuts": "ショートカット: Enter キーを押して実行します"
     },
     "details": {
-      "notFound": "Container details not found",
-      "basicInfo": "Basic information",
+      "notFound": "コンテナの詳細が見つかりません",
+      "basicInfo": "基本情報",
       "id": "ID",
-      "image": "Image",
-      "command": "Command",
-      "created": "Created",
-      "status": "Status",
-      "state": "State",
-      "running": "Running",
+      "image": "画像",
+      "command": "指示",
+      "created": "作成されました",
+      "status": "状態",
+      "state": "州",
+      "running": "ランニング",
       "pid": "PID",
-      "exitCode": "Exit code",
-      "startedAt": "Started at",
-      "configuration": "Configuration",
-      "hostname": "Hostname",
-      "workingDir": "Working directory",
-      "user": "User",
+      "exitCode": "終了コード",
+      "startedAt": "に開始",
+      "configuration": "構成",
+      "hostname": "ホスト名",
+      "workingDir": "作業ディレクトリ",
+      "user": "ユーザー",
       "tty": "TTY",
-      "environment": "Environment",
-      "mounts": "Mounts",
-      "labels": "Labels"
+      "environment": "環境",
+      "mounts": "マウント",
+      "labels": "ラベル"
     },
     "mounts": {
-      "type": "Type",
-      "source": "Source",
-      "destination": "Destination",
-      "mode": "Mode"
+      "type": "タイプ",
+      "source": "ソース",
+      "destination": "行き先",
+      "mode": "モード"
     }
   },
   "images": {
     "title": "イメージ",
     "comingSoon": "イメージ管理は近日公開予定...",
-    "totalSize": "Total size: {{size}}",
-    "pullButton": "Pull image",
-    "searchPlaceholder": "Search by repository, tag or id...",
-    "containers": "containers",
+    "totalSize": "合計サイズ: {{size}}",
+    "pullButton": "イメージをプルする",
+    "searchPlaceholder": "リポジトリ、タグ、ID で検索...",
+    "containers": "コンテナ",
     "empty": {
-      "title": "No images found",
-      "description": "Pull an image to get started"
+      "title": "画像が見つかりませんでした",
+      "description": "開始するには画像をプルしてください"
     },
     "list": {
-      "repository": "Repository",
-      "tag": "Tag",
+      "repository": "リポジトリ",
+      "tag": "タグ",
       "id": "ID",
-      "size": "Size",
-      "created": "Created",
-      "containers": "Containers",
-      "actions": "Actions"
+      "size": "サイズ",
+      "created": "作成されました",
+      "containers": "コンテナ",
+      "actions": "アクション"
     },
     "actions": {
-      "remove": "Remove"
+      "remove": "取り除く"
     },
     "delete": {
-      "title": "Remove image",
-      "message": "Are you sure you want to remove {{repository}}:{{tag}}?",
-      "warning": "This image is used by {{count}} containers"
+      "title": "画像を削除する",
+      "message": "{{repository}}:{{tag}} を削除してもよろしいですか?",
+      "warning": "このイメージは {{count}} コンテナーによって使用されます"
     },
     "pull": {
-      "title": "Pull image",
-      "imageName": "Image",
-      "imagePlaceholder": "e.g. nginx",
-      "tag": "Tag",
-      "registry": "Registry",
-      "defaultRegistry": "Default registry",
-      "button": "Pull",
-      "pulling": "Pulling...",
-      "success": "Image pulled successfully",
-      "redirecting": "Refreshing list...",
-      "error": "Failed to pull image"
+      "title": "イメージをプルする",
+      "imageName": "画像",
+      "imagePlaceholder": "例えばnginx",
+      "tag": "タグ",
+      "registry": "レジストリ",
+      "defaultRegistry": "デフォルトのレジストリ",
+      "button": "引く",
+      "pulling": "引っ張っている...",
+      "success": "イメージが正常に取得されました",
+      "redirecting": "リストを更新中...",
+      "error": "イメージのプルに失敗しました"
     }
   },
   "volumes": {
     "title": "ボリューム",
     "comingSoon": "ボリューム管理は近日公開予定...",
-    "create": "Create volume",
-    "createTitle": "Create new volume",
-    "createButton": "Create",
-    "searchPlaceholder": "Search by volume name or driver...",
-    "name": "Name",
-    "namePlaceholder": "my-volume",
-    "driver": "Driver",
-    "containers": "containers",
-    "inUse": "Volume is in use",
-    "notFound": "Volume not found",
-    "prune": "Prune",
-    "pruneTitle": "Prune unused volumes",
-    "pruneMessage": "{{count}} unused volumes will be removed.",
-    "pruneWarning": "This action cannot be undone.",
-    "pruneButton": "Prune volumes",
-    "pruneComplete": "Cleanup completed",
-    "pruneResult": "Removed {{count}} volumes and reclaimed {{space}}.",
-    "deleteInUseConfirm": "Volume {{name}} is being used by containers. Remove it anyway?",
+    "create": "ボリュームの作成",
+    "createTitle": "新しいボリュームを作成する",
+    "createButton": "作成する",
+    "searchPlaceholder": "ボリューム名またはドライバーで検索...",
+    "name": "名前",
+    "namePlaceholder": "私のボリューム",
+    "driver": "ドライバ",
+    "containers": "コンテナ",
+    "inUse": "ボリュームは使用中です",
+    "notFound": "ボリュームが見つかりません",
+    "prune": "プルーン",
+    "pruneTitle": "未使用のボリュームを整理する",
+    "pruneMessage": "{{count}} 未使用のボリュームは削除されます。",
+    "pruneWarning": "この操作は元に戻すことができません。",
+    "pruneButton": "ボリュームのプルーニング",
+    "pruneComplete": "クリーンアップが完了しました",
+    "pruneResult": "{{count}} ボリュームを削除し、{{space}} を再利用しました。",
+    "deleteInUseConfirm": "ボリューム {{name}} はコンテナーによって使用されています。とにかく削除しますか？",
     "empty": {
-      "title": "No volumes found",
-      "description": "Create a volume to persist data"
+      "title": "ボリュームが見つかりません",
+      "description": "データを永続化するボリュームを作成する"
     },
     "list": {
-      "name": "Name",
-      "driver": "Driver",
-      "scope": "Scope",
-      "mountpoint": "Mountpoint",
-      "size": "Size",
-      "usage": "Usage",
-      "actions": "Actions"
+      "name": "名前",
+      "driver": "ドライバ",
+      "scope": "範囲",
+      "mountpoint": "マウントポイント",
+      "size": "サイズ",
+      "usage": "使用法",
+      "actions": "アクション"
     },
     "actions": {
-      "remove": "Remove"
+      "remove": "取り除く"
     },
     "details": {
-      "driver": "Driver",
-      "scope": "Scope",
-      "mountpoint": "Mountpoint",
-      "created": "Created",
-      "usage": "Usage",
-      "size": "Size",
-      "refCount": "References",
-      "labels": "Labels",
-      "options": "Options"
+      "driver": "ドライバ",
+      "scope": "範囲",
+      "mountpoint": "マウントポイント",
+      "created": "作成されました",
+      "usage": "使用法",
+      "size": "サイズ",
+      "refCount": "参考文献",
+      "labels": "ラベル",
+      "options": "オプション"
     }
   },
   "networks": {
     "title": "ネットワーク",
     "comingSoon": "ネットワーク管理は近日公開予定...",
-    "create": "Create network",
-    "createTitle": "Create new network",
-    "createButton": "Create",
-    "searchPlaceholder": "Search by network name or driver...",
-    "name": "Name",
-    "namePlaceholder": "my-network",
-    "driver": "Driver",
-    "subnet": "Subnet",
-    "gateway": "Gateway",
-    "connect": "Connect",
-    "disconnect": "Disconnect",
-    "disconnectConfirm": "Are you sure you want to disconnect this container?",
-    "deleteInUseConfirm": "Network {{name}} has {{count}} connected containers. Remove it anyway?",
-    "containerIdPlaceholder": "Container ID or name",
-    "noContainers": "No connected containers",
-    "noSubnet": "Not configured",
+    "create": "ネットワークの作成",
+    "createTitle": "新しいネットワークを作成する",
+    "createButton": "作成する",
+    "searchPlaceholder": "ネットワーク名またはドライバーで検索...",
+    "name": "名前",
+    "namePlaceholder": "私のネットワーク",
+    "driver": "ドライバ",
+    "subnet": "サブネット",
+    "gateway": "ゲートウェイ",
+    "connect": "接続する",
+    "disconnect": "切断する",
+    "disconnectConfirm": "このコンテナを切断してもよろしいですか?",
+    "deleteInUseConfirm": "ネットワーク {{name}} には {{count}} 個のコンテナが接続されています。とにかく削除しますか？",
+    "containerIdPlaceholder": "コンテナ ID または名前",
+    "noContainers": "接続されたコンテナがありません",
+    "noSubnet": "未設定",
     "empty": {
-      "title": "No networks found",
-      "description": "Create a network to connect your containers"
+      "title": "ネットワークが見つかりません",
+      "description": "コンテナを接続するネットワークを作成する"
     },
     "list": {
-      "name": "Name",
+      "name": "名前",
       "id": "ID",
-      "driver": "Driver",
-      "scope": "Scope",
-      "subnet": "Subnet",
-      "containers": "Containers",
-      "actions": "Actions"
+      "driver": "ドライバ",
+      "scope": "範囲",
+      "subnet": "サブネット",
+      "containers": "コンテナ",
+      "actions": "アクション"
     },
     "actions": {
-      "view": "View",
-      "remove": "Remove"
+      "view": "ビュー",
+      "remove": "取り除く"
     },
     "details": {
-      "basicInfo": "Basic information",
+      "basicInfo": "基本情報",
       "id": "ID",
-      "driver": "Driver",
-      "scope": "Scope",
-      "subnet": "Subnet",
-      "gateway": "Gateway",
-      "connectedContainers": "Connected containers",
-      "labels": "Labels"
+      "driver": "ドライバ",
+      "scope": "範囲",
+      "subnet": "サブネット",
+      "gateway": "ゲートウェイ",
+      "connectedContainers": "接続されたコンテナ",
+      "labels": "ラベル"
     }
   },
   "builds": {
     "title": "ビルド",
     "comingSoon": "ビルド管理は近日公開予定...",
-    "empty": "No builds running",
-    "status": "Status",
-    "tags": "Tags",
-    "startedAt": "Started at",
-    "actions": "Actions",
-    "cancel": "Cancel"
+    "empty": "実行中のビルドはありません",
+    "status": "状態",
+    "tags": "タグ",
+    "startedAt": "に開始",
+    "actions": "アクション",
+    "cancel": "キャンセル"
   },
   "compose": {
     "title": "Composeスタック",
     "comingSoon": "Compose管理は近日公開予定...",
-    "empty": "No compose stacks found",
-    "name": "Name",
-    "status": "Status",
-    "services": "Services",
-    "actions": "Actions",
-    "stop": "Stop",
-    "delete": "Delete"
+    "empty": "作成スタックが見つかりません",
+    "name": "名前",
+    "status": "状態",
+    "services": "サービス",
+    "actions": "アクション",
+    "stop": "停止",
+    "delete": "消去"
   },
   "tunnels": {
     "title": "Cloudflareトンネル",
     "comingSoon": "トンネル管理は近日公開予定...",
-    "empty": "No tunnels found",
-    "name": "Name",
-    "status": "Status",
-    "actions": "Actions",
-    "start": "Start",
-    "stop": "Stop",
-    "delete": "Delete"
+    "empty": "トンネルが見つかりませんでした",
+    "name": "名前",
+    "status": "状態",
+    "actions": "アクション",
+    "start": "始める",
+    "stop": "停止",
+    "delete": "消去"
   },
   "settings": {
     "title": "設定",
@@ -372,17 +373,17 @@
     "updateSchedule": "アップデートスケジュール",
     "dailyAtMidnight": "毎日 UTC 00:00",
     "manualOnly": "手動のみ",
-    "changePassword": "Change Password",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "confirmNewPassword": "Confirm new password",
-    "saveNewPassword": "Save new password",
-    "changingPassword": "Changing password...",
-    "passwordChanged": "Password changed successfully",
-    "passwordChangeFailed": "Could not change password",
-    "passwordMismatch": "New passwords do not match",
-    "passwordMinLength": "New password must be at least 8 characters",
-    "passwordAllRequired": "Please complete all password fields"
+    "changePassword": "パスワードを変更する",
+    "currentPassword": "現在のパスワード",
+    "newPassword": "新しいパスワード",
+    "confirmNewPassword": "新しいパスワードを確認します",
+    "saveNewPassword": "新しいパスワードを保存する",
+    "changingPassword": "パスワードを変更しています...",
+    "passwordChanged": "パスワードが正常に変更されました",
+    "passwordChangeFailed": "パスワードを変更できませんでした",
+    "passwordMismatch": "新しいパスワードが一致しません",
+    "passwordMinLength": "新しいパスワードは 8 文字以上である必要があります",
+    "passwordAllRequired": "すべてのパスワードフィールドに入力してください"
   },
   "errors": {
     "pageNotFound": "ページが見つかりません",
@@ -396,7 +397,7 @@
     "allRightsReserved": "全著作権所有。",
     "documentation": "ドキュメント",
     "support": "サポート",
-    "madeWith": "Made with",
+    "madeWith": "で作られました",
     "api": "API",
     "github": "GitHub"
   },
@@ -410,17 +411,17 @@
     "moreOptions": "その他のオプション",
     "expand": "展開",
     "collapse": "折りたたむ",
-    "select_language": "Select language",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "view": "View",
-    "back": "Back",
-    "optional": "optional",
-    "ok": "OK",
-    "yes": "Yes",
-    "no": "No",
-    "enabled": "Enabled",
-    "disabled": "Disabled"
+    "select_language": "言語を選択してください",
+    "cancel": "キャンセル",
+    "delete": "消去",
+    "view": "ビュー",
+    "back": "戻る",
+    "optional": "オプション",
+    "ok": "わかりました",
+    "yes": "はい",
+    "no": "いいえ",
+    "enabled": "有効",
+    "disabled": "無効"
   },
-  "select_language": "Select language"
+  "select_language": "言語を選択してください"
 }
