@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -43,11 +44,11 @@ const STARTER_YAML = `services:
       - "8080:80"
 `;
 
-const tabs = [
-  { id: 'source', label: '1. Origen', icon: FileCode2 },
-  { id: 'env', label: '2. Environment', icon: Settings2 },
-  { id: 'validate', label: '3. Validación', icon: ShieldCheck },
-  { id: 'deploy', label: '4. Deploy', icon: Rocket },
+const tabDefs = [
+  { id: 'source', icon: FileCode2, labelKey: 'composePage.tabs.source' },
+  { id: 'env', icon: Settings2, labelKey: 'composePage.tabs.env' },
+  { id: 'validate', icon: ShieldCheck, labelKey: 'composePage.tabs.validate' },
+  { id: 'deploy', icon: Rocket, labelKey: 'composePage.tabs.deploy' },
 ] as const;
 
 function toEnvObject(rows: EnvRow[]): Record<string, string> {
@@ -60,8 +61,9 @@ function toEnvObject(rows: EnvRow[]): Record<string, string> {
 }
 
 export default function Compose() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]['id']>('source');
+  const [activeTab, setActiveTab] = useState<(typeof tabDefs)[number]['id']>('source');
   const [stackName, setStackName] = useState('');
   const [yaml, setYaml] = useState(STARTER_YAML);
   const [envRows, setEnvRows] = useState<EnvRow[]>([]);
@@ -70,6 +72,7 @@ export default function Compose() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const envObject = useMemo(() => toEnvObject(envRows), [envRows]);
+  const tabs = useMemo(() => tabDefs.map((tab) => ({ ...tab, label: t(tab.labelKey) })), [t]);
   const canValidate = stackName.trim().length > 1 && yaml.trim().length > 0;
 
   const {
@@ -105,7 +108,7 @@ export default function Compose() {
     },
     onError: (error: unknown) => {
       setErrorMessage(
-        (error as { message?: string })?.message || 'No se pudo validar la configuración'
+        (error as { message?: string })?.message || t('composePage.errors.validateFailed')
       );
     },
   });
@@ -128,7 +131,9 @@ export default function Compose() {
       setSelectedStackLogs(stackName);
     },
     onError: (error: unknown) => {
-      setErrorMessage((error as { message?: string })?.message || 'No se pudo desplegar el stack');
+      setErrorMessage(
+        (error as { message?: string })?.message || t('composePage.errors.deployFailed')
+      );
     },
   });
 
@@ -162,9 +167,11 @@ export default function Compose() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Compose Deploy</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {t('composePage.title')}
+          </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Flujo recomendado: define origen, variables, valida conflictos y despliega.
+            {t('composePage.subtitle')}
           </p>
         </div>
         <button onClick={() => refetch()} disabled={isLoading} className="btn btn-secondary btn-sm">
@@ -199,7 +206,7 @@ export default function Compose() {
             <div className="space-y-3">
               <input
                 className="input"
-                placeholder="Nombre del microservicio/stack (ej: api-core)"
+                placeholder={t('composePage.placeholders.stackName')}
                 value={stackName}
                 onChange={(e) => setStackName(e.target.value)}
               />
@@ -216,7 +223,7 @@ export default function Compose() {
             <div className="space-y-3">
               {envRows.length === 0 && (
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Sin variables definidas. Agrega variables para este deploy.
+                  {t('composePage.env.empty')}
                 </div>
               )}
               {envRows.map((row, index) => (
@@ -258,7 +265,7 @@ export default function Compose() {
                         );
                       }}
                     />
-                    Secret
+                    {t('composePage.env.secret')}
                   </label>
                   <button
                     className="btn btn-danger btn-sm md:col-span-1"
@@ -276,7 +283,7 @@ export default function Compose() {
                   setEnvRows((prev) => [...prev, { key: '', value: '', secret: false }])
                 }
               >
-                + Agregar variable
+                {t('composePage.env.addVariable')}
               </button>
             </div>
           )}
@@ -284,7 +291,7 @@ export default function Compose() {
           {activeTab === 'validate' && (
             <div className="space-y-3">
               <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-300">
-                Ejecuta preflight para detectar conflictos antes del deploy.
+                {t('composePage.validate.description')}
               </div>
               <button
                 className="btn btn-secondary"
@@ -292,14 +299,16 @@ export default function Compose() {
                 onClick={() => preflightMutation.mutate()}
               >
                 <ShieldCheck className="h-4 w-4 mr-1" />
-                Validar configuración
+                {t('composePage.validate.button')}
               </button>
               {preflightResult && (
                 <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 space-y-2">
                   <div className="text-sm">
-                    Resultado:{' '}
+                    {t('composePage.validate.resultLabel')}{' '}
                     <span className={preflightResult.valid ? 'text-green-600' : 'text-red-600'}>
-                      {preflightResult.valid ? 'válido' : 'con errores'}
+                      {preflightResult.valid
+                        ? t('composePage.validate.valid')
+                        : t('composePage.validate.invalid')}
                     </span>
                   </div>
                   {preflightResult.errors.length > 0 && (
@@ -326,12 +335,13 @@ export default function Compose() {
               {!preflightResult ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 p-3 text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 mt-0.5" />
-                  Debes ejecutar validación de preflight antes de desplegar.
+                  {t('composePage.deploy.needsPreflight')}
                 </div>
               ) : (
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 p-3 text-sm text-emerald-800 dark:text-emerald-300 flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 mt-0.5" />
-                  Validación lista. Fingerprint: {preflightResult.fingerprint.slice(0, 20)}...
+                  {t('composePage.deploy.preflightReady')}{' '}
+                  {preflightResult.fingerprint.slice(0, 20)}...
                 </div>
               )}
               <button
@@ -340,7 +350,7 @@ export default function Compose() {
                 onClick={() => deployMutation.mutate()}
               >
                 <Rocket className="h-4 w-4 mr-1" />
-                Desplegar stack
+                {t('composePage.deploy.button')}
               </button>
             </div>
           )}
@@ -351,7 +361,7 @@ export default function Compose() {
         <div className="card-body p-0">
           {(stacks?.length || 0) === 0 ? (
             <div className="p-6 text-sm text-gray-500 dark:text-gray-400">
-              No compose stacks found
+              {t('composePage.stacks.empty')}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -359,19 +369,19 @@ export default function Compose() {
                 <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Stack
+                      {t('composePage.stacks.stack')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Estado
+                      {t('composePage.stacks.status')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Servicios
+                      {t('composePage.stacks.services')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Creado
+                      {t('composePage.stacks.created')}
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Acciones
+                      {t('composePage.stacks.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -397,7 +407,7 @@ export default function Compose() {
                           disabled={downMutation.isLoading}
                         >
                           <Square className="h-4 w-4 mr-1" />
-                          Stop
+                          {t('composePage.actions.stop')}
                         </button>
                         <button
                           className="btn btn-secondary btn-sm"
@@ -407,7 +417,7 @@ export default function Compose() {
                           }}
                         >
                           <ScrollText className="h-4 w-4 mr-1" />
-                          Logs
+                          {t('composePage.actions.logs')}
                         </button>
                         <button
                           onClick={() => deleteMutation.mutate(stack.name)}
@@ -415,7 +425,7 @@ export default function Compose() {
                           disabled={deleteMutation.isLoading}
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
-                          Eliminar
+                          {t('composePage.actions.delete')}
                         </button>
                       </td>
                     </tr>
@@ -431,7 +441,7 @@ export default function Compose() {
         <div className="card">
           <div className="card-header flex items-center justify-between">
             <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-              Logs de {selectedStackLogs}
+              {t('composePage.logs.title', { stack: selectedStackLogs })}
             </h2>
             <button
               className="btn btn-secondary btn-sm"
@@ -443,7 +453,7 @@ export default function Compose() {
           </div>
           <div className="card-body">
             <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 text-xs overflow-auto max-h-[320px]">
-              {logsResponse || 'Sin logs'}
+              {logsResponse || t('composePage.logs.empty')}
             </pre>
           </div>
         </div>

@@ -63,7 +63,10 @@
     "quickActions": "Quick Actions",
     "pullImage": "Pull Image",
     "createContainer": "Create Container",
-    "prune": "Prune System"
+    "prune": "Prune System",
+    "pruneConfirmBody": "Unused Docker resources will be removed (stopped containers, dangling images, unused volumes and networks).",
+    "pruneSuccess": "Prune System: {{total}} items removed",
+    "pruneError": "Could not complete system cleanup"
   },
   "containers": {
     "title": "Containers",
@@ -331,6 +334,302 @@
     "stop": "Stop",
     "delete": "Delete"
   },
+  "composePage": {
+    "title": "Compose Deploy",
+    "subtitle": "Recommended flow: define source, variables, validate conflicts and deploy.",
+    "tabs": {
+      "source": "1. Source",
+      "env": "2. Environment",
+      "validate": "3. Validation",
+      "deploy": "4. Deploy"
+    },
+    "errors": {
+      "validateFailed": "Could not validate configuration",
+      "deployFailed": "Could not deploy stack"
+    },
+    "placeholders": {
+      "stackName": "Microservice/stack name (e.g. api-core)"
+    },
+    "env": {
+      "empty": "No variables defined. Add variables for this deploy.",
+      "addVariable": "+ Add variable",
+      "secret": "Secret"
+    },
+    "validate": {
+      "description": "Run preflight to detect conflicts before deploy.",
+      "button": "Validate configuration",
+      "resultLabel": "Result:",
+      "valid": "valid",
+      "invalid": "with errors"
+    },
+    "deploy": {
+      "needsPreflight": "You must run preflight validation before deploying.",
+      "preflightReady": "Validation ready. Fingerprint:",
+      "button": "Deploy stack"
+    },
+    "stacks": {
+      "empty": "No compose stacks found",
+      "stack": "Stack",
+      "status": "Status",
+      "services": "Services",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "stop": "Stop",
+      "logs": "Logs",
+      "delete": "Delete"
+    },
+    "logs": {
+      "title": "Logs for {{stack}}",
+      "empty": "No logs"
+    }
+  },
+  "repositoriesPage": {
+    "title": "Repositories",
+    "subtitle": "Deploy from manual repositories (public or private). OAuth is optional.",
+    "messages": {
+      "created": "Repository created successfully",
+      "connectionOk": "Connection validated successfully",
+      "synced": "Repository synchronized",
+      "deployDone": "Deployment completed",
+      "sshReady": "Public key generated",
+      "githubStarted": "GitHub flow started. Complete the code in the indicated URL.",
+      "githubPending": "GitHub pending: {{error}}",
+      "githubConnected": "GitHub connected: {{username}}",
+      "gitlabStarted": "GitLab flow started. Complete the code in the indicated URL.",
+      "gitlabPending": "GitLab pending: {{error}}",
+      "gitlabConnected": "GitLab connected: {{username}}",
+      "sshCopied": "Key copied to clipboard"
+    },
+    "errors": {
+      "create": "Error creating repository",
+      "connection": "Error validating connection",
+      "sync": "Error synchronizing repository",
+      "deploy": "Error deploying",
+      "sshKey": "Error fetching SSH key",
+      "githubStart": "Could not start GitHub device flow",
+      "githubNotStarted": "GitHub device flow not started",
+      "githubPoll": "Error validating GitHub device flow",
+      "gitlabStart": "Could not start GitLab device flow",
+      "gitlabNotStarted": "GitLab device flow not started",
+      "gitlabPoll": "Error validating GitLab device flow"
+    },
+    "oauth": {
+      "title": "OAuth Integrations (optional)",
+      "publicUrl": "Public URL available",
+      "githubConfigured": "GitHub App configured",
+      "gitlabConfigured": "GitLab OAuth configured",
+      "noPublicUrlWarning": "Without a public URL, use manual flow (SSH or HTTPS token). OAuth/webhooks remain disabled.",
+      "connectGithub": "Connect GitHub (Device Flow)",
+      "connectGitlab": "Connect GitLab (Device Flow)",
+      "githubDeviceTitle": "GitHub Device Flow",
+      "gitlabDeviceTitle": "GitLab Device Flow",
+      "openUrl": "Open",
+      "code": "Code",
+      "verifyGithub": "Verify GitHub",
+      "verifyGitlab": "Verify GitLab"
+    },
+    "newRepo": {
+      "title": "New repository",
+      "name": "Name",
+      "providerGeneric": "Generic",
+      "providerGithub": "GitHub",
+      "providerGitlab": "GitLab",
+      "repoUrl": "Repository URL",
+      "branch": "Branch (main)",
+      "composePath": "Compose path (docker-compose.yml)",
+      "visibilityPublic": "Public",
+      "visibilityPrivate": "Private",
+      "authNone": "No auth (public)",
+      "authSsh": "SSH key",
+      "authHttpsToken": "HTTPS token",
+      "httpsToken": "HTTPS token",
+      "autoDeploy": "Autodeploy (requires webhook and verifiable public endpoint)",
+      "createButton": "Create repository"
+    },
+    "registered": {
+      "title": "Registered repositories",
+      "loading": "Loading...",
+      "empty": "No repositories registered",
+      "columns": {
+        "name": "Name",
+        "repo": "Repository",
+        "branch": "Branch",
+        "auth": "Auth",
+        "actions": "Actions"
+      }
+    },
+    "actions": {
+      "test": "Test",
+      "sync": "Sync",
+      "deploy": "Deploy",
+      "sshKey": "SSH key"
+    },
+    "quickDeploy": {
+      "title": "Quick deploy",
+      "selectRepo": "Select repository",
+      "stackName": "Stack name (optional)",
+      "button": "Deploy from repository"
+    },
+    "ssh": {
+      "title": "SSH public key",
+      "copy": "Copy"
+    }
+  },
+  "tunnelsPage": {
+    "errors": {
+      "authCloudflare": "Could not authenticate with Cloudflare",
+      "oauthStart": "Could not start OAuth",
+      "selectService": "Select a microservice to link the tunnel",
+      "hostnameRequired": "Enter a public hostname (e.g. api.mydomain.com)",
+      "serviceNotFound": "Selected microservice not found",
+      "serviceAlreadyLinked": "Microservice is already linked to tunnel \"{{name}}\". Only 1 tunnel is allowed per microservice.",
+      "invalidTunnelName": "Could not generate a valid tunnel name for the microservice",
+      "createTunnel": "Could not create tunnel",
+      "changeAccount": "Could not change active account",
+      "startTunnel": "Could not start tunnel",
+      "stopTunnel": "Could not stop tunnel",
+      "deleteTunnel": "Could not delete tunnel",
+      "updateAutostart": "Could not update tunnel auto-start"
+    },
+    "status": {
+      "active": "Active",
+      "creating": "Connecting",
+      "inactive": "Inactive",
+      "error": "Error"
+    },
+    "debug": {
+      "title": "Cloudflare login diagnostics",
+      "hide": "Hide",
+      "show": "Show",
+      "ok": "ok",
+      "error": "error",
+      "empty": "No events yet. Try login and refresh to see details.",
+      "columns": {
+        "time": "Time",
+        "action": "Action",
+        "status": "Status",
+        "message": "Message"
+      }
+    },
+    "auth": {
+      "title": "Cloudflare Auth",
+      "connectedAs": "Connected with account",
+      "activeAccount": "Active account",
+      "via": "via",
+      "unknown": "unknown",
+      "logout": "Sign out Cloudflare",
+      "loginHelp": "Sign in with Cloudflare to create and manage tunnels.",
+      "accountIdPlaceholder": "Cloudflare Account ID (optional)",
+      "tokenPlaceholder": "Cloudflare API token",
+      "loginWithToken": "Login with API token",
+      "startOauth": "Start OAuth",
+      "openOauthLink": "Open this link to complete OAuth:",
+      "requiredWarning": "You must authenticate with Cloudflare to view/create tunnels."
+    },
+    "management": {
+      "title": "Tunnel management",
+      "createTitle": "Create your tunnel in 3 steps",
+      "createSubtitle": "1) Choose microservice, 2) define public hostname, 3) create. DockPilot configures ingress + DNS CNAME automatically.",
+      "service": "Microservice",
+      "selectService": "Select microservice",
+      "portPlaceholder": "Internal port (e.g. 80)",
+      "hostname": "Public hostname",
+      "hostnamePlaceholder": "e.g. api.mydomain.com",
+      "zonePlaceholder": "Zone ID (optional)",
+      "finish": "Finish",
+      "namePlaceholder": "Tunnel name (optional)",
+      "autoStart": "Auto-start when created and when DockPilot restarts",
+      "preview": "Destination preview",
+      "createButton": "Create, link and start"
+    },
+    "cards": {
+      "hostname": "Public hostname",
+      "service": "Microservice",
+      "targetService": "Target service",
+      "temporaryUrl": "Temporary URL",
+      "temporaryUrlN/A": "Not applicable (you use your own hostname)",
+      "autoStartLabel": "Auto-start {{status}}",
+      "autoStartEnabled": "enabled",
+      "autoStartDisabled": "disabled"
+    }
+  },
+  "containerDetailPage": {
+    "title": "Microservice / Container",
+    "loadError": "Could not load container details.",
+    "envTitle": "Environment variables per microservice",
+    "envDescription": "When saved, DockPilot safely recreates the container and keeps a rollback ready.",
+    "addVariable": "+ Add variable",
+    "saveAndRecreate": "Save and recreate",
+    "envApplied": "Variables applied",
+    "messages": {
+      "started": "Container started",
+      "stopped": "Container stopped",
+      "restarted": "Container restarted",
+      "envApplied": "Variables applied successfully",
+      "envAppliedBackup": "Variables applied. Backup: {{backup}}",
+      "available": "available",
+      "envError": "Error updating variables"
+    }
+  },
+  "supportPage": {
+    "title": "Support",
+    "subtitle": "Help center for operational incidents, Cloudflare authentication, and tunnel errors.",
+    "checklist": {
+      "title": "Quick diagnostics checklist",
+      "items": {
+        "0": "Check container status and DockPilot healthchecks.",
+        "1": "Confirm Cloudflare permissions (Tunnel Edit + Zone DNS Edit + Zone Read).",
+        "2": "Review `dockpilot-tunnel-control` logs when creating/starting tunnels.",
+        "3": "If a tunnel fails, share the full message and the `tunnelId`."
+      }
+    },
+    "include": {
+      "title": "What to include when asking for help",
+      "items": {
+        "0": "Installed DockPilot version and date of the last upgrade.",
+        "1": "Executed commands and exact error message received.",
+        "2": "Relevant logs output (without exposing tokens or secrets).",
+        "3": "UI screenshot when applicable."
+      }
+    },
+    "channelsTitle": "Support channels",
+    "channels": {
+      "bug": {
+        "title": "Report bug",
+        "description": "Include screenshots, logs, and steps to reproduce."
+      },
+      "feature": {
+        "title": "Request improvement",
+        "description": "Share the use case and expected result."
+      }
+    }
+  },
+  "documentationPage": {
+    "title": "Documentation",
+    "subtitle": "Quick guide to operate DockPilot: installation, upgrades, tunnels, and troubleshooting.",
+    "commandsTitle": "Useful commands",
+    "bestPracticesTitle": "Best practices",
+    "bestPractices": {
+      "items": {
+        "0": "Keep Cloudflare tokens with minimum permissions and correct zone.",
+        "1": "Validate backups before major upgrades.",
+        "2": "Monitor tunnel-control logs when status is error/inactive."
+      }
+    },
+    "linksTitle": "Links",
+    "links": {
+      "api": {
+        "title": "API Reference",
+        "description": "Available endpoints to automate tasks and observability."
+      },
+      "github": {
+        "title": "GitHub Repository",
+        "description": "Source code, changelog, and deployment best practices."
+      }
+    }
+  },
   "settings": {
     "title": "Settings",
     "versionAndUpdates": "Version & Updates",
@@ -348,8 +647,22 @@
     "upgradeWarning": "Do not close this page or restart the server during the upgrade. The system will restart automatically when finished.",
     "upgradeComplete": "Upgrade completed successfully! The page will refresh shortly.",
     "upgradeConfirm": "Are you sure you want to upgrade to version {{version}}? The system will restart during the upgrade.",
+    "upgradeModalTitle": "Confirm upgrade",
+    "upgradeModalDescription": "Review the version change before starting the update process.",
+    "upgradeModalCurrent": "Current version",
+    "upgradeModalTarget": "Target version",
+    "upgradeModalImpact": "This operation restarts DockPilot services and can temporarily interrupt access.",
+    "upgradeCancel": "Cancel",
+    "upgradeConfirmButton": "Start upgrade",
     "upgradeAlreadyInProgress": "An upgrade is already in progress. Please wait.",
     "upgradeFailed": "Failed to start upgrade. Please try again.",
+    "upgradeProgressPreparing": "Preparing upgrade task...",
+    "upgradeProgressDownloading": "Downloading new version and updating containers...",
+    "upgradeProgressRestarting": "Restarting services. Waiting for DockPilot to come back...",
+    "upgradeProgressFinalizing": "Finalizing upgrade and validating status...",
+    "upgradeSuccessTitle": "Congratulations! Upgrade complete",
+    "upgradeSuccessDescription": "DockPilot is now running version {{version}}.",
+    "upgradeSuccessReloading": "Reloading interface in a few seconds...",
     "updateCheckFailed": "Failed to check for updates. Please try again.",
     "lastChecked": "Last checked:",
     "autoUpdate": "Automatic Updates",

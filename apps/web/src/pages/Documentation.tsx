@@ -1,29 +1,33 @@
 import { BookOpen, ExternalLink, TerminalSquare, ShieldCheck } from 'lucide-react';
-
-const quickLinks = [
-  {
-    title: 'API Reference',
-    description: 'Endpoints disponibles para automatizar tareas y observabilidad.',
-    href: 'https://api.dockpilot.io',
-  },
-  {
-    title: 'Repositorio GitHub',
-    description: 'Código fuente, changelog y mejores prácticas de despliegue.',
-    href: 'https://github.com/marweb/DockPilot',
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function Documentation() {
+  const { t } = useTranslation();
+
+  const quickLinks = [
+    {
+      title: t('documentationPage.links.api.title'),
+      description: t('documentationPage.links.api.description'),
+      href: 'https://api.dockpilot.io',
+    },
+    {
+      title: t('documentationPage.links.github.title'),
+      description: t('documentationPage.links.github.description'),
+      href: 'https://github.com/marweb/DockPilot',
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-50 to-white dark:from-primary-900/20 dark:to-gray-800 p-6">
         <div className="flex items-start gap-3">
           <BookOpen className="h-6 w-6 text-primary-600 dark:text-primary-400 mt-0.5" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Documentación</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {t('documentationPage.title')}
+            </h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Guía rápida para operar DockPilot: instalación, upgrades, túneles y resolución de
-              problemas comunes.
+              {t('documentationPage.subtitle')}
             </p>
           </div>
         </div>
@@ -34,7 +38,7 @@ export default function Documentation() {
           <div className="flex items-center gap-2 mb-3">
             <TerminalSquare className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-              Comandos utiles
+              {t('documentationPage.commandsTitle')}
             </h2>
           </div>
           <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 font-mono">
@@ -50,19 +54,21 @@ export default function Documentation() {
           <div className="flex items-center gap-2 mb-3">
             <ShieldCheck className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-              Buenas prácticas
+              {t('documentationPage.bestPracticesTitle')}
             </h2>
           </div>
           <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300 list-disc pl-5">
-            <li>Mantén tokens Cloudflare con permisos mínimos y zona correcta.</li>
-            <li>Valida backups antes de upgrades mayores.</li>
-            <li>Monitorea logs de tunnel-control cuando el estado sea error/inactive.</li>
+            <li>{t('documentationPage.bestPractices.items.0')}</li>
+            <li>{t('documentationPage.bestPractices.items.1')}</li>
+            <li>{t('documentationPage.bestPractices.items.2')}</li>
           </ul>
         </div>
       </div>
 
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 p-5">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Enlaces</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
+          {t('documentationPage.linksTitle')}
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {quickLinks.map((link) => (
             <a

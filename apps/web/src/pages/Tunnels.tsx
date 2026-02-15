@@ -157,7 +157,7 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      const message = getErrorMessage(err, 'No se pudo autenticar con Cloudflare');
+      const message = getErrorMessage(err, t('tunnelsPage.errors.authCloudflare'));
       setAuthError(message);
       refetchAuthLogs();
     },
@@ -174,7 +174,7 @@ export default function Tunnels() {
       setOauthUrl(url);
     },
     onError: (err: unknown) => {
-      const message = getErrorMessage(err, 'No se pudo iniciar OAuth');
+      const message = getErrorMessage(err, t('tunnelsPage.errors.oauthStart'));
       setAuthError(message);
       refetchAuthLogs();
     },
@@ -195,27 +195,25 @@ export default function Tunnels() {
       setActionError('');
 
       if (!serviceContainerId) {
-        throw new Error('Selecciona un microservicio para enlazar el tunel');
+        throw new Error(t('tunnelsPage.errors.selectService'));
       }
 
       if (!hostname.trim()) {
-        throw new Error('Ingresa un hostname publico (ej: api.midominio.com)');
+        throw new Error(t('tunnelsPage.errors.hostnameRequired'));
       }
 
       const selectedContainer = (containers || []).find(
         (container) => container.id === serviceContainerId
       );
       if (!selectedContainer) {
-        throw new Error('No se encontro el microservicio seleccionado');
+        throw new Error(t('tunnelsPage.errors.serviceNotFound'));
       }
 
       const linkedTunnel = (tunnels || []).find((tunnel) =>
         (tunnel.connectedServices || []).includes(serviceContainerId)
       );
       if (linkedTunnel) {
-        throw new Error(
-          `El microservicio ya esta enlazado al tunel "${linkedTunnel.name}". Solo se permite 1 tunel por microservicio.`
-        );
+        throw new Error(t('tunnelsPage.errors.serviceAlreadyLinked', { name: linkedTunnel.name }));
       }
 
       const resolvedPort = Number(servicePort) || selectedContainer.ports?.[0]?.containerPort || 80;
@@ -237,7 +235,7 @@ export default function Tunnels() {
           .slice(0, 63);
 
       if (!effectiveTunnelName) {
-        throw new Error('No se pudo generar un nombre de tunel valido para el microservicio');
+        throw new Error(t('tunnelsPage.errors.invalidTunnelName'));
       }
 
       const response = await api.post('/tunnels/provision', {
@@ -263,7 +261,7 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      const message = getErrorMessage(err, 'No se pudo crear el tunel');
+      const message = getErrorMessage(err, t('tunnelsPage.errors.createTunnel'));
       setCreateError(message);
     },
   });
@@ -280,7 +278,7 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      setAuthError(getErrorMessage(err, 'No se pudo cambiar la cuenta activa'));
+      setAuthError(getErrorMessage(err, t('tunnelsPage.errors.changeAccount')));
     },
   });
 
@@ -293,7 +291,7 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      setActionError(getErrorMessage(err, 'No se pudo iniciar el tunel'));
+      setActionError(getErrorMessage(err, t('tunnelsPage.errors.startTunnel')));
     },
   });
 
@@ -304,7 +302,7 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      setActionError(getErrorMessage(err, 'No se pudo detener el tunel'));
+      setActionError(getErrorMessage(err, t('tunnelsPage.errors.stopTunnel')));
     },
   });
 
@@ -315,7 +313,7 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      setActionError(getErrorMessage(err, 'No se pudo eliminar el tunel'));
+      setActionError(getErrorMessage(err, t('tunnelsPage.errors.deleteTunnel')));
     },
   });
 
@@ -329,7 +327,7 @@ export default function Tunnels() {
       queryClient.invalidateQueries({ queryKey: ['tunnels'] });
     },
     onError: (err: unknown) => {
-      setActionError(getErrorMessage(err, 'No se pudo actualizar auto-inicio del tunel'));
+      setActionError(getErrorMessage(err, t('tunnelsPage.errors.updateAutostart')));
     },
   });
 
@@ -338,10 +336,10 @@ export default function Tunnels() {
   );
 
   const statusLabel: Record<Tunnel['status'], string> = {
-    active: 'Activo',
-    creating: 'Conectando',
-    inactive: 'Inactivo',
-    error: 'Error',
+    active: t('tunnelsPage.status.active'),
+    creating: t('tunnelsPage.status.creating'),
+    inactive: t('tunnelsPage.status.inactive'),
+    error: t('tunnelsPage.status.error'),
   };
 
   const statusBadgeClass: Record<Tunnel['status'], string> = {
@@ -387,7 +385,7 @@ export default function Tunnels() {
           <div className="flex items-center gap-2">
             <Bug className="h-4 w-4 text-primary-600" />
             <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-              Diagnostico de login Cloudflare
+              {t('tunnelsPage.debug.title')}
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -399,7 +397,7 @@ export default function Tunnels() {
               onClick={() => setShowDebugLogs((s) => !s)}
               type="button"
             >
-              {showDebugLogs ? 'Ocultar' : 'Mostrar'}
+              {showDebugLogs ? t('tunnelsPage.debug.hide') : t('tunnelsPage.debug.show')}
             </button>
           </div>
         </div>
@@ -407,17 +405,23 @@ export default function Tunnels() {
           <div className="card-body">
             {(authDebugLogs?.length || 0) === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Sin eventos aun. Intenta login y recarga para ver detalles.
+                {t('tunnelsPage.debug.empty')}
               </p>
             ) : (
               <div className="max-h-[320px] overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-700/50">
                     <tr>
-                      <th className="px-3 py-2 text-left">Hora</th>
-                      <th className="px-3 py-2 text-left">Accion</th>
-                      <th className="px-3 py-2 text-left">Estado</th>
-                      <th className="px-3 py-2 text-left">Mensaje</th>
+                      <th className="px-3 py-2 text-left">{t('tunnelsPage.debug.columns.time')}</th>
+                      <th className="px-3 py-2 text-left">
+                        {t('tunnelsPage.debug.columns.action')}
+                      </th>
+                      <th className="px-3 py-2 text-left">
+                        {t('tunnelsPage.debug.columns.status')}
+                      </th>
+                      <th className="px-3 py-2 text-left">
+                        {t('tunnelsPage.debug.columns.message')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -434,7 +438,7 @@ export default function Tunnels() {
                           <span
                             className={`badge text-xs ${log.success ? 'badge-success' : 'badge-neutral'}`}
                           >
-                            {log.success ? 'ok' : 'error'}
+                            {log.success ? t('tunnelsPage.debug.ok') : t('tunnelsPage.debug.error')}
                           </span>
                         </td>
                         <td className="px-3 py-2">
@@ -457,7 +461,9 @@ export default function Tunnels() {
 
       <div className="card">
         <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">Cloudflare Auth</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+            {t('tunnelsPage.auth.title')}
+          </h2>
         </div>
         <div className="card-body space-y-4">
           {authError && <div className="text-sm text-red-600 dark:text-red-400">{authError}</div>}
@@ -465,13 +471,18 @@ export default function Tunnels() {
           {authStatus?.authenticated ? (
             <div className="flex flex-col gap-3">
               <div className="text-sm text-gray-700 dark:text-gray-300">
-                Conectado con cuenta{' '}
-                <span className="font-medium">{authStatus.accountId || '-'}</span> via{' '}
-                <span className="font-medium">{authStatus.method || 'unknown'}</span>
+                {t('tunnelsPage.auth.connectedAs')}{' '}
+                <span className="font-medium">{authStatus.accountId || '-'}</span>{' '}
+                {t('tunnelsPage.auth.via')}{' '}
+                <span className="font-medium">
+                  {authStatus.method || t('tunnelsPage.auth.unknown')}
+                </span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-600 dark:text-gray-400">Cuenta activa</label>
+                  <label className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('tunnelsPage.auth.activeAccount')}
+                  </label>
                   <select
                     className="input py-2"
                     value={selectedAccountId || authStatus.accountId || ''}
@@ -500,25 +511,25 @@ export default function Tunnels() {
                   disabled={logoutMutation.isLoading}
                 >
                   <LogOut className="h-4 w-4 mr-1" />
-                  Cerrar sesion Cloudflare
+                  {t('tunnelsPage.auth.logout')}
                 </button>
               </div>
             </div>
           ) : (
             <>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Inicia sesion con Cloudflare para crear y gestionar tuneles.
+                {t('tunnelsPage.auth.loginHelp')}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   className="input"
-                  placeholder="Cloudflare Account ID (opcional)"
+                  placeholder={t('tunnelsPage.auth.accountIdPlaceholder')}
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
                 />
                 <input
                   className="input"
-                  placeholder="Cloudflare API Token"
+                  placeholder={t('tunnelsPage.auth.tokenPlaceholder')}
                   type="password"
                   value={apiToken}
                   onChange={(e) => setApiToken(e.target.value)}
@@ -531,19 +542,19 @@ export default function Tunnels() {
                   disabled={!apiToken || tokenLoginMutation.isLoading}
                 >
                   <LogIn className="h-4 w-4 mr-1" />
-                  Login con API Token
+                  {t('tunnelsPage.auth.loginWithToken')}
                 </button>
                 <button
                   className="btn btn-secondary btn-sm"
                   onClick={() => oauthLoginMutation.mutate()}
                   disabled={oauthLoginMutation.isLoading}
                 >
-                  Iniciar OAuth
+                  {t('tunnelsPage.auth.startOauth')}
                 </button>
               </div>
               {oauthUrl && (
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Abre este enlace para completar OAuth:{' '}
+                  {t('tunnelsPage.auth.openOauthLink')}{' '}
                   <a
                     href={oauthUrl}
                     target="_blank"
@@ -561,7 +572,9 @@ export default function Tunnels() {
 
       <div className="card">
         <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">Gestion de tuneles</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+            {t('tunnelsPage.management.title')}
+          </h2>
         </div>
         <div className="card-body space-y-4">
           {authStatus?.authenticated && (
@@ -578,11 +591,10 @@ export default function Tunnels() {
                   <Rocket className="h-5 w-5 mt-0.5 text-primary-600 dark:text-primary-400" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      Crea tu tunel en 3 pasos
+                      {t('tunnelsPage.management.createTitle')}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      1) Elige microservicio, 2) define hostname publico, 3) crea. DockPilot
-                      configura ingress + DNS CNAME automaticamente.
+                      {t('tunnelsPage.management.createSubtitle')}
                     </p>
                   </div>
                 </div>
@@ -594,7 +606,7 @@ export default function Tunnels() {
                     <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-white text-xs">
                       1
                     </span>
-                    Microservicio
+                    {t('tunnelsPage.management.service')}
                   </div>
                   <select
                     className="input"
@@ -620,7 +632,7 @@ export default function Tunnels() {
                       }
                     }}
                   >
-                    <option value="">Seleccionar microservicio</option>
+                    <option value="">{t('tunnelsPage.management.selectService')}</option>
                     {(containers || []).map((container) => (
                       <option key={container.id} value={container.id}>
                         {container.name} ({container.status})
@@ -629,7 +641,7 @@ export default function Tunnels() {
                   </select>
                   <input
                     className="input"
-                    placeholder="Puerto interno (ej: 80)"
+                    placeholder={t('tunnelsPage.management.portPlaceholder')}
                     value={servicePort}
                     onChange={(e) => setServicePort(e.target.value.replace(/[^0-9]/g, ''))}
                   />
@@ -640,17 +652,17 @@ export default function Tunnels() {
                     <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-white text-xs">
                       2
                     </span>
-                    Hostname publico
+                    {t('tunnelsPage.management.hostname')}
                   </div>
                   <input
                     className="input"
-                    placeholder="ej: api.midominio.com"
+                    placeholder={t('tunnelsPage.management.hostnamePlaceholder')}
                     value={hostname}
                     onChange={(e) => setHostname(e.target.value)}
                   />
                   <input
                     className="input"
-                    placeholder="Zone ID (opcional)"
+                    placeholder={t('tunnelsPage.management.zonePlaceholder')}
                     value={zoneId}
                     onChange={(e) => setZoneId(e.target.value)}
                   />
@@ -661,11 +673,11 @@ export default function Tunnels() {
                     <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-white text-xs">
                       3
                     </span>
-                    Finalizar
+                    {t('tunnelsPage.management.finish')}
                   </div>
                   <input
                     className="input"
-                    placeholder="Nombre del tunel (opcional)"
+                    placeholder={t('tunnelsPage.management.namePlaceholder')}
                     value={tunnelName}
                     onChange={(e) => setTunnelName(e.target.value)}
                   />
@@ -676,7 +688,7 @@ export default function Tunnels() {
                       onChange={(e) => setAutoStartOnBoot(e.target.checked)}
                       className="rounded"
                     />
-                    Auto iniciar al crear y cuando DockPilot reinicie
+                    {t('tunnelsPage.management.autoStart')}
                   </label>
                 </div>
               </div>
@@ -685,7 +697,7 @@ export default function Tunnels() {
                 <div className="rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-300">
                   <div className="flex items-center gap-2 mb-1">
                     <Link2 className="h-4 w-4 text-primary-600 dark:text-primary-400" />
-                    Vista previa de destino
+                    {t('tunnelsPage.management.preview')}
                   </div>
                   <span className="font-mono text-xs sm:text-sm">
                     http://{selectedContainer.name}:
@@ -700,14 +712,14 @@ export default function Tunnels() {
                 disabled={!serviceContainerId || !hostname || createTunnelMutation.isLoading}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Crear, enlazar e iniciar
+                {t('tunnelsPage.management.createButton')}
               </button>
             </div>
           )}
 
           {!authStatus?.authenticated ? (
             <div className="text-sm text-yellow-700 dark:text-yellow-400">
-              Debes autenticarte con Cloudflare para ver/crear tuneles.
+              {t('tunnelsPage.auth.requiredWarning')}
             </div>
           ) : (tunnels?.length || 0) === 0 ? (
             <div className="text-sm text-gray-500 dark:text-gray-400">{t('tunnels.empty')}</div>
@@ -737,7 +749,7 @@ export default function Tunnels() {
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
                         <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
                           <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <Globe className="h-3.5 w-3.5" /> Hostname publico
+                            <Globe className="h-3.5 w-3.5" /> {t('tunnelsPage.cards.hostname')}
                           </p>
                           <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100 break-all">
                             {getTunnelHostname(tunnel)}
@@ -746,7 +758,7 @@ export default function Tunnels() {
 
                         <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
                           <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <Server className="h-3.5 w-3.5" /> Microservicio
+                            <Server className="h-3.5 w-3.5" /> {t('tunnelsPage.cards.service')}
                           </p>
                           <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">
                             {getLinkedServiceName(tunnel)}
@@ -755,7 +767,7 @@ export default function Tunnels() {
 
                         <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
                           <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <Route className="h-3.5 w-3.5" /> Servicio destino
+                            <Route className="h-3.5 w-3.5" /> {t('tunnelsPage.cards.targetService')}
                           </p>
                           <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100 break-all">
                             {getTunnelService(tunnel)}
@@ -763,9 +775,11 @@ export default function Tunnels() {
                         </div>
 
                         <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">URL temporal</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {t('tunnelsPage.cards.temporaryUrl')}
+                          </p>
                           <p className="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100 break-all">
-                            {tunnel.publicUrl || 'No aplica (usas hostname propio)'}
+                            {tunnel.publicUrl || t('tunnelsPage.cards.temporaryUrlN/A')}
                           </p>
                         </div>
                       </div>
@@ -783,7 +797,11 @@ export default function Tunnels() {
                           className="rounded"
                           disabled={updateSettingsMutation.isLoading}
                         />
-                        Auto inicio {tunnel.autoStart ? 'habilitado' : 'deshabilitado'}
+                        {t('tunnelsPage.cards.autoStartLabel', {
+                          status: tunnel.autoStart
+                            ? t('tunnelsPage.cards.autoStartEnabled')
+                            : t('tunnelsPage.cards.autoStartDisabled'),
+                        })}
                       </label>
                     </div>
 

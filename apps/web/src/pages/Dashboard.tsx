@@ -66,19 +66,19 @@ export default function Dashboard() {
         result.volumesDeleted +
         result.networksDeleted;
 
-      showToast(`${t('dashboard.prune')}: ${total} elementos eliminados`, 'success');
+      showToast(t('dashboard.pruneSuccess', { total }), 'success');
     },
     onError: (error: unknown) => {
       const message =
         (error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
-          ?.message || 'No se pudo completar la limpieza del sistema';
+          ?.message || t('dashboard.pruneError');
       showToast(message, 'error');
     },
   });
 
   const handlePruneSystem = () => {
     const confirmed = window.confirm(
-      `${t('dashboard.prune')}\n\nSe eliminaran recursos Docker no utilizados (contenedores detenidos, imagenes dangling, volumenes y redes sin uso).`
+      `${t('dashboard.prune')}\n\n${t('dashboard.pruneConfirmBody')}`
     );
 
     if (!confirmed) {

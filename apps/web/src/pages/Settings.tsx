@@ -13,8 +13,11 @@ import {
   Loader2,
   Info,
   KeyRound,
+  PartyPopper,
 } from 'lucide-react';
 import api from '../api/client';
+import Modal from '../components/common/Modal';
+import Button from '../components/common/Button';
 
 interface VersionInfo {
   currentVersion: string;
@@ -45,6 +48,10 @@ export default function Settings() {
   const [upgrading, setUpgrading] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [showUpgradeConfirmModal, setShowUpgradeConfirmModal] = useState(false);
+  const [showUpgradeSuccessModal, setShowUpgradeSuccessModal] = useState(false);
+  const [upgradeProgress, setUpgradeProgress] = useState(0);
+  const [upgradeStepKey, setUpgradeStepKey] = useState('settings.upgradeProgressPreparing');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -134,12 +141,11 @@ export default function Settings() {
   const triggerUpgrade = async () => {
     if (!versionInfo?.latestVersion) return;
 
-    const confirmed = window.confirm(
-      t('settings.upgradeConfirm', { version: versionInfo.latestVersion })
-    );
-    if (!confirmed) return;
+    setShowUpgradeConfirmModal(false);
 
     setUpgrading(true);
+    setUpgradeProgress(12);
+    setUpgradeStepKey('settings.upgradeProgressPreparing');
     setError('');
     try {
       await api.post('/system/upgrade', {
@@ -149,6 +155,8 @@ export default function Settings() {
         inProgress: true,
         targetVersion: versionInfo.latestVersion,
       });
+      setUpgradeProgress(24);
+      setUpgradeStepKey('settings.upgradeProgressDownloading');
       // Start polling for upgrade status
       pollUpgradeStatus();
     } catch (err: unknown) {
@@ -158,6 +166,7 @@ export default function Settings() {
       } else {
         setError(apiErr?.message || t('settings.upgradeFailed'));
       }
+      setUpgradeProgress(0);
       setUpgrading(false);
     }
   };
@@ -175,20 +184,30 @@ export default function Settings() {
         setUpgradeStatus(status);
 
         if (status.inProgress && attempts < maxAttempts) {
+          const estimated = Math.min(92, 24 + attempts * 6);
+          setUpgradeProgress((prev) => Math.max(prev, estimated));
+          setUpgradeStepKey('settings.upgradeProgressDownloading');
           setTimeout(poll, 5000);
         } else {
           setUpgrading(false);
           if (status.completed) {
+            setUpgradeProgress(100);
+            setUpgradeStepKey('settings.upgradeProgressFinalizing');
             setSuccessMessage(t('settings.upgradeComplete'));
-            // Refresh version info
+            setShowUpgradeSuccessModal(true);
             setTimeout(() => {
-              checkForUpdates();
-            }, 10000); // Wait 10s for new containers to be ready
+              window.location.reload();
+            }, 4500);
+          } else if (status.exitCode && status.exitCode !== 0) {
+            setError(t('settings.upgradeFailed'));
+            setUpgradeProgress(0);
           }
         }
       } catch {
         // If we can't reach the API, the upgrade may be restarting containers
         if (attempts < maxAttempts) {
+          setUpgradeStepKey('settings.upgradeProgressRestarting');
+          setUpgradeProgress((prev) => Math.max(prev, 94));
           setTimeout(poll, 5000);
         } else {
           setUpgrading(false);
@@ -286,7 +305,7 @@ export default function Settings() {
                   </div>
                 </div>
                 <button
-                  onClick={triggerUpgrade}
+                  onClick={() => setShowUpgradeConfirmModal(true)}
                   className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   <ArrowUpCircle className="h-4 w-4" />
@@ -332,9 +351,18 @@ export default function Settings() {
 
               {/* Progress Steps */}
               <div className="mt-4 space-y-2">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-yellow-200 dark:bg-yellow-900/40">
+                  <div
+                    className="h-full rounded-full bg-yellow-500 transition-all duration-700"
+                    style={{ width: `${upgradeProgress}%` }}
+                  />
+                </div>
+                <div className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
+                  {upgradeProgress}%
+                </div>
                 <div className="flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  <span>{t('settings.upgradeStepPulling')}</span>
+                  <span>{t(upgradeStepKey)}</span>
                 </div>
               </div>
 
@@ -540,6 +568,66 @@ export default function Settings() {
           </dl>
         </div>
       </div>
+
+      <Modal
+        isOpen={showUpgradeConfirmModal}
+        onClose={() => setShowUpgradeConfirmModal(false)}
+        title={t('settings.upgradeModalTitle')}
+        description={t('settings.upgradeModalDescription')}
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowUpgradeConfirmModal(false)}>
+              {t('settings.upgradeCancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={triggerUpgrade}
+              leftIcon={<ArrowUpCircle className="h-4 w-4" />}
+            >
+              {t('settings.upgradeConfirmButton')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+          <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700/40">
+            <span className="font-medium">{t('settings.upgradeModalCurrent')}:</span>{' '}
+            {versionInfo?.currentVersion}
+          </div>
+          <div className="rounded-lg bg-blue-50 p-3 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+            <span className="font-medium">{t('settings.upgradeModalTarget')}:</span>{' '}
+            {versionInfo?.latestVersion}
+          </div>
+          <div className="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>{t('settings.upgradeModalImpact')}</span>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showUpgradeSuccessModal}
+        onClose={() => setShowUpgradeSuccessModal(false)}
+        title={t('settings.upgradeSuccessTitle')}
+        description={t('settings.upgradeSuccessDescription', {
+          version: upgradeStatus?.targetVersion || versionInfo?.latestVersion || '',
+        })}
+        size="md"
+        footer={
+          <Button variant="primary" onClick={() => window.location.reload()}>
+            {t('errors.goHome')}
+          </Button>
+        }
+      >
+        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300">
+          <PartyPopper className="h-5 w-5" />
+          <div className="text-sm">
+            <p className="font-medium">{t('settings.upgradeSuccessTitle')}</p>
+            <p className="text-xs opacity-90">{t('settings.upgradeSuccessReloading')}</p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

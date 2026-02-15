@@ -62,7 +62,10 @@
     "quickActions": "快速操作",
     "pullImage": "拉取镜像",
     "createContainer": "创建容器",
-    "prune": "清理系统"
+    "prune": "清理系统",
+    "pruneConfirmBody": "Unused Docker resources will be removed (stopped containers, dangling images, unused volumes and networks).",
+    "pruneSuccess": "Prune System: {{total}} items removed",
+    "pruneError": "Could not complete system cleanup"
   },
   "containers": {
     "title": "容器",
@@ -383,7 +386,21 @@
     "passwordChangeFailed": "无法更改密码",
     "passwordMismatch": "新密码不匹配",
     "passwordMinLength": "新密码必须至少 8 个字符",
-    "passwordAllRequired": "请填写所有密码字段"
+    "passwordAllRequired": "请填写所有密码字段",
+    "upgradeModalTitle": "确认升级",
+    "upgradeModalDescription": "在开始更新过程之前查看版本更改。",
+    "upgradeModalCurrent": "当前版本",
+    "upgradeModalTarget": "目标版本",
+    "upgradeModalImpact": "此操作会重新启动 DockPilot 服务并可以暂时中断访问。",
+    "upgradeCancel": "取消",
+    "upgradeConfirmButton": "开始升级",
+    "upgradeProgressPreparing": "正在准备升级任务...",
+    "upgradeProgressDownloading": "正在下载新版本并更新容器...",
+    "upgradeProgressRestarting": "重新启动服务。等待 DockPilot 回来...",
+    "upgradeProgressFinalizing": "正在完成升级并验证状态...",
+    "upgradeSuccessTitle": "恭喜！升级完成",
+    "upgradeSuccessDescription": "DockPilot 现在运行版本 {{version}}。",
+    "upgradeSuccessReloading": "几秒钟后重新加载界面..."
   },
   "errors": {
     "pageNotFound": "页面未找到",
@@ -423,5 +440,301 @@
     "enabled": "启用",
     "disabled": "残疾人"
   },
-  "select_language": "选择语言"
+  "select_language": "选择语言",
+  "composePage": {
+    "title": "编写部署",
+    "subtitle": "推荐流程：定义源、变量、验证冲突并部署。",
+    "tabs": {
+      "source": "1. 来源",
+      "env": "2. 环境",
+      "validate": "3. 验证",
+      "deploy": "4. 部署"
+    },
+    "errors": {
+      "validateFailed": "无法验证配置",
+      "deployFailed": "无法部署堆栈"
+    },
+    "placeholders": {
+      "stackName": "微服务/堆栈名称（例如 api-core）"
+    },
+    "env": {
+      "empty": "没有定义变量。为此部署添加变量。",
+      "addVariable": "+ 添加变量",
+      "secret": "秘密"
+    },
+    "validate": {
+      "description": "在部署之前运行预检以检测冲突。",
+      "button": "验证配置",
+      "resultLabel": "结果：",
+      "valid": "有效的",
+      "invalid": "有错误"
+    },
+    "deploy": {
+      "needsPreflight": "您必须在部署之前运行预检验证。",
+      "preflightReady": "验证准备就绪。指纹：",
+      "button": "部署堆栈"
+    },
+    "stacks": {
+      "empty": "未找到撰写堆栈",
+      "status": "地位",
+      "services": "服务",
+      "created": "已创建",
+      "actions": "行动",
+      "stack": "堆"
+    },
+    "actions": {
+      "stop": "停止",
+      "logs": "日志",
+      "delete": "删除"
+    },
+    "logs": {
+      "title": "{{stack}} 的日志",
+      "empty": "无日志"
+    }
+  },
+  "repositoriesPage": {
+    "title": "存储库",
+    "subtitle": "从手动存储库（公共或私有）进行部署。 OAuth 是可选的。",
+    "messages": {
+      "created": "存储库创建成功",
+      "connectionOk": "连接验证成功",
+      "synced": "存储库已同步",
+      "deployDone": "部署完成",
+      "sshReady": "生成公钥",
+      "githubStarted": "GitHub 流程开始。完成指定 URL 中的代码。",
+      "githubPending": "GitHub 待处理：{{error}}",
+      "githubConnected": "GitHub 连接：{{username}}",
+      "gitlabStarted": "GitLab 流程开始。完成指定 URL 中的代码。",
+      "gitlabPending": "GitLab 待处理：{{error}}",
+      "gitlabConnected": "GitLab 连接：{{username}}",
+      "sshCopied": "密钥已复制到剪贴板"
+    },
+    "errors": {
+      "create": "创建存储库时出错",
+      "connection": "验证连接时出错",
+      "sync": "同步存储库时出错",
+      "deploy": "部署时出错",
+      "sshKey": "获取 SSH 密钥时出错",
+      "githubStart": "无法启动 GitHub 设备流",
+      "githubNotStarted": "GitHub 设备流程未启动",
+      "githubPoll": "验证 GitHub 设备流时出错",
+      "gitlabStart": "无法启动 GitLab 设备流",
+      "gitlabNotStarted": "GitLab 设备流程未启动",
+      "gitlabPoll": "验证 GitLab 设备流时出错"
+    },
+    "oauth": {
+      "title": "OAuth 集成（可选）",
+      "publicUrl": "可用的公共网址",
+      "githubConfigured": "GitHub 应用程序已配置",
+      "gitlabConfigured": "已配置 GitLab OAuth",
+      "noPublicUrlWarning": "如果没有公共 URL，请使用手动流程（SSH 或 HTTPS 令牌）。 OAuth/webhooks 保持禁用状态。",
+      "connectGithub": "连接 GitHub（设备流程）",
+      "connectGitlab": "连接 GitLab（设备流程）",
+      "githubDeviceTitle": "GitHub 设备流程",
+      "gitlabDeviceTitle": "亚搏体育appGitLab设备流程",
+      "openUrl": "打开",
+      "code": "代码",
+      "verifyGithub": "验证 GitHub",
+      "verifyGitlab": "验证 GitLab"
+    },
+    "newRepo": {
+      "title": "新存储库",
+      "name": "姓名",
+      "providerGeneric": "通用的",
+      "repoUrl": "存储库网址",
+      "branch": "分公司（总公司）",
+      "composePath": "撰写路径（docker-compose.yml）",
+      "visibilityPublic": "民众",
+      "visibilityPrivate": "私人的",
+      "authNone": "无授权（公开）",
+      "httpsToken": "HTTPS 令牌",
+      "autoDeploy": "自动部署（需要 Webhook 和可验证的公共端点）",
+      "createButton": "创建存储库",
+      "providerGithub": "GitHub 提供商",
+      "providerGitlab": "GitLab 提供商",
+      "authSsh": "SSH 密钥",
+      "authHttpsToken": "HTTPS 令牌"
+    },
+    "registered": {
+      "title": "注册存储库",
+      "loading": "加载中...",
+      "empty": "没有注册存储库",
+      "columns": {
+        "name": "姓名",
+        "actions": "行动",
+        "repo": "存储库",
+        "branch": "分支",
+        "auth": "授权"
+      }
+    },
+    "actions": {
+      "test": "测试",
+      "sshKey": "SSH 密钥",
+      "sync": "同步",
+      "deploy": "部署"
+    },
+    "quickDeploy": {
+      "title": "快速部署",
+      "selectRepo": "选择存储库",
+      "stackName": "堆栈名称（可选）",
+      "button": "从存储库部署"
+    },
+    "ssh": {
+      "title": "SSH 公钥",
+      "copy": "复制"
+    }
+  },
+  "tunnelsPage": {
+    "errors": {
+      "authCloudflare": "无法通过 Cloudflare 进行身份验证",
+      "oauthStart": "无法启动 OAuth",
+      "selectService": "选择一个微服务来链接隧道",
+      "hostnameRequired": "输入公共主机名（例如 api.mydomain.com）",
+      "serviceNotFound": "找不到所选的微服务",
+      "serviceAlreadyLinked": "微服务已链接到隧道“{{name}}”。每个微服务仅允许 1 个隧道。",
+      "invalidTunnelName": "无法为微服务生成有效的隧道名称",
+      "createTunnel": "无法创建隧道",
+      "changeAccount": "无法更改活动帐户",
+      "startTunnel": "无法启动隧道",
+      "stopTunnel": "无法停止隧道",
+      "deleteTunnel": "无法删除隧道",
+      "updateAutostart": "无法更新隧道自动启动"
+    },
+    "status": {
+      "active": "积极的",
+      "creating": "正在连接",
+      "inactive": "不活跃",
+      "error": "错误"
+    },
+    "debug": {
+      "title": "Cloudflare 登录诊断",
+      "hide": "隐藏",
+      "show": "展示",
+      "empty": "还没有活动。尝试登录并刷新以查看详细信息。",
+      "columns": {
+        "time": "时间",
+        "action": "行动",
+        "status": "地位",
+        "message": "信息"
+      },
+      "ok": "好的",
+      "error": "错误"
+    },
+    "auth": {
+      "connectedAs": "已与帐户关联",
+      "activeAccount": "活跃账户",
+      "logout": "退出 Cloudflare",
+      "loginHelp": "使用 Cloudflare 登录以创建和管理隧道。",
+      "accountIdPlaceholder": "Cloudflare 帐户 ID（可选）",
+      "loginWithToken": "使用 API 令牌登录",
+      "startOauth": "启动 OAuth",
+      "openOauthLink": "打开此链接完成 OAuth：",
+      "requiredWarning": "您必须通过 Cloudflare 进行身份验证才能查看/创建隧道。",
+      "title": "Cloudflare 身份验证",
+      "via": "通过",
+      "unknown": "未知",
+      "tokenPlaceholder": "Cloudflare API 令牌"
+    },
+    "management": {
+      "title": "隧道管理",
+      "createTitle": "只需 3 步即可创建隧道",
+      "createSubtitle": "1) 选择微服务，2) 定义公共主机名，3) 创建。 DockPilot 自动配置入口 + DNS CNAME。",
+      "service": "微服务",
+      "selectService": "选择微服务",
+      "portPlaceholder": "内部端口（例如 80）",
+      "hostname": "公共主机名",
+      "hostnamePlaceholder": "例如api.mydomain.com",
+      "zonePlaceholder": "区域 ID（可选）",
+      "finish": "结束",
+      "namePlaceholder": "隧道名称（可选）",
+      "autoStart": "创建时和 DockPilot 重新启动时自动启动",
+      "preview": "目的地预览",
+      "createButton": "创建、链接并启动"
+    },
+    "cards": {
+      "hostname": "公共主机名",
+      "service": "微服务",
+      "targetService": "目标服务",
+      "temporaryUrl": "临时网址",
+      "temporaryUrlN/A": "不适用（您使用自己的主机名）",
+      "autoStartLabel": "自动启动{{status}}",
+      "autoStartEnabled": "已启用",
+      "autoStartDisabled": "残疾人"
+    }
+  },
+  "containerDetailPage": {
+    "title": "微服务/容器",
+    "loadError": "无法加载容器详细信息。",
+    "envTitle": "每个微服务的环境变量",
+    "envDescription": "保存后，DockPilot 会安全地重新创建容器并做好回滚准备。",
+    "addVariable": "+ 添加变量",
+    "saveAndRecreate": "保存并重新创建",
+    "envApplied": "应用变量",
+    "messages": {
+      "started": "容器启动",
+      "stopped": "集装箱停止",
+      "restarted": "容器已重启",
+      "envApplied": "变量应用成功",
+      "envAppliedBackup": "应用变量。备份：{{backup}}",
+      "available": "可用的",
+      "envError": "更新变量时出错"
+    }
+  },
+  "supportPage": {
+    "title": "支持",
+    "subtitle": "有关操作事件、Cloudflare 身份验证和隧道错误的帮助中心。",
+    "checklist": {
+      "title": "快速诊断清单",
+      "items": {
+        "0": "检查容器状态和 DockPilot 运行状况检查。",
+        "1": "确认 Cloudflare 权限（隧道编辑 + 区域 DNS 编辑 + 区域读取）。",
+        "2": "创建/启动隧道时查看“dockpilot-tunnel-control”日志。",
+        "3": "如果隧道失败，请共享完整消息和“tunnelId”。"
+      }
+    },
+    "include": {
+      "title": "寻求帮助时应包括哪些内容",
+      "items": {
+        "0": "安装的 DockPilot 版本和上次升级的日期。",
+        "1": "执行的命令和收到的确切错误消息。",
+        "2": "相关日志输出（不暴露令牌或秘密）。",
+        "3": "适用时的 UI 屏幕截图。"
+      }
+    },
+    "channelsTitle": "支持渠道",
+    "channels": {
+      "bug": {
+        "title": "报告错误",
+        "description": "包括屏幕截图、日志和重现步骤。"
+      },
+      "feature": {
+        "title": "请求改进",
+        "description": "分享用例和预期结果。"
+      }
+    }
+  },
+  "documentationPage": {
+    "title": "文档",
+    "subtitle": "DockPilot 操作快速指南：安装、升级、隧道和故障排除。",
+    "commandsTitle": "有用的命令",
+    "bestPracticesTitle": "最佳实践",
+    "bestPractices": {
+      "items": {
+        "0": "保持 Cloudflare 令牌具有最低权限和正确的区域。",
+        "1": "在重大升级之前验证备份。",
+        "2": "当状态为错误/非活动时监视隧道控制日志。"
+      }
+    },
+    "linksTitle": "链接",
+    "links": {
+      "api": {
+        "title": "API参考",
+        "description": "用于自动化任务和可观察性的可用端点。"
+      },
+      "github": {
+        "title": "GitHub 存储库",
+        "description": "源代码、变更日志和部署最佳实践。"
+      }
+    }
+  }
 }

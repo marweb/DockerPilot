@@ -52,7 +52,7 @@ interface ChartProps {
   isEmpty?: boolean;
   emptyMessage?: string;
   loadingMessage?: string;
-  customTooltip?: React.ComponentType<TooltipProps<number, string>>;
+  customTooltip?: (props: TooltipProps<number, string>) => React.ReactNode;
 }
 
 const defaultColors = [

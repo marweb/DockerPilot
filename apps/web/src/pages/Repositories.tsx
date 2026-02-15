@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { CheckCircle2, Copy, GitBranch, KeyRound, Play, RefreshCw, Shield } from 'lucide-react';
 import api from '../api/client';
@@ -17,6 +18,7 @@ type Repository = {
 };
 
 export default function Repositories() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     name: '',
@@ -76,11 +78,11 @@ export default function Repositories() {
       return response.data?.data as Repository;
     },
     onSuccess: () => {
-      setMessage('Repositorio creado correctamente');
+      setMessage(t('repositoriesPage.messages.created'));
       queryClient.invalidateQueries({ queryKey: ['repos'] });
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al crear repositorio');
+      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.create'));
     },
   });
 
@@ -89,9 +91,11 @@ export default function Repositories() {
       const response = await api.post(`/repos/${repoId}/test-connection`);
       return response.data;
     },
-    onSuccess: () => setMessage('Conexión validada correctamente'),
+    onSuccess: () => setMessage(t('repositoriesPage.messages.connectionOk')),
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al validar conexión');
+      setMessage(
+        (error as { message?: string })?.message || t('repositoriesPage.errors.connection')
+      );
     },
   });
 
@@ -100,9 +104,9 @@ export default function Repositories() {
       const response = await api.post(`/repos/${repoId}/sync`);
       return response.data;
     },
-    onSuccess: () => setMessage('Repositorio sincronizado'),
+    onSuccess: () => setMessage(t('repositoriesPage.messages.synced')),
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al sincronizar repositorio');
+      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.sync'));
     },
   });
 
@@ -114,10 +118,10 @@ export default function Repositories() {
       return response.data;
     },
     onSuccess: (data: { message?: string }) => {
-      setMessage(data?.message || 'Deploy completado');
+      setMessage(data?.message || t('repositoriesPage.messages.deployDone'));
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al desplegar');
+      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.deploy'));
     },
   });
 
@@ -128,10 +132,10 @@ export default function Repositories() {
     },
     onSuccess: (key) => {
       setPublicKey(key);
-      setMessage('Clave pública generada');
+      setMessage(t('repositoriesPage.messages.sshReady'));
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al obtener clave SSH');
+      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.sshKey'));
     },
   });
 
@@ -147,19 +151,19 @@ export default function Repositories() {
     },
     onSuccess: (data) => {
       setGithubDevice(data);
-      setMessage('Flujo GitHub iniciado. Completa el código en la URL indicada.');
+      setMessage(t('repositoriesPage.messages.githubStarted'));
       queryClient.invalidateQueries({ queryKey: ['repos-oauth-status'] });
     },
     onError: (error: unknown) => {
       setMessage(
-        (error as { message?: string })?.message || 'No se pudo iniciar GitHub device flow'
+        (error as { message?: string })?.message || t('repositoriesPage.errors.githubStart')
       );
     },
   });
 
   const githubPollMutation = useMutation({
     mutationFn: async () => {
-      if (!githubDevice) throw new Error('GitHub device flow no iniciado');
+      if (!githubDevice) throw new Error(t('repositoriesPage.errors.githubNotStarted'));
       const response = await api.post('/repos/oauth/github/device/poll', {
         deviceCode: githubDevice.device_code,
       });
@@ -171,14 +175,24 @@ export default function Repositories() {
     },
     onSuccess: (data) => {
       if (data.pending) {
-        setMessage(`GitHub pendiente: ${data.error || 'authorization_pending'}`);
+        setMessage(
+          t('repositoriesPage.messages.githubPending', {
+            error: data.error || 'authorization_pending',
+          })
+        );
         return;
       }
-      setMessage(`GitHub conectado: ${data.connection?.username || 'ok'}`);
+      setMessage(
+        t('repositoriesPage.messages.githubConnected', {
+          username: data.connection?.username || 'ok',
+        })
+      );
       setGithubDevice(null);
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al validar GitHub device flow');
+      setMessage(
+        (error as { message?: string })?.message || t('repositoriesPage.errors.githubPoll')
+      );
     },
   });
 
@@ -194,19 +208,19 @@ export default function Repositories() {
     },
     onSuccess: (data) => {
       setGitlabDevice(data);
-      setMessage('Flujo GitLab iniciado. Completa el código en la URL indicada.');
+      setMessage(t('repositoriesPage.messages.gitlabStarted'));
       queryClient.invalidateQueries({ queryKey: ['repos-oauth-status'] });
     },
     onError: (error: unknown) => {
       setMessage(
-        (error as { message?: string })?.message || 'No se pudo iniciar GitLab device flow'
+        (error as { message?: string })?.message || t('repositoriesPage.errors.gitlabStart')
       );
     },
   });
 
   const gitlabPollMutation = useMutation({
     mutationFn: async () => {
-      if (!gitlabDevice) throw new Error('GitLab device flow no iniciado');
+      if (!gitlabDevice) throw new Error(t('repositoriesPage.errors.gitlabNotStarted'));
       const response = await api.post('/repos/oauth/gitlab/device/poll', {
         deviceCode: gitlabDevice.device_code,
       });
@@ -218,43 +232,61 @@ export default function Repositories() {
     },
     onSuccess: (data) => {
       if (data.pending) {
-        setMessage(`GitLab pendiente: ${data.error || 'authorization_pending'}`);
+        setMessage(
+          t('repositoriesPage.messages.gitlabPending', {
+            error: data.error || 'authorization_pending',
+          })
+        );
         return;
       }
-      setMessage(`GitLab conectado: ${data.connection?.username || 'ok'}`);
+      setMessage(
+        t('repositoriesPage.messages.gitlabConnected', {
+          username: data.connection?.username || 'ok',
+        })
+      );
       setGitlabDevice(null);
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al validar GitLab device flow');
+      setMessage(
+        (error as { message?: string })?.message || t('repositoriesPage.errors.gitlabPoll')
+      );
     },
   });
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Repositorios</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          {t('repositoriesPage.title')}
+        </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Deploy desde repositorios manuales (públicos o privados). OAuth es opcional.
+          {t('repositoriesPage.subtitle')}
         </p>
       </div>
 
       <div className="card">
         <div className="card-header">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-            Integraciones OAuth (opcional)
+            {t('repositoriesPage.oauth.title')}
           </h2>
         </div>
         <div className="card-body text-sm text-gray-600 dark:text-gray-300 space-y-2">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary-600" />
-            URL pública disponible: {oauthStatus?.hasPublicUrl ? 'Sí' : 'No'}
+            {t('repositoriesPage.oauth.publicUrl')}:{' '}
+            {oauthStatus?.hasPublicUrl ? t('common.yes') : t('common.no')}
           </div>
-          <div>GitHub App configurada: {oauthStatus?.githubAppConfigured ? 'Sí' : 'No'}</div>
-          <div>GitLab OAuth configurada: {oauthStatus?.gitlabOAuthConfigured ? 'Sí' : 'No'}</div>
+          <div>
+            {t('repositoriesPage.oauth.githubConfigured')}:{' '}
+            {oauthStatus?.githubAppConfigured ? t('common.yes') : t('common.no')}
+          </div>
+          <div>
+            {t('repositoriesPage.oauth.gitlabConfigured')}:{' '}
+            {oauthStatus?.gitlabOAuthConfigured ? t('common.yes') : t('common.no')}
+          </div>
           {!oauthStatus?.hasPublicUrl && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 p-3 text-amber-700 dark:text-amber-300">
-              Sin URL pública, usa flujo manual (SSH o token HTTPS). OAuth/webhooks quedan
-              desactivados.
+              {t('repositoriesPage.oauth.noPublicUrlWarning')}
             </div>
           )}
 
@@ -264,29 +296,33 @@ export default function Repositories() {
               onClick={() => githubStartMutation.mutate()}
               disabled={!oauthStatus?.githubAppConfigured || githubStartMutation.isLoading}
             >
-              Conectar GitHub (Device Flow)
+              {t('repositoriesPage.oauth.connectGithub')}
             </button>
             <button
               className="btn btn-secondary btn-sm"
               onClick={() => gitlabStartMutation.mutate()}
               disabled={!oauthStatus?.gitlabOAuthConfigured || gitlabStartMutation.isLoading}
             >
-              Conectar GitLab (Device Flow)
+              {t('repositoriesPage.oauth.connectGitlab')}
             </button>
           </div>
 
           {githubDevice && (
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 mt-2">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                GitHub Device Flow
+                {t('repositoriesPage.oauth.githubDeviceTitle')}
               </p>
-              <p className="text-xs mt-1">Abre: {githubDevice.verification_uri}</p>
-              <p className="text-xs">Código: {githubDevice.user_code}</p>
+              <p className="text-xs mt-1">
+                {t('repositoriesPage.oauth.openUrl')}: {githubDevice.verification_uri}
+              </p>
+              <p className="text-xs">
+                {t('repositoriesPage.oauth.code')}: {githubDevice.user_code}
+              </p>
               <button
                 className="btn btn-secondary btn-sm mt-2"
                 onClick={() => githubPollMutation.mutate()}
               >
-                Verificar GitHub
+                {t('repositoriesPage.oauth.verifyGithub')}
               </button>
             </div>
           )}
@@ -294,15 +330,19 @@ export default function Repositories() {
           {gitlabDevice && (
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 mt-2">
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                GitLab Device Flow
+                {t('repositoriesPage.oauth.gitlabDeviceTitle')}
               </p>
-              <p className="text-xs mt-1">Abre: {gitlabDevice.verification_uri}</p>
-              <p className="text-xs">Código: {gitlabDevice.user_code}</p>
+              <p className="text-xs mt-1">
+                {t('repositoriesPage.oauth.openUrl')}: {gitlabDevice.verification_uri}
+              </p>
+              <p className="text-xs">
+                {t('repositoriesPage.oauth.code')}: {gitlabDevice.user_code}
+              </p>
               <button
                 className="btn btn-secondary btn-sm mt-2"
                 onClick={() => gitlabPollMutation.mutate()}
               >
-                Verificar GitLab
+                {t('repositoriesPage.oauth.verifyGitlab')}
               </button>
             </div>
           )}
@@ -311,7 +351,9 @@ export default function Repositories() {
 
       <div className="card">
         <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">Nuevo repositorio</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+            {t('repositoriesPage.newRepo.title')}
+          </h2>
         </div>
         <div className="card-body space-y-3">
           {message && (
@@ -320,7 +362,7 @@ export default function Repositories() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <input
               className="input"
-              placeholder="Nombre"
+              placeholder={t('repositoriesPage.newRepo.name')}
               value={form.name}
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
             />
@@ -329,25 +371,25 @@ export default function Repositories() {
               value={form.provider}
               onChange={(e) => setForm((prev) => ({ ...prev, provider: e.target.value }))}
             >
-              <option value="generic">Genérico</option>
-              <option value="github">GitHub</option>
-              <option value="gitlab">GitLab</option>
+              <option value="generic">{t('repositoriesPage.newRepo.providerGeneric')}</option>
+              <option value="github">{t('repositoriesPage.newRepo.providerGithub')}</option>
+              <option value="gitlab">{t('repositoriesPage.newRepo.providerGitlab')}</option>
             </select>
             <input
               className="input md:col-span-2"
-              placeholder="URL repositorio"
+              placeholder={t('repositoriesPage.newRepo.repoUrl')}
               value={form.repoUrl}
               onChange={(e) => setForm((prev) => ({ ...prev, repoUrl: e.target.value }))}
             />
             <input
               className="input"
-              placeholder="Branch (main)"
+              placeholder={t('repositoriesPage.newRepo.branch')}
               value={form.branch}
               onChange={(e) => setForm((prev) => ({ ...prev, branch: e.target.value }))}
             />
             <input
               className="input"
-              placeholder="Ruta compose (docker-compose.yml)"
+              placeholder={t('repositoriesPage.newRepo.composePath')}
               value={form.composePath}
               onChange={(e) => setForm((prev) => ({ ...prev, composePath: e.target.value }))}
             />
@@ -356,22 +398,22 @@ export default function Repositories() {
               value={form.visibility}
               onChange={(e) => setForm((prev) => ({ ...prev, visibility: e.target.value }))}
             >
-              <option value="public">Público</option>
-              <option value="private">Privado</option>
+              <option value="public">{t('repositoriesPage.newRepo.visibilityPublic')}</option>
+              <option value="private">{t('repositoriesPage.newRepo.visibilityPrivate')}</option>
             </select>
             <select
               className="input"
               value={form.authType}
               onChange={(e) => setForm((prev) => ({ ...prev, authType: e.target.value }))}
             >
-              <option value="none">Sin auth (público)</option>
-              <option value="ssh">SSH key</option>
-              <option value="https_token">HTTPS token</option>
+              <option value="none">{t('repositoriesPage.newRepo.authNone')}</option>
+              <option value="ssh">{t('repositoriesPage.newRepo.authSsh')}</option>
+              <option value="https_token">{t('repositoriesPage.newRepo.authHttpsToken')}</option>
             </select>
             {form.authType === 'https_token' && (
               <input
                 className="input md:col-span-2"
-                placeholder="Token HTTPS"
+                placeholder={t('repositoriesPage.newRepo.httpsToken')}
                 type="password"
                 value={form.httpsToken}
                 onChange={(e) => setForm((prev) => ({ ...prev, httpsToken: e.target.value }))}
@@ -383,7 +425,7 @@ export default function Repositories() {
                 checked={form.autoDeploy}
                 onChange={(e) => setForm((prev) => ({ ...prev, autoDeploy: e.target.checked }))}
               />
-              Autodeploy (requiere webhook y endpoint público verificable)
+              {t('repositoriesPage.newRepo.autoDeploy')}
             </label>
           </div>
           <button
@@ -391,7 +433,7 @@ export default function Repositories() {
             onClick={() => createMutation.mutate()}
             disabled={createMutation.isLoading}
           >
-            Crear repositorio
+            {t('repositoriesPage.newRepo.createButton')}
           </button>
         </div>
       </div>
@@ -399,13 +441,15 @@ export default function Repositories() {
       <div className="card">
         <div className="card-header">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-            Repositorios registrados
+            {t('repositoriesPage.registered.title')}
           </h2>
         </div>
         <div className="card-body p-0">
           {(repos?.length || 0) === 0 ? (
             <div className="p-6 text-sm text-gray-500 dark:text-gray-400">
-              {isLoading ? 'Cargando...' : 'No hay repositorios registrados'}
+              {isLoading
+                ? t('repositoriesPage.registered.loading')
+                : t('repositoriesPage.registered.empty')}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -413,19 +457,19 @@ export default function Repositories() {
                 <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Nombre
+                      {t('repositoriesPage.registered.columns.name')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Repo
+                      {t('repositoriesPage.registered.columns.repo')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Branch
+                      {t('repositoriesPage.registered.columns.branch')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Auth
+                      {t('repositoriesPage.registered.columns.auth')}
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Acciones
+                      {t('repositoriesPage.registered.columns.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -453,14 +497,14 @@ export default function Repositories() {
                           onClick={() => testMutation.mutate(repo.id)}
                         >
                           <CheckCircle2 className="h-4 w-4 mr-1" />
-                          Probar
+                          {t('repositoriesPage.actions.test')}
                         </button>
                         <button
                           className="btn btn-secondary btn-sm"
                           onClick={() => syncMutation.mutate(repo.id)}
                         >
                           <RefreshCw className="h-4 w-4 mr-1" />
-                          Sync
+                          {t('repositoriesPage.actions.sync')}
                         </button>
                         <button
                           className="btn btn-primary btn-sm"
@@ -470,7 +514,7 @@ export default function Repositories() {
                           }}
                         >
                           <Play className="h-4 w-4 mr-1" />
-                          Deploy
+                          {t('repositoriesPage.actions.deploy')}
                         </button>
                         {repo.authType === 'ssh' && (
                           <button
@@ -478,7 +522,7 @@ export default function Repositories() {
                             onClick={() => loadPublicKeyMutation.mutate(repo.id)}
                           >
                             <KeyRound className="h-4 w-4 mr-1" />
-                            Clave SSH
+                            {t('repositoriesPage.actions.sshKey')}
                           </button>
                         )}
                       </td>
@@ -493,7 +537,9 @@ export default function Repositories() {
 
       <div className="card">
         <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">Deploy rápido</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+            {t('repositoriesPage.quickDeploy.title')}
+          </h2>
         </div>
         <div className="card-body grid grid-cols-1 md:grid-cols-3 gap-3">
           <select
@@ -501,7 +547,7 @@ export default function Repositories() {
             value={selectedRepo}
             onChange={(e) => setSelectedRepo(e.target.value)}
           >
-            <option value="">Seleccionar repositorio</option>
+            <option value="">{t('repositoriesPage.quickDeploy.selectRepo')}</option>
             {(repos || []).map((repo) => (
               <option key={repo.id} value={repo.id}>
                 {repo.name}
@@ -510,7 +556,7 @@ export default function Repositories() {
           </select>
           <input
             className="input"
-            placeholder="Nombre de stack (opcional)"
+            placeholder={t('repositoriesPage.quickDeploy.stackName')}
             value={stackName}
             onChange={(e) => setStackName(e.target.value)}
           />
@@ -519,7 +565,7 @@ export default function Repositories() {
             disabled={!selectedRepo || deployMutation.isLoading}
             onClick={() => deployMutation.mutate(selectedRepo)}
           >
-            Deploy desde repo
+            {t('repositoriesPage.quickDeploy.button')}
           </button>
         </div>
       </div>
@@ -527,16 +573,18 @@ export default function Repositories() {
       {publicKey && (
         <div className="card">
           <div className="card-header flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900 dark:text-gray-100">Clave pública SSH</h2>
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+              {t('repositoriesPage.ssh.title')}
+            </h2>
             <button
               className="btn btn-secondary btn-sm"
               onClick={() => {
                 navigator.clipboard.writeText(publicKey);
-                setMessage('Clave copiada al portapapeles');
+                setMessage(t('repositoriesPage.messages.sshCopied'));
               }}
             >
               <Copy className="h-4 w-4 mr-1" />
-              Copiar
+              {t('repositoriesPage.ssh.copy')}
             </button>
           </div>
           <div className="card-body">

@@ -62,7 +62,10 @@
     "quickActions": "Actions Rapides",
     "pullImage": "Télécharger Image",
     "createContainer": "Créer Conteneur",
-    "prune": "Nettoyer Système"
+    "prune": "Nettoyer Système",
+    "pruneConfirmBody": "Unused Docker resources will be removed (stopped containers, dangling images, unused volumes and networks).",
+    "pruneSuccess": "Prune System: {{total}} items removed",
+    "pruneError": "Could not complete system cleanup"
   },
   "containers": {
     "title": "Conteneurs",
@@ -383,7 +386,21 @@
     "passwordChangeFailed": "Impossible de changer le mot de passe",
     "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
     "passwordMinLength": "Le nouveau mot de passe doit comporter au moins 8 caractères",
-    "passwordAllRequired": "Veuillez remplir tous les champs de mot de passe"
+    "passwordAllRequired": "Veuillez remplir tous les champs de mot de passe",
+    "upgradeModalTitle": "Confirmer la mise à niveau",
+    "upgradeModalDescription": "Vérifiez le changement de version avant de démarrer le processus de mise à jour.",
+    "upgradeModalCurrent": "Version actuelle",
+    "upgradeModalTarget": "Version cible",
+    "upgradeModalImpact": "Cette opération redémarre les services DockPilot et peut interrompre temporairement l'accès.",
+    "upgradeCancel": "Annuler",
+    "upgradeConfirmButton": "Démarrer la mise à niveau",
+    "upgradeProgressPreparing": "Préparation de la tâche de mise à niveau...",
+    "upgradeProgressDownloading": "Téléchargement de la nouvelle version et mise à jour des conteneurs...",
+    "upgradeProgressRestarting": "Redémarrage des services. En attendant le retour de DockPilot...",
+    "upgradeProgressFinalizing": "Finalisation de la mise à niveau et validation du statut...",
+    "upgradeSuccessTitle": "Félicitations! Mise à niveau terminée",
+    "upgradeSuccessDescription": "DockPilot exécute désormais la version {{version}}.",
+    "upgradeSuccessReloading": "Rechargement de l'interface en quelques secondes..."
   },
   "errors": {
     "pageNotFound": "Page Non Trouvée",
@@ -423,5 +440,301 @@
     "enabled": "Activé",
     "disabled": "Désactivé"
   },
-  "select_language": "Sélectionnez la langue"
+  "select_language": "Sélectionnez la langue",
+  "composePage": {
+    "title": "Composer Déployer",
+    "subtitle": "Flux recommandé : définir la source, les variables, valider les conflits et déployer.",
+    "tabs": {
+      "source": "1. Origine",
+      "env": "2. Environnement",
+      "validate": "3. Vérification",
+      "deploy": "4. Déployer"
+    },
+    "errors": {
+      "validateFailed": "Impossible de valider la configuration",
+      "deployFailed": "Impossible de déployer la pile"
+    },
+    "placeholders": {
+      "stackName": "Nom du microservice/pile (par exemple, api-core)"
+    },
+    "env": {
+      "empty": "Aucune variable définie. Ajoutez des variables pour ce déploiement.",
+      "addVariable": "+ Ajouter une variable",
+      "secret": "Secrète"
+    },
+    "validate": {
+      "description": "Exécutez un contrôle en amont pour détecter les conflits avant le déploiement.",
+      "button": "Valider la configuration",
+      "resultLabel": "Résultat:",
+      "valid": "valide",
+      "invalid": "avec des erreurs"
+    },
+    "deploy": {
+      "needsPreflight": "Vous devez exécuter une validation en amont avant le déploiement.",
+      "preflightReady": "Validation prête. Empreinte digitale:",
+      "button": "Déployer la pile"
+    },
+    "stacks": {
+      "empty": "Aucune pile de composition trouvée",
+      "status": "Statut",
+      "services": "Services actifs",
+      "created": "Créé",
+      "actions": "Actes",
+      "stack": "Empiler"
+    },
+    "actions": {
+      "stop": "Arrêt",
+      "logs": "Journaux",
+      "delete": "Supprimer"
+    },
+    "logs": {
+      "title": "Journaux pour {{stack}}",
+      "empty": "Aucun journal"
+    }
+  },
+  "repositoriesPage": {
+    "title": "Dépôts",
+    "subtitle": "Déployez à partir de référentiels manuels (publics ou privés). OAuth est facultatif.",
+    "messages": {
+      "created": "Dépôt créé avec succès",
+      "connectionOk": "Connexion validée avec succès",
+      "synced": "Référentiel synchronisé",
+      "deployDone": "Déploiement terminé",
+      "sshReady": "Clé publique générée",
+      "githubStarted": "Le flux GitHub a démarré. Complétez le code dans l'URL indiquée.",
+      "githubPending": "GitHub en attente : {{error}}",
+      "githubConnected": "GitHub connecté : {{username}}",
+      "gitlabStarted": "Le flux GitLab a démarré. Complétez le code dans l'URL indiquée.",
+      "gitlabPending": "GitLab en attente : {{error}}",
+      "gitlabConnected": "GitLab connecté : {{username}}",
+      "sshCopied": "Clé copiée dans le presse-papiers"
+    },
+    "errors": {
+      "create": "Erreur lors de la création du référentiel",
+      "connection": "Erreur lors de la validation de la connexion",
+      "sync": "Erreur de synchronisation du référentiel",
+      "deploy": "Erreur de déploiement",
+      "sshKey": "Erreur lors de la récupération de la clé SSH",
+      "githubStart": "Impossible de démarrer le flux de périphériques GitHub",
+      "githubNotStarted": "Le flux de périphériques GitHub n'a pas démarré",
+      "githubPoll": "Erreur lors de la validation du flux de périphérique GitHub",
+      "gitlabStart": "Impossible de démarrer le flux de périphériques GitLab",
+      "gitlabNotStarted": "Le flux de périphériques GitLab n'a pas démarré",
+      "gitlabPoll": "Erreur lors de la validation du flux de périphérique GitLab"
+    },
+    "oauth": {
+      "title": "Intégrations OAuth (facultatif)",
+      "publicUrl": "URL publique disponible",
+      "githubConfigured": "Application GitHub configurée",
+      "gitlabConfigured": "GitLab OAuth configuré",
+      "noPublicUrlWarning": "Sans URL publique, utilisez le flux manuel (jeton SSH ou HTTPS). OAuth/webhooks restent désactivés.",
+      "connectGithub": "Connectez GitHub (flux de périphériques)",
+      "connectGitlab": "Connectez GitLab (flux de périphériques)",
+      "githubDeviceTitle": "Flux de périphériques GitHub",
+      "gitlabDeviceTitle": "Flux de périphériques GitLab",
+      "openUrl": "Ouvrir",
+      "code": "Code d'accès",
+      "verifyGithub": "Vérifier GitHub",
+      "verifyGitlab": "Vérifier GitLab"
+    },
+    "newRepo": {
+      "title": "Nouveau référentiel",
+      "name": "Nom",
+      "providerGeneric": "Générique",
+      "repoUrl": "URL du référentiel",
+      "branch": "Branche (principale)",
+      "composePath": "Chemin de composition (docker-compose.yml)",
+      "visibilityPublic": "Publique",
+      "visibilityPrivate": "Privé",
+      "authNone": "Aucune authentification (publique)",
+      "httpsToken": "Jeton HTTPS",
+      "autoDeploy": "Déploiement automatique (nécessite un webhook et un point de terminaison public vérifiable)",
+      "createButton": "Créer un référentiel",
+      "providerGithub": "Fournisseur GitHub",
+      "providerGitlab": "Fournisseur GitLab",
+      "authSsh": "Clé SSH",
+      "authHttpsToken": "Jeton HTTPS"
+    },
+    "registered": {
+      "title": "Dépôts enregistrés",
+      "loading": "Chargement...",
+      "empty": "Aucun référentiel enregistré",
+      "columns": {
+        "name": "Nom",
+        "actions": "Actes",
+        "repo": "Dépôt",
+        "branch": "Bifurquer",
+        "auth": "Authentification"
+      }
+    },
+    "actions": {
+      "test": "Tester",
+      "sshKey": "Clé SSH",
+      "sync": "Synchroniser",
+      "deploy": "Déployer"
+    },
+    "quickDeploy": {
+      "title": "Déploiement rapide",
+      "selectRepo": "Sélectionnez le référentiel",
+      "stackName": "Nom de la pile (facultatif)",
+      "button": "Déployer à partir du référentiel"
+    },
+    "ssh": {
+      "title": "Clé publique SSH",
+      "copy": "Copie"
+    }
+  },
+  "tunnelsPage": {
+    "errors": {
+      "authCloudflare": "Impossible de s'authentifier avec Cloudflare",
+      "oauthStart": "Impossible de démarrer OAuth",
+      "selectService": "Sélectionnez un microservice pour lier le tunnel",
+      "hostnameRequired": "Entrez un nom d'hôte public (par exemple api.mydomain.com)",
+      "serviceNotFound": "Microservice sélectionné introuvable",
+      "serviceAlreadyLinked": "Le microservice est déjà lié au tunnel \"{{name}}\". Un seul tunnel est autorisé par microservice.",
+      "invalidTunnelName": "Impossible de générer un nom de tunnel valide pour le microservice",
+      "createTunnel": "Impossible de créer un tunnel",
+      "changeAccount": "Impossible de changer de compte actif",
+      "startTunnel": "Impossible de démarrer le tunnel",
+      "stopTunnel": "Impossible d'arrêter le tunnel",
+      "deleteTunnel": "Impossible de supprimer le tunnel",
+      "updateAutostart": "Impossible de mettre à jour le démarrage automatique du tunnel"
+    },
+    "status": {
+      "active": "Actif",
+      "creating": "De liaison",
+      "inactive": "Inactif",
+      "error": "Erreur"
+    },
+    "debug": {
+      "title": "Diagnostic de connexion Cloudflare",
+      "hide": "Cacher",
+      "show": "Montrer",
+      "empty": "Aucun événement pour l'instant. Essayez de vous connecter et actualisez pour voir les détails.",
+      "columns": {
+        "time": "Temps",
+        "action": "Événement",
+        "status": "Statut",
+        "message": "Détail"
+      },
+      "ok": "d'accord",
+      "error": "erreur"
+    },
+    "auth": {
+      "connectedAs": "Connecté au compte",
+      "activeAccount": "Compte actif",
+      "logout": "Se déconnecter",
+      "loginHelp": "Connectez-vous avec Cloudflare pour créer et gérer des tunnels.",
+      "accountIdPlaceholder": "ID de compte Cloudflare (facultatif)",
+      "loginWithToken": "Connectez-vous avec le jeton API",
+      "startOauth": "Démarrer OAuth",
+      "openOauthLink": "Ouvrez ce lien pour terminer OAuth :",
+      "requiredWarning": "Vous devez vous authentifier auprès de Cloudflare pour afficher/créer des tunnels.",
+      "title": "Authentification Cloudflare",
+      "via": "par",
+      "unknown": "inconnu",
+      "tokenPlaceholder": "Jeton API Cloudflare"
+    },
+    "management": {
+      "title": "Gestion des tunnels",
+      "createTitle": "Créez votre tunnel en 3 étapes",
+      "createSubtitle": "1) Choisissez le microservice, 2) définissez le nom d'hôte public, 3) créez. DockPilot configure automatiquement l'entrée + DNS CNAME.",
+      "service": "Service",
+      "selectService": "Sélectionnez un microservice",
+      "portPlaceholder": "Port interne (par exemple 80)",
+      "hostname": "Nom d'hôte public",
+      "hostnamePlaceholder": "par ex. api.mondomaine.com",
+      "zonePlaceholder": "ID de zone (facultatif)",
+      "finish": "Finition",
+      "namePlaceholder": "Nom du tunnel (facultatif)",
+      "autoStart": "Démarrage automatique à la création et au redémarrage de DockPilot",
+      "preview": "Aperçu de la destination",
+      "createButton": "Créez, liez et démarrez"
+    },
+    "cards": {
+      "hostname": "Nom d'hôte public",
+      "service": "Service",
+      "targetService": "Service cible",
+      "temporaryUrl": "URL temporaire",
+      "temporaryUrlN/A": "Non applicable (vous utilisez votre propre nom d'hôte)",
+      "autoStartLabel": "Démarrage automatique {{status}}",
+      "autoStartEnabled": "activé",
+      "autoStartDisabled": "désactivé"
+    }
+  },
+  "containerDetailPage": {
+    "title": "Microservice/Conteneur",
+    "loadError": "Impossible de charger les détails du conteneur.",
+    "envTitle": "Variables d'environnement par microservice",
+    "envDescription": "Une fois enregistré, DockPilot recrée le conteneur en toute sécurité et prépare une restauration.",
+    "addVariable": "+ Ajouter une variable",
+    "saveAndRecreate": "Enregistrer et recréer",
+    "envApplied": "Variables appliquées",
+    "messages": {
+      "started": "Conteneur démarré",
+      "stopped": "Conteneur arrêté",
+      "restarted": "Conteneur redémarré",
+      "envApplied": "Variables appliquées avec succès",
+      "envAppliedBackup": "Variables appliquées. Sauvegarde : {{backup}}",
+      "available": "disponible",
+      "envError": "Erreur lors de la mise à jour des variables"
+    }
+  },
+  "supportPage": {
+    "title": "Soutien",
+    "subtitle": "Centre d'aide pour les incidents opérationnels, l'authentification Cloudflare et les erreurs de tunnel.",
+    "checklist": {
+      "title": "Liste de contrôle de diagnostic rapide",
+      "items": {
+        "0": "Vérifiez l’état du conteneur et les contrôles de santé DockPilot.",
+        "1": "Confirmez les autorisations Cloudflare (Tunnel Edit + Zone DNS Edit + Zone Read).",
+        "2": "Consultez les journaux « dockpilot-tunnel-control » lors de la création/démarrage de tunnels.",
+        "3": "Si un tunnel échoue, partagez le message complet et le « tunnelId »."
+      }
+    },
+    "include": {
+      "title": "Que faut-il inclure lors d'une demande d'aide",
+      "items": {
+        "0": "Version de DockPilot installée et date de la dernière mise à niveau.",
+        "1": "Commandes exécutées et message d'erreur exact reçu.",
+        "2": "Sortie de journaux pertinents (sans exposer de jetons ou de secrets).",
+        "3": "Capture d'écran de l'interface utilisateur, le cas échéant."
+      }
+    },
+    "channelsTitle": "Canaux d'assistance",
+    "channels": {
+      "bug": {
+        "title": "Signaler un bug",
+        "description": "Incluez des captures d'écran, des journaux et des étapes à reproduire."
+      },
+      "feature": {
+        "title": "Demander une amélioration",
+        "description": "Partagez le cas d'utilisation et le résultat attendu."
+      }
+    }
+  },
+  "documentationPage": {
+    "title": "Documentation produit",
+    "subtitle": "Guide rapide pour utiliser DockPilot : installation, mises à niveau, tunnels et dépannage.",
+    "commandsTitle": "Commandes utiles",
+    "bestPracticesTitle": "Meilleures pratiques",
+    "bestPractices": {
+      "items": {
+        "0": "Conservez les jetons Cloudflare avec des autorisations minimales et une zone correcte.",
+        "1": "Validez les sauvegardes avant les mises à niveau majeures.",
+        "2": "Surveillez les journaux de contrôle du tunnel lorsque l’état est erreur/inactif."
+      }
+    },
+    "linksTitle": "Liens",
+    "links": {
+      "api": {
+        "title": "Référence API",
+        "description": "Points de terminaison disponibles pour automatiser les tâches et l'observabilité."
+      },
+      "github": {
+        "title": "Dépôt GitHub",
+        "description": "Code source, journal des modifications et bonnes pratiques de déploiement."
+      }
+    }
+  }
 }

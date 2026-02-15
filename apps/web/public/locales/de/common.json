@@ -62,7 +62,10 @@
     "quickActions": "Schnellaktionen",
     "pullImage": "Image herunterladen",
     "createContainer": "Container erstellen",
-    "prune": "System bereinigen"
+    "prune": "System bereinigen",
+    "pruneConfirmBody": "Unused Docker resources will be removed (stopped containers, dangling images, unused volumes and networks).",
+    "pruneSuccess": "Prune System: {{total}} items removed",
+    "pruneError": "Could not complete system cleanup"
   },
   "containers": {
     "title": "Container",
@@ -383,7 +386,21 @@
     "passwordChangeFailed": "Das Passwort konnte nicht geändert werden",
     "passwordMismatch": "Neue Passwörter stimmen nicht überein",
     "passwordMinLength": "Das neue Passwort muss mindestens 8 Zeichen lang sein",
-    "passwordAllRequired": "Bitte füllen Sie alle Passwortfelder aus"
+    "passwordAllRequired": "Bitte füllen Sie alle Passwortfelder aus",
+    "upgradeModalTitle": "Bestätigen Sie das Upgrade",
+    "upgradeModalDescription": "Überprüfen Sie die Versionsänderung, bevor Sie mit dem Aktualisierungsvorgang beginnen.",
+    "upgradeModalCurrent": "Aktuelle Version",
+    "upgradeModalTarget": "Zielversion",
+    "upgradeModalImpact": "Dieser Vorgang startet die DockPilot-Dienste neu und kann den Zugriff vorübergehend unterbrechen.",
+    "upgradeCancel": "Stornieren",
+    "upgradeConfirmButton": "Starten Sie das Upgrade",
+    "upgradeProgressPreparing": "Upgrade-Aufgabe wird vorbereitet...",
+    "upgradeProgressDownloading": "Neue Version herunterladen und Container aktualisieren...",
+    "upgradeProgressRestarting": "Dienste neu starten. Ich warte darauf, dass DockPilot zurückkommt ...",
+    "upgradeProgressFinalizing": "Das Upgrade wird abgeschlossen und der Status wird überprüft...",
+    "upgradeSuccessTitle": "Glückwunsch! Upgrade abgeschlossen",
+    "upgradeSuccessDescription": "DockPilot führt jetzt die Version {{version}} aus.",
+    "upgradeSuccessReloading": "Die Benutzeroberfläche wird in wenigen Sekunden neu geladen ..."
   },
   "errors": {
     "pageNotFound": "Seite Nicht Gefunden",
@@ -423,5 +440,301 @@
     "enabled": "Ermöglicht",
     "disabled": "Deaktiviert"
   },
-  "select_language": "Sprache auswählen"
+  "select_language": "Sprache auswählen",
+  "composePage": {
+    "title": "Compose Deployment",
+    "subtitle": "Empfohlener Ablauf: Quelle und Variablen definieren, Konflikte validieren und bereitstellen.",
+    "tabs": {
+      "source": "1. Quelle",
+      "env": "2. Umwelt",
+      "validate": "3. Validierung",
+      "deploy": "4. Bereitstellen"
+    },
+    "errors": {
+      "validateFailed": "Die Konfiguration konnte nicht validiert werden",
+      "deployFailed": "Stack konnte nicht bereitgestellt werden"
+    },
+    "placeholders": {
+      "stackName": "Microservice-/Stack-Name (z. B. api-core)"
+    },
+    "env": {
+      "empty": "Keine Variablen definiert. Fügen Sie Variablen für diese Bereitstellung hinzu.",
+      "addVariable": "+ Variable hinzufügen",
+      "secret": "Geheimnis"
+    },
+    "validate": {
+      "description": "Führen Sie Preflight aus, um Konflikte vor der Bereitstellung zu erkennen.",
+      "button": "Konfiguration validieren",
+      "resultLabel": "Ergebnis:",
+      "valid": "gültig",
+      "invalid": "mit Fehlern"
+    },
+    "deploy": {
+      "needsPreflight": "Sie müssen vor der Bereitstellung eine Preflight-Validierung durchführen.",
+      "preflightReady": "Validierung bereit. Fingerabdruck:",
+      "button": "Stapel bereitstellen"
+    },
+    "stacks": {
+      "empty": "Keine Compose-Stapel gefunden",
+      "status": "Zustand",
+      "services": "Dienstleistungen",
+      "created": "Erstellt",
+      "actions": "Aktionen",
+      "stack": "Stapel"
+    },
+    "actions": {
+      "stop": "Stoppen",
+      "logs": "Protokolle",
+      "delete": "Löschen"
+    },
+    "logs": {
+      "title": "Protokolle für {{stack}}",
+      "empty": "Keine Protokolle"
+    }
+  },
+  "repositoriesPage": {
+    "title": "Repositorien",
+    "subtitle": "Bereitstellung aus manuellen Repositorys (öffentlich oder privat). OAuth ist optional.",
+    "messages": {
+      "created": "Repository erfolgreich erstellt",
+      "connectionOk": "Verbindung erfolgreich validiert",
+      "synced": "Repository synchronisiert",
+      "deployDone": "Bereitstellung abgeschlossen",
+      "sshReady": "Öffentlicher Schlüssel generiert",
+      "githubStarted": "GitHub-Flow gestartet. Vervollständigen Sie den Code in der angegebenen URL.",
+      "githubPending": "GitHub ausstehend: {{error}}",
+      "githubConnected": "GitHub verbunden: {{username}}",
+      "gitlabStarted": "GitLab-Flow gestartet. Vervollständigen Sie den Code in der angegebenen URL.",
+      "gitlabPending": "GitLab ausstehend: {{error}}",
+      "gitlabConnected": "GitLab verbunden: {{username}}",
+      "sshCopied": "Schlüssel in die Zwischenablage kopiert"
+    },
+    "errors": {
+      "create": "Fehler beim Erstellen des Repositorys",
+      "connection": "Fehler beim Validieren der Verbindung",
+      "sync": "Fehler beim Synchronisieren des Repositorys",
+      "deploy": "Fehler beim Bereitstellen",
+      "sshKey": "Fehler beim Abrufen des SSH-Schlüssels",
+      "githubStart": "Der GitHub-Gerätefluss konnte nicht gestartet werden",
+      "githubNotStarted": "GitHub-Gerätefluss nicht gestartet",
+      "githubPoll": "Fehler beim Validieren des GitHub-Geräteflusses",
+      "gitlabStart": "Der GitLab-Gerätefluss konnte nicht gestartet werden",
+      "gitlabNotStarted": "GitLab-Gerätefluss nicht gestartet",
+      "gitlabPoll": "Fehler beim Validieren des GitLab-Geräteflusses"
+    },
+    "oauth": {
+      "title": "OAuth-Integrationen (optional)",
+      "publicUrl": "Öffentliche URL verfügbar",
+      "githubConfigured": "GitHub-App konfiguriert",
+      "gitlabConfigured": "GitLab OAuth konfiguriert",
+      "noPublicUrlWarning": "Ohne öffentliche URL verwenden Sie den manuellen Ablauf (SSH- oder HTTPS-Token). OAuth/Webhooks bleiben deaktiviert.",
+      "connectGithub": "GitHub verbinden (Gerätefluss)",
+      "connectGitlab": "GitLab verbinden (Gerätefluss)",
+      "githubDeviceTitle": "GitHub-Gerätefluss",
+      "gitlabDeviceTitle": "GitLab-Gerätefluss",
+      "openUrl": "Offen",
+      "code": "Freigabecode",
+      "verifyGithub": "Überprüfen Sie GitHub",
+      "verifyGitlab": "Überprüfen Sie GitLab"
+    },
+    "newRepo": {
+      "title": "Neues Repository",
+      "name": "Bezeichnung",
+      "providerGeneric": "Generisch",
+      "repoUrl": "Repository-URL",
+      "branch": "Zweig (Hauptzweig)",
+      "composePath": "Erstellungspfad (docker-compose.yml)",
+      "visibilityPublic": "Öffentlich",
+      "visibilityPrivate": "Privat",
+      "authNone": "Keine Authentifizierung (öffentlich)",
+      "httpsToken": "HTTPS-Token",
+      "autoDeploy": "Autodeploy (erfordert Webhook und überprüfbaren öffentlichen Endpunkt)",
+      "createButton": "Repository erstellen",
+      "providerGithub": "GitHub Anbieter",
+      "providerGitlab": "GitLab Anbieter",
+      "authSsh": "SSH-Schlüssel",
+      "authHttpsToken": "HTTPS-Token"
+    },
+    "registered": {
+      "title": "Registrierte Repositorys",
+      "loading": "Laden...",
+      "empty": "Keine Repositorys registriert",
+      "columns": {
+        "name": "Bezeichnung",
+        "actions": "Aktionen",
+        "repo": "Quell-Repository",
+        "branch": "Zweig",
+        "auth": "Authentifizierung"
+      }
+    },
+    "actions": {
+      "test": "Prüfen",
+      "sshKey": "SSH-Schlüssel",
+      "sync": "Synchronisieren",
+      "deploy": "Einsetzen"
+    },
+    "quickDeploy": {
+      "title": "Schnelle Bereitstellung",
+      "selectRepo": "Repository auswählen",
+      "stackName": "Stack-Name (optional)",
+      "button": "Aus dem Repository bereitstellen"
+    },
+    "ssh": {
+      "title": "Öffentlicher SSH-Schlüssel",
+      "copy": "Kopie"
+    }
+  },
+  "tunnelsPage": {
+    "errors": {
+      "authCloudflare": "Die Authentifizierung bei Cloudflare konnte nicht durchgeführt werden",
+      "oauthStart": "OAuth konnte nicht gestartet werden",
+      "selectService": "Wählen Sie einen Microservice aus, um den Tunnel zu verknüpfen",
+      "hostnameRequired": "Geben Sie einen öffentlichen Hostnamen ein (z. B. api.mydomain.com)",
+      "serviceNotFound": "Ausgewählter Mikrodienst nicht gefunden",
+      "serviceAlreadyLinked": "Microservice ist bereits mit Tunnel „{{name}}“ verknüpft. Pro Mikrodienst ist nur 1 Tunnel zulässig.",
+      "invalidTunnelName": "Für den Microservice konnte kein gültiger Tunnelname generiert werden",
+      "createTunnel": "Tunnel konnte nicht erstellt werden",
+      "changeAccount": "Das aktive Konto konnte nicht geändert werden",
+      "startTunnel": "Der Tunnel konnte nicht gestartet werden",
+      "stopTunnel": "Der Tunnel konnte nicht gestoppt werden",
+      "deleteTunnel": "Tunnel konnte nicht gelöscht werden",
+      "updateAutostart": "Der Tunnel-Autostart konnte nicht aktualisiert werden"
+    },
+    "status": {
+      "active": "Aktiv",
+      "creating": "Verbinden",
+      "inactive": "Inaktiv",
+      "error": "Fehler"
+    },
+    "debug": {
+      "title": "Cloudflare-Anmeldediagnose",
+      "hide": "Verstecken",
+      "show": "Zeigen",
+      "empty": "Noch keine Veranstaltungen. Versuchen Sie, sich anzumelden und zu aktualisieren, um Details anzuzeigen.",
+      "columns": {
+        "time": "Zeit",
+        "action": "Aktion",
+        "status": "Zustand",
+        "message": "Nachricht"
+      },
+      "ok": "OK",
+      "error": "Fehler"
+    },
+    "auth": {
+      "connectedAs": "Mit Konto verbunden",
+      "activeAccount": "Aktives Konto",
+      "logout": "Melden Sie sich bei Cloudflare ab",
+      "loginHelp": "Melden Sie sich bei Cloudflare an, um Tunnel zu erstellen und zu verwalten.",
+      "accountIdPlaceholder": "Cloudflare-Konto-ID (optional)",
+      "loginWithToken": "Melden Sie sich mit API-Token an",
+      "startOauth": "Starten Sie OAuth",
+      "openOauthLink": "Öffnen Sie diesen Link, um OAuth abzuschließen:",
+      "requiredWarning": "Sie müssen sich bei Cloudflare authentifizieren, um Tunnel anzuzeigen/zu erstellen.",
+      "title": "Cloudflare-Auth",
+      "via": "über",
+      "unknown": "unbekannt",
+      "tokenPlaceholder": "Cloudflare-API-Token"
+    },
+    "management": {
+      "title": "Tunnelmanagement",
+      "createTitle": "Erstellen Sie Ihren Tunnel in 3 Schritten",
+      "createSubtitle": "1) Microservice auswählen, 2) öffentlichen Hostnamen definieren, 3) erstellen. DockPilot konfiguriert Ingress + DNS CNAME automatisch.",
+      "service": "Mikroservice",
+      "selectService": "Wählen Sie Mikroservice aus",
+      "portPlaceholder": "Interner Port (z. B. 80)",
+      "hostname": "Öffentlicher Hostname",
+      "hostnamePlaceholder": "z.B. api.meinedomain.com",
+      "zonePlaceholder": "Zonen-ID (optional)",
+      "finish": "Beenden",
+      "namePlaceholder": "Tunnelname (optional)",
+      "autoStart": "Automatischer Start beim Erstellen und beim Neustart von DockPilot",
+      "preview": "Zielvorschau",
+      "createButton": "Erstellen, verknüpfen und starten"
+    },
+    "cards": {
+      "hostname": "Öffentlicher Hostname",
+      "service": "Mikroservice",
+      "targetService": "Zielservice",
+      "temporaryUrl": "Temporäre URL",
+      "temporaryUrlN/A": "Nicht zutreffend (Sie verwenden Ihren eigenen Hostnamen)",
+      "autoStartLabel": "Autostart {{status}}",
+      "autoStartEnabled": "ermöglicht",
+      "autoStartDisabled": "deaktiviert"
+    }
+  },
+  "containerDetailPage": {
+    "title": "Mikroservice / Container",
+    "loadError": "Containerdetails konnten nicht geladen werden.",
+    "envTitle": "Umgebungsvariablen pro Microservice",
+    "envDescription": "Beim Speichern erstellt DockPilot den Container sicher neu und hält ein Rollback bereit.",
+    "addVariable": "+ Variable hinzufügen",
+    "saveAndRecreate": "Speichern und neu erstellen",
+    "envApplied": "Angewandte Variablen",
+    "messages": {
+      "started": "Container gestartet",
+      "stopped": "Container gestoppt",
+      "restarted": "Container neu gestartet",
+      "envApplied": "Variablen erfolgreich angewendet",
+      "envAppliedBackup": "Angewandte Variablen. Sicherung: {{backup}}",
+      "available": "verfügbar",
+      "envError": "Fehler beim Aktualisieren der Variablen"
+    }
+  },
+  "supportPage": {
+    "title": "Unterstützung",
+    "subtitle": "Hilfecenter für Betriebsvorfälle, Cloudflare-Authentifizierung und Tunnelfehler.",
+    "checklist": {
+      "title": "Checkliste für die Schnelldiagnose",
+      "items": {
+        "0": "Überprüfen Sie den Containerstatus und die DockPilot-Gesundheitsprüfungen.",
+        "1": "Bestätigen Sie die Cloudflare-Berechtigungen (Tunnelbearbeitung + Zonen-DNS-Bearbeitung + Zonenlesen).",
+        "2": "Überprüfen Sie die „dockpilot-tunnel-control“-Protokolle beim Erstellen/Starten von Tunneln.",
+        "3": "Wenn ein Tunnel fehlschlägt, teilen Sie die vollständige Nachricht und die „Tunnel-ID“ mit."
+      }
+    },
+    "include": {
+      "title": "Was ist bei der Bitte um Hilfe anzugeben?",
+      "items": {
+        "0": "Installierte DockPilot-Version und Datum des letzten Upgrades.",
+        "1": "Ausgeführte Befehle und genaue Fehlermeldung erhalten.",
+        "2": "Relevante Protokollausgabe (ohne Offenlegung von Token oder Geheimnissen).",
+        "3": "UI-Screenshot, falls zutreffend."
+      }
+    },
+    "channelsTitle": "Support-Kanäle",
+    "channels": {
+      "bug": {
+        "title": "Fehler melden",
+        "description": "Fügen Sie Screenshots, Protokolle und Schritte zur Reproduktion hinzu."
+      },
+      "feature": {
+        "title": "Verbesserung anfordern",
+        "description": "Teilen Sie den Anwendungsfall und das erwartete Ergebnis."
+      }
+    }
+  },
+  "documentationPage": {
+    "title": "Dokumentation",
+    "subtitle": "Kurzanleitung zum Betrieb von DockPilot: Installation, Upgrades, Tunnel und Fehlerbehebung.",
+    "commandsTitle": "Nützliche Befehle",
+    "bestPracticesTitle": "Best Practices",
+    "bestPractices": {
+      "items": {
+        "0": "Behalten Sie Cloudflare-Token mit minimalen Berechtigungen und der richtigen Zone.",
+        "1": "Validieren Sie Backups vor größeren Upgrades.",
+        "2": "Überwachen Sie Tunnelsteuerungsprotokolle, wenn der Status Fehler/Inaktiv ist."
+      }
+    },
+    "linksTitle": "Verweise",
+    "links": {
+      "api": {
+        "title": "API-Referenz",
+        "description": "Verfügbare Endpunkte zur Automatisierung von Aufgaben und Beobachtbarkeit."
+      },
+      "github": {
+        "title": "GitHub-Repository",
+        "description": "Quellcode, Änderungsprotokoll und Best Practices für die Bereitstellung."
+      }
+    }
+  }
 }

@@ -98,6 +98,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
   const volumeSparkline = useMemo(() => generateSparklineData(volumes.count, 2), [volumes.count]);
 
   const buildSparkline = useMemo(() => generateSparklineData(builds.success, 10), [builds.success]);
+  const pendingTrend: 'up' | 'neutral' = builds.pending > 0 ? 'up' : 'neutral';
 
   const metrics = [
     // Containers
@@ -208,7 +209,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({
       change: builds.pending > 0 ? 100 : 0,
       sparklineData: generateSparklineData(builds.pending, 0.5),
       icon: Clock,
-      trend: (builds.pending > 0 ? 'up' : 'neutral') as const,
+      trend: pendingTrend,
     },
   ];
 

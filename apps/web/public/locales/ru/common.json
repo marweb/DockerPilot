@@ -62,7 +62,10 @@
     "quickActions": "Быстрые действия",
     "pullImage": "Загрузить образ",
     "createContainer": "Создать контейнер",
-    "prune": "Очистить систему"
+    "prune": "Очистить систему",
+    "pruneConfirmBody": "Unused Docker resources will be removed (stopped containers, dangling images, unused volumes and networks).",
+    "pruneSuccess": "Prune System: {{total}} items removed",
+    "pruneError": "Could not complete system cleanup"
   },
   "containers": {
     "title": "Контейнеры",
@@ -383,7 +386,21 @@
     "passwordChangeFailed": "Не удалось изменить пароль",
     "passwordMismatch": "Новые пароли не совпадают",
     "passwordMinLength": "Новый пароль должен содержать не менее 8 символов.",
-    "passwordAllRequired": "Пожалуйста, заполните все поля пароля"
+    "passwordAllRequired": "Пожалуйста, заполните все поля пароля",
+    "upgradeModalTitle": "Подтвердить обновление",
+    "upgradeModalDescription": "Прежде чем начинать процесс обновления, просмотрите изменение версии.",
+    "upgradeModalCurrent": "Текущая версия",
+    "upgradeModalTarget": "Целевая версия",
+    "upgradeModalImpact": "Эта операция перезапускает службы DockPilot и может временно прервать доступ.",
+    "upgradeCancel": "Отмена",
+    "upgradeConfirmButton": "Начать обновление",
+    "upgradeProgressPreparing": "Подготовка задачи обновления...",
+    "upgradeProgressDownloading": "Загрузка новой версии и обновление контейнеров...",
+    "upgradeProgressRestarting": "Перезапуск служб. Жду возвращения DockPilot...",
+    "upgradeProgressFinalizing": "Завершение обновления и проверка статуса...",
+    "upgradeSuccessTitle": "Поздравляем! Обновление завершено",
+    "upgradeSuccessDescription": "DockPilot теперь использует версию {{version}}.",
+    "upgradeSuccessReloading": "Перезагрузка интерфейса через несколько секунд..."
   },
   "errors": {
     "pageNotFound": "Страница не найдена",
@@ -423,5 +440,301 @@
     "enabled": "Включено",
     "disabled": "Неполноценный"
   },
-  "select_language": "Выберите язык"
+  "select_language": "Выберите язык",
+  "composePage": {
+    "title": "Развертывание Compose",
+    "subtitle": "Рекомендуемый поток: укажите источник, переменные, проверьте конфликты и разверните.",
+    "tabs": {
+      "source": "1. Источник",
+      "env": "2. Окружение",
+      "validate": "3. Проверка",
+      "deploy": "4. Деплой"
+    },
+    "errors": {
+      "validateFailed": "Не удалось проверить конфигурацию",
+      "deployFailed": "Не удалось развернуть стек"
+    },
+    "placeholders": {
+      "stackName": "Имя микросервиса/стека (например: api-core)"
+    },
+    "env": {
+      "empty": "Переменные не заданы. Добавьте переменные для этого деплоя.",
+      "addVariable": "+ Добавить переменную",
+      "secret": "Секрет"
+    },
+    "validate": {
+      "description": "Запустите preflight, чтобы обнаружить конфликты перед деплоем.",
+      "button": "Проверить конфигурацию",
+      "resultLabel": "Результат:",
+      "valid": "валидно",
+      "invalid": "с ошибками"
+    },
+    "deploy": {
+      "needsPreflight": "Перед деплоем нужно выполнить preflight-проверку.",
+      "preflightReady": "Проверка готова. Fingerprint:",
+      "button": "Развернуть стек"
+    },
+    "stacks": {
+      "empty": "Compose-стеки не найдены",
+      "stack": "Стек",
+      "status": "Статус",
+      "services": "Сервисы",
+      "created": "Создан",
+      "actions": "Действия"
+    },
+    "actions": {
+      "stop": "Остановить",
+      "logs": "Логи",
+      "delete": "Удалить"
+    },
+    "logs": {
+      "title": "Логи {{stack}}",
+      "empty": "Логов нет"
+    }
+  },
+  "repositoriesPage": {
+    "title": "Репозитории",
+    "subtitle": "Деплой из ручных репозиториев (публичных или приватных). OAuth опционален.",
+    "messages": {
+      "created": "Репозиторий успешно создан",
+      "connectionOk": "Подключение успешно проверено",
+      "synced": "Репозиторий синхронизирован",
+      "deployDone": "Деплой завершен",
+      "sshReady": "Публичный ключ создан",
+      "githubStarted": "GitHub flow запущен. Подтвердите код по указанному URL.",
+      "githubPending": "GitHub ожидает: {{error}}",
+      "githubConnected": "GitHub подключен: {{username}}",
+      "gitlabStarted": "GitLab flow запущен. Подтвердите код по указанному URL.",
+      "gitlabPending": "GitLab ожидает: {{error}}",
+      "gitlabConnected": "GitLab подключен: {{username}}",
+      "sshCopied": "Ключ скопирован в буфер обмена"
+    },
+    "errors": {
+      "create": "Ошибка создания репозитория",
+      "connection": "Ошибка проверки подключения",
+      "sync": "Ошибка синхронизации репозитория",
+      "deploy": "Ошибка деплоя",
+      "sshKey": "Ошибка получения SSH-ключа",
+      "githubStart": "Не удалось запустить GitHub device flow",
+      "githubNotStarted": "GitHub device flow не запущен",
+      "githubPoll": "Ошибка проверки GitHub device flow",
+      "gitlabStart": "Не удалось запустить GitLab device flow",
+      "gitlabNotStarted": "GitLab device flow не запущен",
+      "gitlabPoll": "Ошибка проверки GitLab device flow"
+    },
+    "oauth": {
+      "title": "OAuth интеграции (опционально)",
+      "publicUrl": "Публичный URL доступен",
+      "githubConfigured": "GitHub App настроена",
+      "gitlabConfigured": "GitLab OAuth настроен",
+      "noPublicUrlWarning": "Без публичного URL используйте ручной режим (SSH или HTTPS token). OAuth/webhooks будут отключены.",
+      "connectGithub": "Подключить GitHub (Device Flow)",
+      "connectGitlab": "Подключить GitLab (Device Flow)",
+      "githubDeviceTitle": "Поток устройства GitHub",
+      "gitlabDeviceTitle": "Поток устройства GitLab",
+      "openUrl": "Откройте",
+      "code": "Код",
+      "verifyGithub": "Проверить GitHub",
+      "verifyGitlab": "Проверить GitLab"
+    },
+    "newRepo": {
+      "title": "Новый репозиторий",
+      "name": "Название",
+      "providerGeneric": "Общий",
+      "providerGithub": "Провайдер GitHub",
+      "providerGitlab": "Провайдер GitLab",
+      "repoUrl": "URL репозитория",
+      "branch": "Ветка (main)",
+      "composePath": "Путь к compose (docker-compose.yml)",
+      "visibilityPublic": "Публичный",
+      "visibilityPrivate": "Приватный",
+      "authNone": "Без auth (публичный)",
+      "authSsh": "SSH ключ",
+      "authHttpsToken": "HTTPS токен",
+      "httpsToken": "HTTPS токен",
+      "autoDeploy": "Autodeploy (нужен webhook и проверяемый публичный endpoint)",
+      "createButton": "Создать репозиторий"
+    },
+    "registered": {
+      "title": "Зарегистрированные репозитории",
+      "loading": "Загрузка...",
+      "empty": "Нет зарегистрированных репозиториев",
+      "columns": {
+        "name": "Название",
+        "repo": "Repo",
+        "branch": "Ветка",
+        "auth": "Аутентификация",
+        "actions": "Действия"
+      }
+    },
+    "actions": {
+      "test": "Проверить",
+      "sync": "Синхронизировать",
+      "deploy": "Развернуть",
+      "sshKey": "SSH ключ"
+    },
+    "quickDeploy": {
+      "title": "Быстрый деплой",
+      "selectRepo": "Выбрать репозиторий",
+      "stackName": "Имя стека (опционально)",
+      "button": "Деплой из репозитория"
+    },
+    "ssh": {
+      "title": "Публичный SSH ключ",
+      "copy": "Копировать"
+    }
+  },
+  "tunnelsPage": {
+    "errors": {
+      "authCloudflare": "Не удалось авторизоваться в Cloudflare",
+      "oauthStart": "Не удалось запустить OAuth",
+      "selectService": "Выберите микросервис для привязки туннеля",
+      "hostnameRequired": "Введите публичный hostname (например: api.mydomain.com)",
+      "serviceNotFound": "Выбранный микросервис не найден",
+      "serviceAlreadyLinked": "Микросервис уже привязан к туннелю \"{{name}}\". Разрешен только 1 туннель на микросервис.",
+      "invalidTunnelName": "Не удалось сгенерировать валидное имя туннеля для микросервиса",
+      "createTunnel": "Не удалось создать туннель",
+      "changeAccount": "Не удалось сменить активный аккаунт",
+      "startTunnel": "Не удалось запустить туннель",
+      "stopTunnel": "Не удалось остановить туннель",
+      "deleteTunnel": "Не удалось удалить туннель",
+      "updateAutostart": "Не удалось обновить автостарт туннеля"
+    },
+    "status": {
+      "active": "Активен",
+      "creating": "Подключение",
+      "inactive": "Неактивен",
+      "error": "Ошибка"
+    },
+    "debug": {
+      "title": "Диагностика входа Cloudflare",
+      "hide": "Скрыть",
+      "show": "Показать",
+      "ok": "Успех",
+      "error": "Ошибка",
+      "empty": "Пока нет событий. Выполните вход и обновите страницу, чтобы увидеть детали.",
+      "columns": {
+        "time": "Время",
+        "action": "Действие",
+        "status": "Статус",
+        "message": "Сообщение"
+      }
+    },
+    "auth": {
+      "title": "Аутентификация Cloudflare",
+      "connectedAs": "Подключен аккаунт",
+      "activeAccount": "Активный аккаунт",
+      "via": "через",
+      "unknown": "неизвестно",
+      "logout": "Выйти из Cloudflare",
+      "loginHelp": "Войдите через Cloudflare, чтобы создавать и управлять туннелями.",
+      "accountIdPlaceholder": "Cloudflare Account ID (опционально)",
+      "tokenPlaceholder": "Cloudflare API Token",
+      "loginWithToken": "Войти по API Token",
+      "startOauth": "Запустить OAuth",
+      "openOauthLink": "Откройте эту ссылку для завершения OAuth:",
+      "requiredWarning": "Для просмотра/создания туннелей нужна авторизация Cloudflare."
+    },
+    "management": {
+      "title": "Управление туннелями",
+      "createTitle": "Создайте туннель за 3 шага",
+      "createSubtitle": "1) Выберите микросервис, 2) задайте публичный hostname, 3) создайте туннель. DockPilot автоматически настраивает ingress + DNS CNAME.",
+      "service": "Микросервис",
+      "selectService": "Выбрать микросервис",
+      "portPlaceholder": "Внутренний порт (например: 80)",
+      "hostname": "Публичный hostname",
+      "hostnamePlaceholder": "например: api.mydomain.com",
+      "zonePlaceholder": "Zone ID (опционально)",
+      "finish": "Завершение",
+      "namePlaceholder": "Имя туннеля (опционально)",
+      "autoStart": "Автозапуск при создании и при перезапуске DockPilot",
+      "preview": "Предпросмотр назначения",
+      "createButton": "Создать, связать и запустить"
+    },
+    "cards": {
+      "hostname": "Публичный hostname",
+      "service": "Микросервис",
+      "targetService": "Целевой сервис",
+      "temporaryUrl": "Временный URL",
+      "temporaryUrlN/A": "Не применяется (используется собственный hostname)",
+      "autoStartLabel": "Автостарт {{status}}",
+      "autoStartEnabled": "включен",
+      "autoStartDisabled": "выключен"
+    }
+  },
+  "containerDetailPage": {
+    "title": "Микросервис / Контейнер",
+    "loadError": "Не удалось загрузить детали контейнера.",
+    "envTitle": "Переменные окружения по микросервису",
+    "envDescription": "При сохранении DockPilot безопасно пересоздает контейнер и оставляет готовый rollback.",
+    "addVariable": "+ Добавить переменную",
+    "saveAndRecreate": "Сохранить и пересоздать",
+    "envApplied": "Переменные применены",
+    "messages": {
+      "started": "Контейнер запущен",
+      "stopped": "Контейнер остановлен",
+      "restarted": "Контейнер перезапущен",
+      "envApplied": "Переменные успешно применены",
+      "envAppliedBackup": "Переменные применены. Бэкап: {{backup}}",
+      "available": "доступен",
+      "envError": "Ошибка при обновлении переменных"
+    }
+  },
+  "supportPage": {
+    "title": "Поддержка",
+    "subtitle": "Центр помощи по операционным инцидентам, авторизации Cloudflare и ошибкам туннелей.",
+    "checklist": {
+      "title": "Быстрый чеклист диагностики",
+      "items": {
+        "0": "Проверьте состояние контейнеров и healthchecks DockPilot.",
+        "1": "Проверьте права Cloudflare (Tunnel Edit + Zone DNS Edit + Zone Read).",
+        "2": "Проверьте логи `dockpilot-tunnel-control` при создании/запуске туннелей.",
+        "3": "Если туннель падает, приложите полный текст ошибки и `tunnelId`."
+      }
+    },
+    "include": {
+      "title": "Что приложить при обращении",
+      "items": {
+        "0": "Установленная версия DockPilot и дата последнего обновления.",
+        "1": "Какие команды выполнялись и точный текст ошибки.",
+        "2": "Релевантные логи (без токенов и секретов).",
+        "3": "Скриншот интерфейса, если применимо."
+      }
+    },
+    "channelsTitle": "Каналы поддержки",
+    "channels": {
+      "bug": {
+        "title": "Сообщить о баге",
+        "description": "Приложите скриншоты, логи и шаги воспроизведения."
+      },
+      "feature": {
+        "title": "Запросить улучшение",
+        "description": "Опишите сценарий использования и ожидаемый результат."
+      }
+    }
+  },
+  "documentationPage": {
+    "title": "Документация",
+    "subtitle": "Краткое руководство по DockPilot: установка, обновления, туннели и решение типовых проблем.",
+    "commandsTitle": "Полезные команды",
+    "bestPracticesTitle": "Лучшие практики",
+    "bestPractices": {
+      "items": {
+        "0": "Используйте токены Cloudflare с минимально необходимыми правами и правильной зоной.",
+        "1": "Проверяйте бэкапы перед крупными обновлениями.",
+        "2": "Следите за логами tunnel-control, когда статус error/inactive."
+      }
+    },
+    "linksTitle": "Ссылки",
+    "links": {
+      "api": {
+        "title": "Справочник API",
+        "description": "Доступные эндпоинты для автоматизации задач и наблюдаемости."
+      },
+      "github": {
+        "title": "GitHub репозиторий",
+        "description": "Исходный код, changelog и лучшие практики деплоя."
+      }
+    }
+  }
 }

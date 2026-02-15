@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
@@ -44,6 +45,7 @@ function rowsToEnv(rows: EnvRow[]): Record<string, string> {
 }
 
 export default function ContainerDetail() {
+  const { t } = useTranslation();
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -69,7 +71,7 @@ export default function ContainerDetail() {
     mutationFn: () => startContainer(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['container-detail', id] });
-      setMessage('Contenedor iniciado');
+      setMessage(t('containerDetailPage.messages.started'));
     },
   });
 
@@ -77,7 +79,7 @@ export default function ContainerDetail() {
     mutationFn: () => stopContainer(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['container-detail', id] });
-      setMessage('Contenedor detenido');
+      setMessage(t('containerDetailPage.messages.stopped'));
     },
   });
 
@@ -85,7 +87,7 @@ export default function ContainerDetail() {
     mutationFn: () => restartContainer(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['container-detail', id] });
-      setMessage('Contenedor reiniciado');
+      setMessage(t('containerDetailPage.messages.restarted'));
     },
   });
 
@@ -107,14 +109,18 @@ export default function ContainerDetail() {
     onSuccess: async (data) => {
       setMessage(
         data.rollbackAvailable
-          ? `Variables aplicadas. Backup: ${data.rollbackContainerName || 'disponible'}`
-          : 'Variables aplicadas correctamente'
+          ? t('containerDetailPage.messages.envAppliedBackup', {
+              backup: data.rollbackContainerName || t('containerDetailPage.messages.available'),
+            })
+          : t('containerDetailPage.messages.envApplied')
       );
       await queryClient.invalidateQueries({ queryKey: ['container-detail', id] });
       await queryClient.invalidateQueries({ queryKey: ['container-env', id] });
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || 'Error al actualizar variables');
+      setMessage(
+        (error as { message?: string })?.message || t('containerDetailPage.messages.envError')
+      );
     },
   });
 
@@ -136,11 +142,11 @@ export default function ContainerDetail() {
       <div className="space-y-4">
         <button onClick={() => navigate('/containers')} className="btn btn-secondary btn-sm">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Volver
+          {t('common.back')}
         </button>
         <div className="card">
           <div className="card-body text-red-600 dark:text-red-400">
-            No se pudo cargar el detalle del contenedor.
+            {t('containerDetailPage.loadError')}
           </div>
         </div>
       </div>
@@ -162,7 +168,7 @@ export default function ContainerDetail() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <Box className="h-6 w-6 text-primary-600" />
-            Microservicio / Contenedor
+            {t('containerDetailPage.title')}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">{containerName}</p>
         </div>
@@ -178,33 +184,33 @@ export default function ContainerDetail() {
         {!running ? (
           <button className="btn btn-primary" onClick={() => startMutation.mutate()}>
             <Play className="h-4 w-4 mr-1" />
-            Start
+            {t('containers.actions.start')}
           </button>
         ) : (
           <button className="btn btn-secondary" onClick={() => stopMutation.mutate()}>
             <Square className="h-4 w-4 mr-1" />
-            Stop
+            {t('containers.actions.stop')}
           </button>
         )}
         <button className="btn btn-secondary" onClick={() => restartMutation.mutate()}>
           <RefreshCw className="h-4 w-4 mr-1" />
-          Restart
+          {t('containers.actions.restart')}
         </button>
         <button className="btn btn-danger" onClick={() => removeMutation.mutate()}>
           <Trash2 className="h-4 w-4 mr-1" />
-          Remove
+          {t('containers.actions.remove')}
         </button>
       </div>
 
       <div className="card">
         <div className="card-header">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Variables de entorno por microservicio
+            {t('containerDetailPage.envTitle')}
           </h2>
         </div>
         <div className="card-body space-y-3">
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            Al guardar, DockPilot recrea el contenedor de forma segura y mantiene un rollback listo.
+            {t('containerDetailPage.envDescription')}
           </div>
 
           {rows.map((row, index) => (
@@ -248,18 +254,18 @@ export default function ContainerDetail() {
               className="btn btn-secondary btn-sm"
               onClick={() => setRows((prev) => [...prev, { key: '', value: '', secret: false }])}
             >
-              + Agregar variable
+              {t('containerDetailPage.addVariable')}
             </button>
             <button className="btn btn-primary" onClick={() => updateEnvMutation.mutate()}>
               <Save className="h-4 w-4 mr-1" />
-              Guardar y recrear
+              {t('containerDetailPage.saveAndRecreate')}
             </button>
           </div>
 
           {updateEnvMutation.isSuccess && (
             <div className="text-sm text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
               <CheckCircle2 className="h-4 w-4" />
-              Variables aplicadas
+              {t('containerDetailPage.envApplied')}
             </div>
           )}
         </div>

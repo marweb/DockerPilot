@@ -402,7 +402,7 @@ export async function provisionTunnelForService(
 ): Promise<ProvisionTunnelResult> {
   const normalizedName = sanitizeTunnelName(options.name || options.serviceName);
   if (!normalizedName) {
-    throw new Error('No se pudo generar un nombre de tunel valido');
+    throw new Error('Failed to generate a valid tunnel name');
   }
 
   const autoStart = options.autoStart ?? true;

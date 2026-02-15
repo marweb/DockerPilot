@@ -62,7 +62,10 @@
     "quickActions": "クイックアクション",
     "pullImage": "イメージを取得",
     "createContainer": "コンテナ作成",
-    "prune": "システムクリーンアップ"
+    "prune": "システムクリーンアップ",
+    "pruneConfirmBody": "Unused Docker resources will be removed (stopped containers, dangling images, unused volumes and networks).",
+    "pruneSuccess": "Prune System: {{total}} items removed",
+    "pruneError": "Could not complete system cleanup"
   },
   "containers": {
     "title": "コンテナ",
@@ -383,7 +386,21 @@
     "passwordChangeFailed": "パスワードを変更できませんでした",
     "passwordMismatch": "新しいパスワードが一致しません",
     "passwordMinLength": "新しいパスワードは 8 文字以上である必要があります",
-    "passwordAllRequired": "すべてのパスワードフィールドに入力してください"
+    "passwordAllRequired": "すべてのパスワードフィールドに入力してください",
+    "upgradeModalTitle": "アップグレードの確認",
+    "upgradeModalDescription": "更新プロセスを開始する前に、バージョンの変更を確認してください。",
+    "upgradeModalCurrent": "現在のバージョン",
+    "upgradeModalTarget": "対象バージョン",
+    "upgradeModalImpact": "この操作により DockPilot サービスが再起動され、アクセスが一時的に中断される可能性があります。",
+    "upgradeCancel": "キャンセル",
+    "upgradeConfirmButton": "アップグレードの開始",
+    "upgradeProgressPreparing": "アップグレードタスクを準備しています...",
+    "upgradeProgressDownloading": "新しいバージョンをダウンロードし、コンテナを更新しています...",
+    "upgradeProgressRestarting": "サービスを再開しています。 DockPilot が戻ってくるのを待っています...",
+    "upgradeProgressFinalizing": "アップグレードを完了し、ステータスを検証しています...",
+    "upgradeSuccessTitle": "おめでとう！アップグレードが完了しました",
+    "upgradeSuccessDescription": "DockPilot は現在バージョン {{version}} を実行しています。",
+    "upgradeSuccessReloading": "数秒以内にインターフェイスを再読み込みしています..."
   },
   "errors": {
     "pageNotFound": "ページが見つかりません",
@@ -423,5 +440,301 @@
     "enabled": "有効",
     "disabled": "無効"
   },
-  "select_language": "言語を選択してください"
+  "select_language": "言語を選択してください",
+  "composePage": {
+    "title": "構成 デプロイ",
+    "subtitle": "推奨されるフロー: ソース、変数を定義し、競合を検証してデプロイします。",
+    "tabs": {
+      "source": "1. 出典",
+      "env": "2. 環境",
+      "validate": "3. 検証",
+      "deploy": "4.展開"
+    },
+    "errors": {
+      "validateFailed": "構成を検証できませんでした",
+      "deployFailed": "スタックをデプロイできませんでした"
+    },
+    "placeholders": {
+      "stackName": "マイクロサービス/スタック名 (例: api-core)"
+    },
+    "env": {
+      "empty": "変数が定義されていません。このデプロイ用の変数を追加します。",
+      "addVariable": "+ 変数を追加",
+      "secret": "秘密"
+    },
+    "validate": {
+      "description": "デプロイ前にプリフライトを実行して競合を検出します。",
+      "button": "構成の検証",
+      "resultLabel": "結果：",
+      "valid": "有効",
+      "invalid": "エラーあり"
+    },
+    "deploy": {
+      "needsPreflight": "デプロイする前にプリフライト検証を実行する必要があります。",
+      "preflightReady": "検証の準備ができました。指紋：",
+      "button": "スタックのデプロイ"
+    },
+    "stacks": {
+      "empty": "作成スタックが見つかりません",
+      "status": "状態",
+      "services": "サービス",
+      "created": "作成されました",
+      "actions": "アクション",
+      "stack": "スタック"
+    },
+    "actions": {
+      "stop": "停止",
+      "logs": "ログ",
+      "delete": "消去"
+    },
+    "logs": {
+      "title": "{{stack}} のログ",
+      "empty": "ログがありません"
+    }
+  },
+  "repositoriesPage": {
+    "title": "リポジトリ",
+    "subtitle": "手動リポジトリ (パブリックまたはプライベート) からデプロイします。 OAuth はオプションです。",
+    "messages": {
+      "created": "リポジトリが正常に作成されました",
+      "connectionOk": "接続が正常に検証されました",
+      "synced": "リポジトリが同期されました",
+      "deployDone": "導入が完了しました",
+      "sshReady": "公開鍵が生成されました",
+      "githubStarted": "GitHub フローが開始されました。示された URL にコードを入力します。",
+      "githubPending": "GitHub 保留中: {{error}}",
+      "githubConnected": "GitHub に接続しました: {{username}}",
+      "gitlabStarted": "GitLab フローが開始されました。示された URL にコードを入力します。",
+      "gitlabPending": "GitLab 保留中: {{error}}",
+      "gitlabConnected": "GitLab が接続されました: {{username}}",
+      "sshCopied": "キーがクリップボードにコピーされました"
+    },
+    "errors": {
+      "create": "リポジトリ作成エラー",
+      "connection": "接続検証中にエラーが発生しました",
+      "sync": "リポジトリの同期中にエラーが発生しました",
+      "deploy": "デプロイ中にエラーが発生しました",
+      "sshKey": "SSH キーの取得エラー",
+      "githubStart": "GitHub デバイス フローを開始できませんでした",
+      "githubNotStarted": "GitHub デバイス フローが開始されていません",
+      "githubPoll": "GitHub デバイス フローの検証中にエラーが発生しました",
+      "gitlabStart": "GitLab デバイス フローを開始できませんでした",
+      "gitlabNotStarted": "GitLab デバイス フローが開始されていません",
+      "gitlabPoll": "GitLab デバイス フローの検証中にエラーが発生しました"
+    },
+    "oauth": {
+      "title": "OAuth 統合 (オプション)",
+      "publicUrl": "公開URLが利用可能",
+      "githubConfigured": "GitHub アプリの設定済み",
+      "gitlabConfigured": "GitLab OAuth の構成",
+      "noPublicUrlWarning": "パブリック URL がない場合は、手動フロー (SSH または HTTPS トークン) を使用します。 OAuth/Webhook は無効のままです。",
+      "connectGithub": "GitHub に接続する (デバイス フロー)",
+      "connectGitlab": "GitLab への接続 (デバイス フロー)",
+      "githubDeviceTitle": "GitHub デバイス フロー",
+      "gitlabDeviceTitle": "GitLab デバイス フロー",
+      "openUrl": "開ける",
+      "code": "コード",
+      "verifyGithub": "GitHub を検証する",
+      "verifyGitlab": "GitLab を検証する"
+    },
+    "newRepo": {
+      "title": "新しいリポジトリ",
+      "name": "名前",
+      "providerGeneric": "ジェネリック",
+      "repoUrl": "リポジトリURL",
+      "branch": "ブランチ（メイン）",
+      "composePath": "作成パス (docker-compose.yml)",
+      "visibilityPublic": "公共",
+      "visibilityPrivate": "プライベート",
+      "authNone": "認証なし (パブリック)",
+      "httpsToken": "HTTPSトークン",
+      "autoDeploy": "自動デプロイ (Webhook と検証可能なパブリック エンドポイントが必要)",
+      "createButton": "リポジトリの作成",
+      "providerGithub": "GitHub プロバイダー",
+      "providerGitlab": "GitLab プロバイダー",
+      "authSsh": "SSHキー",
+      "authHttpsToken": "HTTPSトークン"
+    },
+    "registered": {
+      "title": "登録リポジトリ",
+      "loading": "読み込み中...",
+      "empty": "リポジトリが登録されていません",
+      "columns": {
+        "name": "名前",
+        "actions": "アクション",
+        "repo": "リポジトリ",
+        "branch": "支店",
+        "auth": "認証"
+      }
+    },
+    "actions": {
+      "test": "テスト",
+      "sshKey": "SSHキー",
+      "sync": "同期",
+      "deploy": "展開する"
+    },
+    "quickDeploy": {
+      "title": "クイックデプロイ",
+      "selectRepo": "リポジトリの選択",
+      "stackName": "スタック名 (オプション)",
+      "button": "リポジトリからデプロイする"
+    },
+    "ssh": {
+      "title": "SSH公開鍵",
+      "copy": "コピー"
+    }
+  },
+  "tunnelsPage": {
+    "errors": {
+      "authCloudflare": "Cloudflareで認証できませんでした",
+      "oauthStart": "OAuthを開始できませんでした",
+      "selectService": "トンネルをリンクするマイクロサービスを選択してください",
+      "hostnameRequired": "パブリックホスト名を入力します (例: api.mydomain.com)",
+      "serviceNotFound": "選択したマイクロサービスが見つかりません",
+      "serviceAlreadyLinked": "マイクロサービスはすでにトンネル「{{name}}」にリンクされています。マイクロサービスごとに許可されるトンネルは 1 つだけです。",
+      "invalidTunnelName": "マイクロサービスの有効なトンネル名を生成できませんでした",
+      "createTunnel": "トンネルを作成できませんでした",
+      "changeAccount": "アクティブなアカウントを変更できませんでした",
+      "startTunnel": "トンネルを開始できませんでした",
+      "stopTunnel": "トンネルを停止できませんでした",
+      "deleteTunnel": "トンネルを削除できませんでした",
+      "updateAutostart": "トンネルの自動開始を更新できませんでした"
+    },
+    "status": {
+      "active": "アクティブ",
+      "creating": "接続中",
+      "inactive": "非アクティブ",
+      "error": "エラー"
+    },
+    "debug": {
+      "title": "Cloudflareのログイン診断",
+      "hide": "隠れる",
+      "show": "見せる",
+      "empty": "まだイベントはありません。詳細を確認するには、ログインして更新してください。",
+      "columns": {
+        "time": "時間",
+        "action": "アクション",
+        "status": "状態",
+        "message": "メッセージ"
+      },
+      "ok": "わかりました",
+      "error": "エラー"
+    },
+    "auth": {
+      "connectedAs": "アカウントに接続されました",
+      "activeAccount": "アクティブなアカウント",
+      "logout": "Cloudflareからサインアウトする",
+      "loginHelp": "Cloudflare でサインインして、トンネルを作成および管理します。",
+      "accountIdPlaceholder": "CloudflareアカウントID (オプション)",
+      "loginWithToken": "APIトークンでログイン",
+      "startOauth": "OAuthを開始する",
+      "openOauthLink": "このリンクを開いて OAuth を完了します。",
+      "requiredWarning": "トンネルを表示/作成するには、Cloudflare で認証する必要があります。",
+      "title": "クラウドフレア認証",
+      "via": "経由",
+      "unknown": "未知",
+      "tokenPlaceholder": "Cloudflare APIトークン"
+    },
+    "management": {
+      "title": "トンネル管理",
+      "createTitle": "3 つのステップでトンネルを作成します",
+      "createSubtitle": "1) マイクロサービスを選択し、2) パブリックホスト名を定義し、3) 作成します。 DockPilot は、イングレス + DNS CNAME を自動的に構成します。",
+      "service": "マイクロサービス",
+      "selectService": "マイクロサービスの選択",
+      "portPlaceholder": "内部ポート (例: 80)",
+      "hostname": "パブリックホスト名",
+      "hostnamePlaceholder": "例えばapi.mydomain.com",
+      "zonePlaceholder": "ゾーンID (オプション)",
+      "finish": "仕上げる",
+      "namePlaceholder": "トンネル名 (オプション)",
+      "autoStart": "作成時およびDockPilotの再起動時に自動起動",
+      "preview": "目的地のプレビュー",
+      "createButton": "作成、リンク、開始"
+    },
+    "cards": {
+      "hostname": "パブリックホスト名",
+      "service": "マイクロサービス",
+      "targetService": "対象サービス",
+      "temporaryUrl": "一時的な URL",
+      "temporaryUrlN/A": "該当なし (独自のホスト名を使用します)",
+      "autoStartLabel": "自動開始 {{status}}",
+      "autoStartEnabled": "有効",
+      "autoStartDisabled": "無効"
+    }
+  },
+  "containerDetailPage": {
+    "title": "マイクロサービス / コンテナ",
+    "loadError": "コンテナの詳細をロードできませんでした。",
+    "envTitle": "マイクロサービスごとの環境変数",
+    "envDescription": "保存すると、DockPilot はコンテナを安全に再作成し、ロールバックの準備を整えます。",
+    "addVariable": "+ 変数を追加",
+    "saveAndRecreate": "保存して再作成する",
+    "envApplied": "適用される変数",
+    "messages": {
+      "started": "コンテナが開始されました",
+      "stopped": "コンテナが停止しました",
+      "restarted": "コンテナが再起動されました",
+      "envApplied": "変数は正常に適用されました",
+      "envAppliedBackup": "変数が適用されました。バックアップ: {{backup}}",
+      "available": "利用可能",
+      "envError": "変数の更新エラー"
+    }
+  },
+  "supportPage": {
+    "title": "サポート",
+    "subtitle": "運用インシデント、Cloudflare認証、トンネルエラーに関するヘルプセンター。",
+    "checklist": {
+      "title": "クイック診断チェックリスト",
+      "items": {
+        "0": "コンテナのステータスとDockPilotのヘルスチェックを確認します。",
+        "1": "Cloudflareの権限を確認します(トンネル編集 + ゾーンDNS編集 + ゾーン読み取り)。",
+        "2": "トンネルを作成/開始するときに「dockpilot-tunnel-control」ログを確認してください。",
+        "3": "トンネルが失敗した場合は、メッセージ全体と「tunnelId」を共有します。"
+      }
+    },
+    "include": {
+      "title": "助けを求めるときに含めるべきこと",
+      "items": {
+        "0": "インストールされている DockPilot のバージョンと最後のアップグレードの日付。",
+        "1": "実行されたコマンドと正確なエラー メッセージを受信しました。",
+        "2": "関連するログ出力 (トークンやシークレットは公開されません)。",
+        "3": "該当する場合は UI のスクリーンショット。"
+      }
+    },
+    "channelsTitle": "サポートチャネル",
+    "channels": {
+      "bug": {
+        "title": "バグを報告する",
+        "description": "スクリーンショット、ログ、再現手順を含めます。"
+      },
+      "feature": {
+        "title": "改善を求める",
+        "description": "使用例と期待される結果を共有します。"
+      }
+    }
+  },
+  "documentationPage": {
+    "title": "ドキュメント",
+    "subtitle": "DockPilot を操作するためのクイック ガイド: インストール、アップグレード、トンネル、トラブルシューティング。",
+    "commandsTitle": "便利なコマンド",
+    "bestPracticesTitle": "ベストプラクティス",
+    "bestPractices": {
+      "items": {
+        "0": "最小限の権限と正しいゾーンを備えた Cloudflare トークンを保持します。",
+        "1": "メジャーアップグレードの前にバックアップを検証します。",
+        "2": "ステータスがエラー/非アクティブの場合、トンネル制御ログを監視します。"
+      }
+    },
+    "linksTitle": "リンク",
+    "links": {
+      "api": {
+        "title": "APIリファレンス",
+        "description": "タスクと可観測性を自動化するために利用可能なエンドポイント。"
+      },
+      "github": {
+        "title": "GitHub リポジトリ",
+        "description": "ソース コード、変更ログ、および展開のベスト プラクティス。"
+      }
+    }
+  }
 }
