@@ -290,6 +290,14 @@ else
   echo "JWT_SECRET=${JWT_SECRET}" >> "$ENV_FILE"
 fi
 
+# Generate MASTER_KEY for secret encryption
+MASTER_KEY=$(openssl rand -base64 48)
+if grep -q "^MASTER_KEY=" "$ENV_FILE" 2>/dev/null; then
+  sed -i "s|^MASTER_KEY=.*|MASTER_KEY=${MASTER_KEY}|" "$ENV_FILE"
+else
+  echo "MASTER_KEY=${MASTER_KEY}" >> "$ENV_FILE"
+fi
+
 # Set version
 if grep -q "^DOCKPILOT_VERSION=" "$ENV_FILE" 2>/dev/null; then
   sed -i "s|^DOCKPILOT_VERSION=.*|DOCKPILOT_VERSION=${LATEST_VERSION}|" "$ENV_FILE"
