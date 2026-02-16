@@ -29,6 +29,7 @@ services:
       - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-100}
       - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-1 minute}
       - DOCKPILOT_VERSION=${DOCKPILOT_VERSION:-latest}
+      - MASTER_KEY=${MASTER_KEY}
     volumes:
       - api-gateway-data:/data
     networks:
@@ -63,6 +64,8 @@ services:
       - COMPOSE_DIR=/data/compose
       - DOCKPILOT_VERSION=${DOCKPILOT_VERSION:-latest}
       - DOCKPILOT_SOURCE_DIR=${DOCKPILOT_HOME:-/data/dockpilot}/source
+      - MASTER_KEY=${MASTER_KEY}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
     volumes:
       - docker-control-data:/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
