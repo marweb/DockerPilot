@@ -202,6 +202,24 @@ else
       sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${NEW_JWT}|" "$ENV_FILE"
     fi
   fi
+
+  # Generate MASTER_KEY if not set (required for webhook secret encryption)
+  if ! grep -q "^MASTER_KEY=..*" "$ENV_FILE" 2>/dev/null || [ -z "$(grep "^MASTER_KEY=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2)" ]; then
+    log "Generating MASTER_KEY for webhook secret encryption..."
+    NEW_MASTER_KEY=$(openssl rand -base64 32)
+    if grep -q "^MASTER_KEY=" "$ENV_FILE" 2>/dev/null; then
+      # Replace existing empty or unset MASTER_KEY
+      if [[ "$(uname)" == "Darwin" ]]; then
+        sed -i '' "s|^MASTER_KEY=.*|MASTER_KEY=${NEW_MASTER_KEY}|" "$ENV_FILE"
+      else
+        sed -i "s|^MASTER_KEY=.*|MASTER_KEY=${NEW_MASTER_KEY}|" "$ENV_FILE"
+      fi
+    else
+      # Add MASTER_KEY if it doesn't exist
+      echo "MASTER_KEY=${NEW_MASTER_KEY}" >> "$ENV_FILE"
+    fi
+    log "MASTER_KEY generated successfully"
+  fi
 fi
 
 # Always update version to the target
