@@ -50,6 +50,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build types package
+        run: cd packages/types && pnpm build
+
       - name: Type check all packages
         run: |
           cd packages/types && npx tsc --noEmit
