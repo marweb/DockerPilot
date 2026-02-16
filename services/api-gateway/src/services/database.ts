@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import { readFile } from 'fs/promises';
 import { existsSync, mkdirSync, readdirSync } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import type {
   User,
   UserRole,
@@ -9,6 +10,10 @@ import type {
   NotificationHistory,
   NotificationRulesMatrix,
 } from '@dockpilot/types';
+
+// ES Modules compatibility - define __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DB_FILE = 'dockpilot.db';
 const DB_JSON_FILE = 'db.json';
