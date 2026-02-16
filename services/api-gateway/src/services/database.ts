@@ -156,6 +156,25 @@ function createSchema(sqlite: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_notification_channels_provider ON notification_channels(provider);
     CREATE INDEX IF NOT EXISTS idx_notification_channels_enabled ON notification_channels(enabled);
 
+    -- System settings table (fallback if migration 002 hasn't run)
+    CREATE TABLE IF NOT EXISTS system_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'string',
+      description TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Insert default settings
+    INSERT OR IGNORE INTO system_settings (key, value, type, description) VALUES
+    ('instance_name', 'DockPilot', 'string', 'Instance name'),
+    ('public_url', '', 'string', 'Public URL'),
+    ('timezone', 'UTC', 'string', 'Timezone'),
+    ('public_ipv4', '', 'string', 'Public IPv4'),
+    ('public_ipv6', '', 'string', 'Public IPv6'),
+    ('auto_update', 'false', 'boolean', 'Auto update');
+
     -- Notification rules table (managed by migration 003)
     -- Notification history table (managed by migration 003)
   `);
