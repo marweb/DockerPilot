@@ -726,7 +726,69 @@
     "ssh": {
       "title": "Публичный SSH ключ",
       "copy": "Копировать"
-    }
+    },
+    "webhook": {
+      "title": "Конфигурация Webhook",
+      "enabled": "Webhook Включен",
+      "enable": "Включить Webhook",
+      "url": "URL Webhook",
+      "secret": "Секрет Webhook",
+      "secretPlaceholder": "Введите секрет для проверки подписей webhook",
+      "secretHelp": "Этот секрет используется для проверки того, что webhooks приходят от вашего Git-провайдера",
+      "saveConfig": "Сохранить Конфигурацию Webhook",
+      "publicUrlRequired": "Должен быть настроен публичный URL в Настройках для включения webhooks",
+      "publicUrl": {
+        "configured": "Публичный URL Настроен",
+        "missing": "Публичный URL Не Настроен",
+        "description": "Для webhooks требуется публичный URL. Настройте его в Настройки > Общие."
+      },
+      "github": {
+        "title": "Настройка Webhook GitHub",
+        "step1": "Перейдите в ваш репозиторий на GitHub",
+        "step2": "Перейдите в Настройки > Webhooks > Добавить webhook",
+        "step3": "Вставьте URL webhook выше",
+        "step4": "Установите тип контента на 'application/json' и добавьте ваш секрет"
+      },
+      "gitlab": {
+        "title": "Настройка Webhook GitLab",
+        "step1": "Перейдите в ваш проект на GitLab",
+        "step2": "Перейдите в Настройки > Webhooks",
+        "step3": "Вставьте URL webhook и добавьте ваш секретный токен"
+      },
+      "generic": {
+        "title": "Настройка Webhook",
+        "step1": "Настройте ваш webhook для отправки POST-запросов на: {{url}}",
+        "step2": "Установите секретный токен, если требуется вашим провайдером"
+      }
+    },
+    "publicUrl": {
+      "configured": "Публичный URL настроен",
+      "missing": "Публичный URL не настроен",
+      "description": "Настройте публичный URL в Настройках для включения webhooks и OAuth интеграций."
+    },
+    "form": {
+      "name": "Название Репозитория",
+      "namePlaceholder": "мое-приложение",
+      "provider": "Провайдер",
+      "repoUrl": "URL Репозитория",
+      "branch": "Ветка",
+      "composePath": "Путь к Файлу Compose",
+      "visibility": "Видимость",
+      "visibilityPublic": "Публичный",
+      "visibilityPrivate": "Приватный",
+      "authType": "Аутентификация",
+      "noAuth": "Без Аутентификации",
+      "httpsToken": "HTTPS Токен",
+      "autoDeploy": "Авто-деплой при push через webhook"
+    },
+    "list": {
+      "title": "Ваши Репозитории"
+    },
+    "createButton": "Создать Репозиторий",
+    "deploy": "Деплой",
+    "stackName": "Имя Стека",
+    "stackNamePlaceholder": "опциональное-имя-стека",
+    "showPublicKey": "Показать Публичный SSH Ключ"
   },
   "tunnelsPage": {
     "errors": {

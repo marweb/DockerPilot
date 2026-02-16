@@ -719,7 +719,69 @@
     "ssh": {
       "title": "Clave pública SSH",
       "copy": "Copiar"
-    }
+    },
+    "webhook": {
+      "title": "Configuración de Webhook",
+      "enabled": "Webhook Habilitado",
+      "enable": "Habilitar Webhook",
+      "url": "URL del Webhook",
+      "secret": "Secreto del Webhook",
+      "secretPlaceholder": "Ingrese un secreto para verificar las firmas del webhook",
+      "secretHelp": "Este secreto se utiliza para verificar que los webhooks provienen de su proveedor de Git",
+      "saveConfig": "Guardar Configuración del Webhook",
+      "publicUrlRequired": "Se debe configurar una URL pública en Configuración para habilitar webhooks",
+      "publicUrl": {
+        "configured": "URL Pública Configurada",
+        "missing": "URL Pública No Configurada",
+        "description": "Se requiere una URL pública para los webhooks. Configúrela en Configuración > General."
+      },
+      "github": {
+        "title": "Configuración de Webhook de GitHub",
+        "step1": "Vaya a su repositorio en GitHub",
+        "step2": "Navegue a Configuración > Webhooks > Agregar webhook",
+        "step3": "Pegue la URL del webhook arriba",
+        "step4": "Establezca el tipo de contenido en 'application/json' y agregue su secreto"
+      },
+      "gitlab": {
+        "title": "Configuración de Webhook de GitLab",
+        "step1": "Vaya a su proyecto en GitLab",
+        "step2": "Navegue a Configuración > Webhooks",
+        "step3": "Pegue la URL del webhook y agregue su token secreto"
+      },
+      "generic": {
+        "title": "Configuración de Webhook",
+        "step1": "Configure su webhook para enviar solicitudes POST a: {{url}}",
+        "step2": "Establezca el token secreto si su proveedor lo requiere"
+      }
+    },
+    "publicUrl": {
+      "configured": "La URL pública está configurada",
+      "missing": "La URL pública no está configurada",
+      "description": "Configure una URL pública en Configuración para habilitar webhooks e integraciones OAuth."
+    },
+    "form": {
+      "name": "Nombre del Repositorio",
+      "namePlaceholder": "mi-app",
+      "provider": "Proveedor",
+      "repoUrl": "URL del Repositorio",
+      "branch": "Rama",
+      "composePath": "Ruta del Archivo Compose",
+      "visibility": "Visibilidad",
+      "visibilityPublic": "Público",
+      "visibilityPrivate": "Privado",
+      "authType": "Autenticación",
+      "noAuth": "Sin Autenticación",
+      "httpsToken": "Token HTTPS",
+      "autoDeploy": "Despliegue automático al recibir push por webhook"
+    },
+    "list": {
+      "title": "Tus Repositorios"
+    },
+    "createButton": "Crear Repositorio",
+    "deploy": "Desplegar",
+    "stackName": "Nombre del Stack",
+    "stackNamePlaceholder": "nombre-stack-opcional",
+    "showPublicKey": "Mostrar Clave Pública SSH"
   },
   "tunnelsPage": {
     "errors": {

@@ -475,7 +475,69 @@
     "ssh": {
       "title": "SSH public key",
       "copy": "Copy"
-    }
+    },
+    "webhook": {
+      "title": "Webhook Configuration",
+      "enabled": "Webhook Enabled",
+      "enable": "Enable Webhook",
+      "url": "Webhook URL",
+      "secret": "Webhook Secret",
+      "secretPlaceholder": "Enter a secret to verify webhook signatures",
+      "secretHelp": "This secret is used to verify that webhooks come from your Git provider",
+      "saveConfig": "Save Webhook Configuration",
+      "publicUrlRequired": "Public URL must be configured in Settings to enable webhooks",
+      "publicUrl": {
+        "configured": "Public URL Configured",
+        "missing": "Public URL Not Configured",
+        "description": "A public URL is required for webhooks. Configure it in Settings > General."
+      },
+      "github": {
+        "title": "GitHub Webhook Setup",
+        "step1": "Go to your repository on GitHub",
+        "step2": "Navigate to Settings > Webhooks > Add webhook",
+        "step3": "Paste the webhook URL above",
+        "step4": "Set Content type to 'application/json' and add your secret"
+      },
+      "gitlab": {
+        "title": "GitLab Webhook Setup",
+        "step1": "Go to your project on GitLab",
+        "step2": "Navigate to Settings > Webhooks",
+        "step3": "Paste the webhook URL and add your secret token"
+      },
+      "generic": {
+        "title": "Webhook Setup",
+        "step1": "Configure your webhook to send POST requests to: {{url}}",
+        "step2": "Set the secret token if required by your provider"
+      }
+    },
+    "publicUrl": {
+      "configured": "Public URL is configured",
+      "missing": "Public URL is not configured",
+      "description": "Configure a public URL in Settings to enable webhooks and OAuth integrations."
+    },
+    "form": {
+      "name": "Repository Name",
+      "namePlaceholder": "my-app",
+      "provider": "Provider",
+      "repoUrl": "Repository URL",
+      "branch": "Branch",
+      "composePath": "Compose File Path",
+      "visibility": "Visibility",
+      "visibilityPublic": "Public",
+      "visibilityPrivate": "Private",
+      "authType": "Authentication",
+      "noAuth": "No Authentication",
+      "httpsToken": "HTTPS Token",
+      "autoDeploy": "Auto-deploy on webhook push"
+    },
+    "list": {
+      "title": "Your Repositories"
+    },
+    "createButton": "Create Repository",
+    "deploy": "Deploy",
+    "stackName": "Stack Name",
+    "stackNamePlaceholder": "optional-stack-name",
+    "showPublicKey": "Show SSH Public Key"
   },
   "tunnelsPage": {
     "errors": {

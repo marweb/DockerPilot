@@ -726,7 +726,69 @@
     "ssh": {
       "title": "Clé publique SSH",
       "copy": "Copie"
-    }
+    },
+    "webhook": {
+      "title": "Configuration du Webhook",
+      "enabled": "Webhook Activé",
+      "enable": "Activer le Webhook",
+      "url": "URL du Webhook",
+      "secret": "Secret du Webhook",
+      "secretPlaceholder": "Entrez un secret pour vérifier les signatures du webhook",
+      "secretHelp": "Ce secret est utilisé pour vérifier que les webhooks proviennent de votre fournisseur Git",
+      "saveConfig": "Enregistrer la Configuration du Webhook",
+      "publicUrlRequired": "L'URL publique doit être configurée dans Paramètres pour activer les webhooks",
+      "publicUrl": {
+        "configured": "URL Publique Configurée",
+        "missing": "URL Publique Non Configurée",
+        "description": "Une URL publique est requise pour les webhooks. Configurez-la dans Paramètres > Général."
+      },
+      "github": {
+        "title": "Configuration du Webhook GitHub",
+        "step1": "Allez à votre référentiel sur GitHub",
+        "step2": "Naviguez vers Paramètres > Webhooks > Ajouter un webhook",
+        "step3": "Collez l'URL du webhook ci-dessus",
+        "step4": "Définissez le type de contenu sur 'application/json' et ajoutez votre secret"
+      },
+      "gitlab": {
+        "title": "Configuration du Webhook GitLab",
+        "step1": "Allez à votre projet sur GitLab",
+        "step2": "Naviguez vers Paramètres > Webhooks",
+        "step3": "Collez l'URL du webhook et ajoutez votre token secret"
+      },
+      "generic": {
+        "title": "Configuration du Webhook",
+        "step1": "Configurez votre webhook pour envoyer des requêtes POST à : {{url}}",
+        "step2": "Définissez le token secret si requis par votre fournisseur"
+      }
+    },
+    "publicUrl": {
+      "configured": "L'URL publique est configurée",
+      "missing": "L'URL publique n'est pas configurée",
+      "description": "Configurez une URL publique dans Paramètres pour activer les webhooks et les intégrations OAuth."
+    },
+    "form": {
+      "name": "Nom du Dépôt",
+      "namePlaceholder": "mon-app",
+      "provider": "Fournisseur",
+      "repoUrl": "URL du Référentiel",
+      "branch": "Branche",
+      "composePath": "Chemin du Fichier Compose",
+      "visibility": "Visibilité",
+      "visibilityPublic": "Publique",
+      "visibilityPrivate": "Privé",
+      "authType": "Authentification",
+      "noAuth": "Sans Authentification",
+      "httpsToken": "Jeton HTTPS",
+      "autoDeploy": "Déploiement automatique sur push webhook"
+    },
+    "list": {
+      "title": "Vos Dépôts"
+    },
+    "createButton": "Créer un Dépôt",
+    "deploy": "Déployer",
+    "stackName": "Nom de la Pile",
+    "stackNamePlaceholder": "nom-pile-optionnel",
+    "showPublicKey": "Afficher la Clé Publique SSH"
   },
   "tunnelsPage": {
     "errors": {

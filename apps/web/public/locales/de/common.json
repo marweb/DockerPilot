@@ -726,7 +726,69 @@
     "ssh": {
       "title": "Öffentlicher SSH-Schlüssel",
       "copy": "Kopie"
-    }
+    },
+    "webhook": {
+      "title": "Webhook-Konfiguration",
+      "enabled": "Webhook Aktiviert",
+      "enable": "Webhook Aktivieren",
+      "url": "Webhook-URL",
+      "secret": "Webhook-Geheimnis",
+      "secretPlaceholder": "Geben Sie ein Geheimnis ein, um Webhook-Signaturen zu überprüfen",
+      "secretHelp": "Dieses Geheimnis wird verwendet, um zu überprüfen, dass Webhooks von Ihrem Git-Anbieter stammen",
+      "saveConfig": "Webhook-Konfiguration Speichern",
+      "publicUrlRequired": "Öffentliche URL muss in Einstellungen konfiguriert sein, um Webhooks zu aktivieren",
+      "publicUrl": {
+        "configured": "Öffentliche URL Konfiguriert",
+        "missing": "Öffentliche URL Nicht Konfiguriert",
+        "description": "Eine öffentliche URL ist für Webhooks erforderlich. Konfigurieren Sie sie unter Einstellungen > Allgemein."
+      },
+      "github": {
+        "title": "GitHub Webhook-Konfiguration",
+        "step1": "Gehen Sie zu Ihrem Repository auf GitHub",
+        "step2": "Navigieren Sie zu Einstellungen > Webhooks > Webhook hinzufügen",
+        "step3": "Fügen Sie die Webhook-URL oben ein",
+        "step4": "Setzen Sie den Inhaltstyp auf 'application/json' und fügen Sie Ihr Geheimnis hinzu"
+      },
+      "gitlab": {
+        "title": "GitLab Webhook-Konfiguration",
+        "step1": "Gehen Sie zu Ihrem Projekt auf GitLab",
+        "step2": "Navigieren Sie zu Einstellungen > Webhooks",
+        "step3": "Fügen Sie die Webhook-URL ein und fügen Sie Ihr Geheimnis-Token hinzu"
+      },
+      "generic": {
+        "title": "Webhook-Konfiguration",
+        "step1": "Konfigurieren Sie Ihren Webhook, um POST-Anfragen zu senden an: {{url}}",
+        "step2": "Setzen Sie das Geheimnis-Token, falls von Ihrem Anbieter erforderlich"
+      }
+    },
+    "publicUrl": {
+      "configured": "Öffentliche URL ist konfiguriert",
+      "missing": "Öffentliche URL ist nicht konfiguriert",
+      "description": "Konfigurieren Sie eine öffentliche URL in den Einstellungen, um Webhooks und OAuth-Integrationen zu aktivieren."
+    },
+    "form": {
+      "name": "Repository-Name",
+      "namePlaceholder": "meine-app",
+      "provider": "Anbieter",
+      "repoUrl": "Repository-URL",
+      "branch": "Zweig",
+      "composePath": "Compose-Dateipfad",
+      "visibility": "Sichtbarkeit",
+      "visibilityPublic": "Öffentlich",
+      "visibilityPrivate": "Privat",
+      "authType": "Authentifizierung",
+      "noAuth": "Keine Authentifizierung",
+      "httpsToken": "HTTPS-Token",
+      "autoDeploy": "Auto-Deploy bei Webhook-Push"
+    },
+    "list": {
+      "title": "Ihre Repositories"
+    },
+    "createButton": "Repository Erstellen",
+    "deploy": "Bereitstellen",
+    "stackName": "Stack-Name",
+    "stackNamePlaceholder": "optionaler-stack-name",
+    "showPublicKey": "SSH-Öffentlichen Schlüssel Anzeigen"
   },
   "tunnelsPage": {
     "errors": {

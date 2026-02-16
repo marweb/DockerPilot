@@ -41,6 +41,9 @@ interface RepoRecord {
   httpsToken?: string;
   oauthConnectionId?: string;
   autoDeploy: boolean;
+  webhookUrl?: string;
+  webhookSecret?: string;
+  webhookEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -84,6 +87,13 @@ const createRepoBody = z.object({
   httpsToken: z.string().optional(),
   oauthConnectionId: z.string().optional(),
   autoDeploy: z.boolean().default(false),
+  webhookEnabled: z.boolean().default(false),
+  webhookSecret: z.string().optional(),
+});
+
+const updateRepoWebhookBody = z.object({
+  webhookEnabled: z.boolean(),
+  webhookSecret: z.string().optional(),
 });
 
 const updateRepoBody = createRepoBody.partial();
@@ -279,10 +289,11 @@ function getRepoKeyPath(id: string): string {
 }
 
 function toSafeRepo(repo: RepoRecord) {
-  const { httpsToken, ...safe } = repo;
+  const { httpsToken, webhookSecret, ...safe } = repo;
   return {
     ...safe,
     hasHttpsToken: Boolean(httpsToken),
+    hasWebhookSecret: Boolean(webhookSecret),
   };
 }
 
@@ -1143,6 +1154,11 @@ export async function repoRoutes(fastify: FastifyInstance) {
       }
 
       const now = new Date().toISOString();
+      const publicBaseUrl = process.env.PUBLIC_BASE_URL || '';
+      const webhookUrl = publicBaseUrl
+        ? `${publicBaseUrl}/api/repos/webhooks/${payload.provider === 'generic' ? 'github' : payload.provider}`
+        : undefined;
+
       const repo: RepoRecord = {
         id: crypto.randomUUID(),
         name,
@@ -1155,6 +1171,9 @@ export async function repoRoutes(fastify: FastifyInstance) {
         httpsToken: encryptSecret(payload.httpsToken),
         oauthConnectionId: payload.oauthConnectionId,
         autoDeploy: payload.autoDeploy,
+        webhookEnabled: payload.webhookEnabled ?? false,
+        webhookUrl,
+        webhookSecret: payload.webhookSecret ? encryptSecret(payload.webhookSecret) : undefined,
         createdAt: now,
         updatedAt: now,
       };
@@ -1179,6 +1198,42 @@ export async function repoRoutes(fastify: FastifyInstance) {
 
     return reply.send({ success: true, data: toSafeRepo(repo) });
   });
+
+  fastify.post<{ Params: { id: string }; Body: z.infer<typeof updateRepoWebhookBody> }>(
+    '/repos/:id/webhook',
+    { schema: { body: updateRepoWebhookBody } },
+    async (request, reply) => {
+      const repos = await loadRepos();
+      const index = repos.findIndex((entry) => entry.id === request.params.id);
+      if (index === -1) {
+        return reply.status(404).send({ success: false, error: 'Repository not found' });
+      }
+
+      const current = repos[index];
+
+      // Validate public endpoint is configured if enabling webhook
+      if (request.body.webhookEnabled && !hasPublicEndpointConfigured()) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Webhook requires a publicly reachable PUBLIC_BASE_URL',
+        });
+      }
+
+      const updated: RepoRecord = {
+        ...current,
+        webhookEnabled: request.body.webhookEnabled,
+        webhookSecret: request.body.webhookSecret
+          ? encryptSecret(request.body.webhookSecret)
+          : current.webhookSecret,
+        updatedAt: new Date().toISOString(),
+      };
+
+      repos[index] = updated;
+      await saveRepos(repos);
+
+      return reply.send({ success: true, data: toSafeRepo(updated) });
+    }
+  );
 
   fastify.patch<{ Params: { id: string }; Body: z.infer<typeof updateRepoBody> }>(
     '/repos/:id',

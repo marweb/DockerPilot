@@ -726,7 +726,69 @@
     "ssh": {
       "title": "SSH 公钥",
       "copy": "复制"
-    }
+    },
+    "webhook": {
+      "title": "Webhook 配置",
+      "enabled": "Webhook 已启用",
+      "enable": "启用 Webhook",
+      "url": "Webhook URL",
+      "secret": "Webhook 密钥",
+      "secretPlaceholder": "输入密钥以验证 webhook 签名",
+      "secretHelp": "此密钥用于验证 webhook 是否来自您的 Git 提供商",
+      "saveConfig": "保存 Webhook 配置",
+      "publicUrlRequired": "必须在设置中配置公共 URL 才能启用 webhooks",
+      "publicUrl": {
+        "configured": "公共 URL 已配置",
+        "missing": "公共 URL 未配置",
+        "description": "webhooks 需要公共 URL。请在设置 > 常规中进行配置。"
+      },
+      "github": {
+        "title": "GitHub Webhook 配置",
+        "step1": "转到 GitHub 上的您的仓库",
+        "step2": "导航到设置 > Webhooks > 添加 webhook",
+        "step3": "粘贴上面的 webhook URL",
+        "step4": "将内容类型设置为 'application/json' 并添加您的密钥"
+      },
+      "gitlab": {
+        "title": "GitLab Webhook 配置",
+        "step1": "转到 GitLab 上的您的项目",
+        "step2": "导航到设置 > Webhooks",
+        "step3": "粘贴 webhook URL 并添加您的密钥令牌"
+      },
+      "generic": {
+        "title": "Webhook 配置",
+        "step1": "配置您的 webhook 以向以下地址发送 POST 请求：{{url}}",
+        "step2": "如果您的提供商需要，请设置密钥令牌"
+      }
+    },
+    "publicUrl": {
+      "configured": "公共 URL 已配置",
+      "missing": "公共 URL 未配置",
+      "description": "在设置中配置公共 URL 以启用 webhooks 和 OAuth 集成。"
+    },
+    "form": {
+      "name": "仓库名称",
+      "namePlaceholder": "我的应用",
+      "provider": "提供商",
+      "repoUrl": "仓库 URL",
+      "branch": "分支",
+      "composePath": "Compose 文件路径",
+      "visibility": "可见性",
+      "visibilityPublic": "公共",
+      "visibilityPrivate": "私有",
+      "authType": "认证",
+      "noAuth": "无认证",
+      "httpsToken": "HTTPS 令牌",
+      "autoDeploy": "在 webhook 推送时自动部署"
+    },
+    "list": {
+      "title": "您的仓库"
+    },
+    "createButton": "创建仓库",
+    "deploy": "部署",
+    "stackName": "堆栈名称",
+    "stackNamePlaceholder": "可选堆栈名称",
+    "showPublicKey": "显示 SSH 公钥"
   },
   "tunnelsPage": {
     "errors": {

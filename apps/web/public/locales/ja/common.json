@@ -726,7 +726,69 @@
     "ssh": {
       "title": "SSH公開鍵",
       "copy": "コピー"
-    }
+    },
+    "webhook": {
+      "title": "Webhook 設定",
+      "enabled": "Webhook 有効",
+      "enable": "Webhook を有効にする",
+      "url": "Webhook URL",
+      "secret": "Webhook シークレット",
+      "secretPlaceholder": "Webhook 署名を確認するためのシークレットを入力してください",
+      "secretHelp": "このシークレットは、Webhook が Git プロバイダーから送信されたことを確認するために使用されます",
+      "saveConfig": "Webhook 設定を保存",
+      "publicUrlRequired": "Webhook を有効にするには、設定でパブリック URL を構成する必要があります",
+      "publicUrl": {
+        "configured": "パブリック URL 構成済み",
+        "missing": "パブリック URL 未構成",
+        "description": "Webhook にはパブリック URL が必要です。設定 > 一般で構成してください。"
+      },
+      "github": {
+        "title": "GitHub Webhook 設定",
+        "step1": "GitHub でリポジトリに移動します",
+        "step2": "設定 > Webhooks > Webhook を追加 に移動します",
+        "step3": "上記の Webhook URL を貼り付けます",
+        "step4": "コンテンツタイプを 'application/json' に設定し、シークレットを追加します"
+      },
+      "gitlab": {
+        "title": "GitLab Webhook 設定",
+        "step1": "GitLab でプロジェクトに移動します",
+        "step2": "設定 > Webhooks に移動します",
+        "step3": "Webhook URL を貼り付け、シークレットトークンを追加します"
+      },
+      "generic": {
+        "title": "Webhook 設定",
+        "step1": "Webhook を次のアドレスに POST リクエストを送信するように構成します：{{url}}",
+        "step2": "プロバイダーが必要とする場合は、シークレットトークンを設定します"
+      }
+    },
+    "publicUrl": {
+      "configured": "パブリック URL が構成されています",
+      "missing": "パブリック URL が構成されていません",
+      "description": "Webhook と OAuth 統合を有効にするには、設定でパブリック URL を構成してください。"
+    },
+    "form": {
+      "name": "リポジトリ名",
+      "namePlaceholder": "my-app",
+      "provider": "プロバイダー",
+      "repoUrl": "リポジトリ URL",
+      "branch": "ブランチ",
+      "composePath": "Compose ファイルパス",
+      "visibility": "可視性",
+      "visibilityPublic": "パブリック",
+      "visibilityPrivate": "プライベート",
+      "authType": "認証",
+      "noAuth": "認証なし",
+      "httpsToken": "HTTPS トークン",
+      "autoDeploy": "Webhook プッシュ時に自動デプロイ"
+    },
+    "list": {
+      "title": "あなたのリポジトリ"
+    },
+    "createButton": "リポジトリを作成",
+    "deploy": "デプロイ",
+    "stackName": "スタック名",
+    "stackNamePlaceholder": "オプションのスタック名",
+    "showPublicKey": "SSH 公開鍵を表示"
   },
   "tunnelsPage": {
     "errors": {

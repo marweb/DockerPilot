@@ -1,8 +1,24 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { CheckCircle2, Copy, GitBranch, KeyRound, Play, RefreshCw, Shield } from 'lucide-react';
+import {
+  CheckCircle2,
+  Copy,
+  GitBranch,
+  KeyRound,
+  Play,
+  RefreshCw,
+  Globe,
+  Webhook,
+  Settings,
+  ChevronDown,
+  ChevronUp,
+  ToggleLeft,
+  ToggleRight,
+  AlertCircle,
+} from 'lucide-react';
 import api from '../api/client';
+import { useToast } from '../contexts/ToastContext';
 
 type Repository = {
   id: string;
@@ -14,12 +30,31 @@ type Repository = {
   visibility: 'public' | 'private';
   authType: 'none' | 'ssh' | 'https_token';
   autoDeploy: boolean;
+  webhookEnabled: boolean;
+  webhookUrl?: string;
+  hasWebhookSecret: boolean;
   hasHttpsToken: boolean;
+};
+
+type SystemSettings = {
+  publicUrl: string;
 };
 
 export default function Repositories() {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const queryClient = useQueryClient();
+  const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
+  const [webhookConfig, setWebhookConfig] = useState<
+    Record<
+      string,
+      {
+        enabled: boolean;
+        secret: string;
+        showSecret: boolean;
+      }
+    >
+  >({});
   const [form, setForm] = useState({
     name: '',
     provider: 'generic',
@@ -33,20 +68,7 @@ export default function Repositories() {
   });
   const [selectedRepo, setSelectedRepo] = useState<string>('');
   const [stackName, setStackName] = useState('');
-  const [message, setMessage] = useState('');
   const [publicKey, setPublicKey] = useState('');
-  const [githubDevice, setGithubDevice] = useState<null | {
-    device_code: string;
-    user_code: string;
-    verification_uri: string;
-    interval?: number;
-  }>(null);
-  const [gitlabDevice, setGitlabDevice] = useState<null | {
-    device_code: string;
-    user_code: string;
-    verification_uri: string;
-    interval?: number;
-  }>(null);
 
   const { data: repos, isLoading } = useQuery({
     queryKey: ['repos'],
@@ -56,21 +78,16 @@ export default function Repositories() {
     },
   });
 
-  const { data: oauthStatus } = useQuery({
-    queryKey: ['repos-oauth-status'],
+  const { data: systemSettings } = useQuery({
+    queryKey: ['system-settings'],
     queryFn: async () => {
-      const response = await api.get('/repos/oauth/status');
-      return response.data?.data as {
-        hasPublicUrl: boolean;
-        githubAppConfigured: boolean;
-        gitlabOAuthConfigured: boolean;
-      };
+      const response = await api.get('/system/settings');
+      return response.data?.data as SystemSettings;
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      setMessage('');
       const response = await api.post('/repos', {
         ...form,
         httpsToken: form.authType === 'https_token' ? form.httpsToken : undefined,
@@ -78,35 +95,53 @@ export default function Repositories() {
       return response.data?.data as Repository;
     },
     onSuccess: () => {
-      setMessage(t('repositoriesPage.messages.created'));
+      showToast(t('repositories.messages.created'), 'success');
       queryClient.invalidateQueries({ queryKey: ['repos'] });
+      setForm({
+        name: '',
+        provider: 'generic',
+        repoUrl: '',
+        branch: 'main',
+        composePath: 'docker-compose.yml',
+        visibility: 'public',
+        authType: 'none',
+        httpsToken: '',
+        autoDeploy: false,
+      });
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.create'));
-    },
-  });
-
-  const testMutation = useMutation({
-    mutationFn: async (repoId: string) => {
-      const response = await api.post(`/repos/${repoId}/test-connection`);
-      return response.data;
-    },
-    onSuccess: () => setMessage(t('repositoriesPage.messages.connectionOk')),
-    onError: (error: unknown) => {
-      setMessage(
-        (error as { message?: string })?.message || t('repositoriesPage.errors.connection')
+      showToast(
+        (error as { message?: string })?.message || t('repositories.errors.create'),
+        'error'
       );
     },
   });
 
-  const syncMutation = useMutation({
-    mutationFn: async (repoId: string) => {
-      const response = await api.post(`/repos/${repoId}/sync`);
+  const updateWebhookMutation = useMutation({
+    mutationFn: async ({
+      repoId,
+      enabled,
+      secret,
+    }: {
+      repoId: string;
+      enabled: boolean;
+      secret?: string;
+    }) => {
+      const response = await api.post(`/repos/${repoId}/webhook`, {
+        webhookEnabled: enabled,
+        webhookSecret: secret,
+      });
       return response.data;
     },
-    onSuccess: () => setMessage(t('repositoriesPage.messages.synced')),
+    onSuccess: () => {
+      showToast(t('repositories.messages.webhookUpdated'), 'success');
+      queryClient.invalidateQueries({ queryKey: ['repos'] });
+    },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.sync'));
+      showToast(
+        (error as { message?: string })?.message || t('repositories.errors.webhookUpdate'),
+        'error'
+      );
     },
   });
 
@@ -117,11 +152,14 @@ export default function Repositories() {
       });
       return response.data;
     },
-    onSuccess: (data: { message?: string }) => {
-      setMessage(data?.message || t('repositoriesPage.messages.deployDone'));
+    onSuccess: () => {
+      showToast(t('repositories.messages.deployDone'), 'success');
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.deploy'));
+      showToast(
+        (error as { message?: string })?.message || t('repositories.errors.deploy'),
+        'error'
+      );
     },
   });
 
@@ -132,466 +170,559 @@ export default function Repositories() {
     },
     onSuccess: (key) => {
       setPublicKey(key);
-      setMessage(t('repositoriesPage.messages.sshReady'));
+      showToast(t('repositories.messages.sshReady'), 'success');
     },
     onError: (error: unknown) => {
-      setMessage((error as { message?: string })?.message || t('repositoriesPage.errors.sshKey'));
-    },
-  });
-
-  const githubStartMutation = useMutation({
-    mutationFn: async () => {
-      const response = await api.post('/repos/oauth/github/device/start');
-      return response.data?.data as {
-        device_code: string;
-        user_code: string;
-        verification_uri: string;
-        interval?: number;
-      };
-    },
-    onSuccess: (data) => {
-      setGithubDevice(data);
-      setMessage(t('repositoriesPage.messages.githubStarted'));
-      queryClient.invalidateQueries({ queryKey: ['repos-oauth-status'] });
-    },
-    onError: (error: unknown) => {
-      setMessage(
-        (error as { message?: string })?.message || t('repositoriesPage.errors.githubStart')
+      showToast(
+        (error as { message?: string })?.message || t('repositories.errors.sshKey'),
+        'error'
       );
     },
   });
 
-  const githubPollMutation = useMutation({
-    mutationFn: async () => {
-      if (!githubDevice) throw new Error(t('repositoriesPage.errors.githubNotStarted'));
-      const response = await api.post('/repos/oauth/github/device/poll', {
-        deviceCode: githubDevice.device_code,
-      });
-      return response.data?.data as {
-        pending?: boolean;
-        error?: string;
-        connection?: { username: string };
-      };
-    },
-    onSuccess: (data) => {
-      if (data.pending) {
-        setMessage(
-          t('repositoriesPage.messages.githubPending', {
-            error: data.error || 'authorization_pending',
-          })
-        );
-        return;
+  const toggleRepoExpansion = (repoId: string) => {
+    setExpandedRepo(expandedRepo === repoId ? null : repoId);
+    if (expandedRepo !== repoId && repos) {
+      const repo = repos.find((r) => r.id === repoId);
+      if (repo) {
+        setWebhookConfig((prev) => ({
+          ...prev,
+          [repoId]: {
+            enabled: repo.webhookEnabled,
+            secret: '',
+            showSecret: false,
+          },
+        }));
       }
-      setMessage(
-        t('repositoriesPage.messages.githubConnected', {
-          username: data.connection?.username || 'ok',
-        })
-      );
-      setGithubDevice(null);
-    },
-    onError: (error: unknown) => {
-      setMessage(
-        (error as { message?: string })?.message || t('repositoriesPage.errors.githubPoll')
-      );
-    },
-  });
+    }
+  };
 
-  const gitlabStartMutation = useMutation({
-    mutationFn: async () => {
-      const response = await api.post('/repos/oauth/gitlab/device/start');
-      return response.data?.data as {
-        device_code: string;
-        user_code: string;
-        verification_uri: string;
-        interval?: number;
-      };
-    },
-    onSuccess: (data) => {
-      setGitlabDevice(data);
-      setMessage(t('repositoriesPage.messages.gitlabStarted'));
-      queryClient.invalidateQueries({ queryKey: ['repos-oauth-status'] });
-    },
-    onError: (error: unknown) => {
-      setMessage(
-        (error as { message?: string })?.message || t('repositoriesPage.errors.gitlabStart')
-      );
-    },
-  });
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    showToast(t('common.copied'), 'success');
+  };
 
-  const gitlabPollMutation = useMutation({
-    mutationFn: async () => {
-      if (!gitlabDevice) throw new Error(t('repositoriesPage.errors.gitlabNotStarted'));
-      const response = await api.post('/repos/oauth/gitlab/device/poll', {
-        deviceCode: gitlabDevice.device_code,
-      });
-      return response.data?.data as {
-        pending?: boolean;
-        error?: string;
-        connection?: { username: string };
-      };
-    },
-    onSuccess: (data) => {
-      if (data.pending) {
-        setMessage(
-          t('repositoriesPage.messages.gitlabPending', {
-            error: data.error || 'authorization_pending',
-          })
-        );
-        return;
-      }
-      setMessage(
-        t('repositoriesPage.messages.gitlabConnected', {
-          username: data.connection?.username || 'ok',
-        })
-      );
-      setGitlabDevice(null);
-    },
-    onError: (error: unknown) => {
-      setMessage(
-        (error as { message?: string })?.message || t('repositoriesPage.errors.gitlabPoll')
-      );
-    },
-  });
+  const getWebhookInstructions = (provider: string) => {
+    const baseUrl = systemSettings?.publicUrl || '{your-public-url}';
+    const webhookUrl = `${baseUrl}/api/repos/webhooks/${provider === 'generic' ? 'github' : provider}`;
+
+    switch (provider) {
+      case 'github':
+        return {
+          title: t('repositories.webhooks.github.title'),
+          steps: [
+            t('repositories.webhooks.github.step1'),
+            t('repositories.webhooks.github.step2', { url: webhookUrl }),
+            t('repositories.webhooks.github.step3'),
+            t('repositories.webhooks.github.step4'),
+          ],
+          contentType: 'application/json',
+          events: ['push', 'pull_request'],
+        };
+      case 'gitlab':
+        return {
+          title: t('repositories.webhooks.gitlab.title'),
+          steps: [
+            t('repositories.webhooks.gitlab.step1'),
+            t('repositories.webhooks.gitlab.step2', { url: webhookUrl }),
+            t('repositories.webhooks.gitlab.step3'),
+          ],
+          events: ['Push events', 'Merge request events'],
+        };
+      default:
+        return {
+          title: t('repositories.webhooks.generic.title'),
+          steps: [
+            t('repositories.webhooks.generic.step1', { url: webhookUrl }),
+            t('repositories.webhooks.generic.step2'),
+          ],
+          events: ['push'],
+        };
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          {t('repositoriesPage.title')}
-        </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {t('repositoriesPage.subtitle')}
-        </p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {t('repositories.title')}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            {t('repositories.description')}
+          </p>
+        </div>
       </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-            {t('repositoriesPage.oauth.title')}
-          </h2>
-        </div>
-        <div className="card-body text-sm text-gray-600 dark:text-gray-300 space-y-2">
+      {/* Public URL Status */}
+      {systemSettings?.publicUrl ? (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary-600" />
-            {t('repositoriesPage.oauth.publicUrl')}:{' '}
-            {oauthStatus?.hasPublicUrl ? t('common.yes') : t('common.no')}
+            <Globe className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <span className="text-green-800 dark:text-green-200 font-medium">
+              {t('repositories.publicUrl.configured')}
+            </span>
           </div>
-          <div>
-            {t('repositoriesPage.oauth.githubConfigured')}:{' '}
-            {oauthStatus?.githubAppConfigured ? t('common.yes') : t('common.no')}
-          </div>
-          <div>
-            {t('repositoriesPage.oauth.gitlabConfigured')}:{' '}
-            {oauthStatus?.gitlabOAuthConfigured ? t('common.yes') : t('common.no')}
-          </div>
-          {!oauthStatus?.hasPublicUrl && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800 p-3 text-amber-700 dark:text-amber-300">
-              {t('repositoriesPage.oauth.noPublicUrlWarning')}
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2 pt-2">
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => githubStartMutation.mutate()}
-              disabled={!oauthStatus?.githubAppConfigured || githubStartMutation.isLoading}
-            >
-              {t('repositoriesPage.oauth.connectGithub')}
-            </button>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => gitlabStartMutation.mutate()}
-              disabled={!oauthStatus?.gitlabOAuthConfigured || gitlabStartMutation.isLoading}
-            >
-              {t('repositoriesPage.oauth.connectGitlab')}
-            </button>
-          </div>
-
-          {githubDevice && (
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 mt-2">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {t('repositoriesPage.oauth.githubDeviceTitle')}
-              </p>
-              <p className="text-xs mt-1">
-                {t('repositoriesPage.oauth.openUrl')}: {githubDevice.verification_uri}
-              </p>
-              <p className="text-xs">
-                {t('repositoriesPage.oauth.code')}: {githubDevice.user_code}
-              </p>
-              <button
-                className="btn btn-secondary btn-sm mt-2"
-                onClick={() => githubPollMutation.mutate()}
-              >
-                {t('repositoriesPage.oauth.verifyGithub')}
-              </button>
-            </div>
-          )}
-
-          {gitlabDevice && (
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 mt-2">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {t('repositoriesPage.oauth.gitlabDeviceTitle')}
-              </p>
-              <p className="text-xs mt-1">
-                {t('repositoriesPage.oauth.openUrl')}: {gitlabDevice.verification_uri}
-              </p>
-              <p className="text-xs">
-                {t('repositoriesPage.oauth.code')}: {gitlabDevice.user_code}
-              </p>
-              <button
-                className="btn btn-secondary btn-sm mt-2"
-                onClick={() => gitlabPollMutation.mutate()}
-              >
-                {t('repositoriesPage.oauth.verifyGitlab')}
-              </button>
-            </div>
-          )}
+          <p className="text-sm text-green-700 dark:text-green-300 mt-1 ml-7">
+            {systemSettings.publicUrl}
+          </p>
         </div>
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-            {t('repositoriesPage.newRepo.title')}
-          </h2>
+      ) : (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+            <span className="text-yellow-800 dark:text-yellow-200 font-medium">
+              {t('repositories.publicUrl.missing')}
+            </span>
+          </div>
+          <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1 ml-7">
+            {t('repositories.publicUrl.description')}
+          </p>
         </div>
-        <div className="card-body space-y-3">
-          {message && (
-            <div className="text-sm text-primary-700 dark:text-primary-300">{message}</div>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      )}
+
+      {/* Create Repository Form */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <GitBranch className="w-5 h-5" />
+          {t('repositories.newRepository')}
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('repositories.form.name')}
+            </label>
             <input
-              className="input"
-              placeholder={t('repositoriesPage.newRepo.name')}
+              type="text"
               value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder={t('repositories.form.namePlaceholder')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('repositories.form.provider')}
+            </label>
             <select
-              className="input"
               value={form.provider}
-              onChange={(e) => setForm((prev) => ({ ...prev, provider: e.target.value }))}
+              onChange={(e) => setForm({ ...form, provider: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="generic">{t('repositoriesPage.newRepo.providerGeneric')}</option>
-              <option value="github">{t('repositoriesPage.newRepo.providerGithub')}</option>
-              <option value="gitlab">{t('repositoriesPage.newRepo.providerGitlab')}</option>
+              <option value="generic">Generic (Any Git)</option>
+              <option value="github">GitHub</option>
+              <option value="gitlab">GitLab</option>
             </select>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('repositories.form.repoUrl')}
+            </label>
             <input
-              className="input md:col-span-2"
-              placeholder={t('repositoriesPage.newRepo.repoUrl')}
+              type="url"
               value={form.repoUrl}
-              onChange={(e) => setForm((prev) => ({ ...prev, repoUrl: e.target.value }))}
+              onChange={(e) => setForm({ ...form, repoUrl: e.target.value })}
+              placeholder="https://github.com/username/repo.git"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('repositories.form.branch')}
+            </label>
             <input
-              className="input"
-              placeholder={t('repositoriesPage.newRepo.branch')}
+              type="text"
               value={form.branch}
-              onChange={(e) => setForm((prev) => ({ ...prev, branch: e.target.value }))}
+              onChange={(e) => setForm({ ...form, branch: e.target.value })}
+              placeholder="main"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('repositories.form.composePath')}
+            </label>
             <input
-              className="input"
-              placeholder={t('repositoriesPage.newRepo.composePath')}
+              type="text"
               value={form.composePath}
-              onChange={(e) => setForm((prev) => ({ ...prev, composePath: e.target.value }))}
+              onChange={(e) => setForm({ ...form, composePath: e.target.value })}
+              placeholder="docker-compose.yml"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('repositories.form.visibility')}
+            </label>
             <select
-              className="input"
               value={form.visibility}
-              onChange={(e) => setForm((prev) => ({ ...prev, visibility: e.target.value }))}
+              onChange={(e) =>
+                setForm({ ...form, visibility: e.target.value as 'public' | 'private' })
+              }
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="public">{t('repositoriesPage.newRepo.visibilityPublic')}</option>
-              <option value="private">{t('repositoriesPage.newRepo.visibilityPrivate')}</option>
+              <option value="public">{t('repositories.form.public')}</option>
+              <option value="private">{t('repositories.form.private')}</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('repositories.form.authType')}
+            </label>
             <select
-              className="input"
               value={form.authType}
-              onChange={(e) => setForm((prev) => ({ ...prev, authType: e.target.value }))}
+              onChange={(e) =>
+                setForm({ ...form, authType: e.target.value as 'none' | 'ssh' | 'https_token' })
+              }
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="none">{t('repositoriesPage.newRepo.authNone')}</option>
-              <option value="ssh">{t('repositoriesPage.newRepo.authSsh')}</option>
-              <option value="https_token">{t('repositoriesPage.newRepo.authHttpsToken')}</option>
+              <option value="none">{t('repositories.form.noAuth')}</option>
+              <option value="ssh">SSH Key</option>
+              <option value="https_token">HTTPS Token</option>
             </select>
-            {form.authType === 'https_token' && (
+          </div>
+
+          {form.authType === 'https_token' && (
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('repositories.form.httpsToken')}
+              </label>
               <input
-                className="input md:col-span-2"
-                placeholder={t('repositoriesPage.newRepo.httpsToken')}
                 type="password"
                 value={form.httpsToken}
-                onChange={(e) => setForm((prev) => ({ ...prev, httpsToken: e.target.value }))}
+                onChange={(e) => setForm({ ...form, httpsToken: e.target.value })}
+                placeholder="ghp_xxxxxxxxxxxx"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
-            )}
-            <label className="text-sm text-gray-700 dark:text-gray-300 inline-flex items-center gap-2 md:col-span-2">
-              <input
-                type="checkbox"
-                checked={form.autoDeploy}
-                onChange={(e) => setForm((prev) => ({ ...prev, autoDeploy: e.target.checked }))}
-              />
-              {t('repositoriesPage.newRepo.autoDeploy')}
-            </label>
-          </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => createMutation.mutate()}
-            disabled={createMutation.isLoading}
-          >
-            {t('repositoriesPage.newRepo.createButton')}
-          </button>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-            {t('repositoriesPage.registered.title')}
-          </h2>
-        </div>
-        <div className="card-body p-0">
-          {(repos?.length || 0) === 0 ? (
-            <div className="p-6 text-sm text-gray-500 dark:text-gray-400">
-              {isLoading
-                ? t('repositoriesPage.registered.loading')
-                : t('repositoriesPage.registered.empty')}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      {t('repositoriesPage.registered.columns.name')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      {t('repositoriesPage.registered.columns.repo')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      {t('repositoriesPage.registered.columns.branch')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      {t('repositoriesPage.registered.columns.auth')}
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      {t('repositoriesPage.registered.columns.actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(repos || []).map((repo) => (
-                    <tr key={repo.id} className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
-                        {repo.name}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 break-all">
-                        {repo.repoUrl}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                        <span className="inline-flex items-center gap-1">
-                          <GitBranch className="h-3.5 w-3.5" />
-                          {repo.branch}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                        {repo.authType}
-                      </td>
-                      <td className="px-4 py-3 text-right space-x-2">
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => testMutation.mutate(repo.id)}
-                        >
-                          <CheckCircle2 className="h-4 w-4 mr-1" />
-                          {t('repositoriesPage.actions.test')}
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => syncMutation.mutate(repo.id)}
-                        >
-                          <RefreshCw className="h-4 w-4 mr-1" />
-                          {t('repositoriesPage.actions.sync')}
-                        </button>
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() => {
-                            setSelectedRepo(repo.id);
-                            deployMutation.mutate(repo.id);
-                          }}
-                        >
-                          <Play className="h-4 w-4 mr-1" />
-                          {t('repositoriesPage.actions.deploy')}
-                        </button>
-                        {repo.authType === 'ssh' && (
-                          <button
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => loadPublicKeyMutation.mutate(repo.id)}
-                          >
-                            <KeyRound className="h-4 w-4 mr-1" />
-                            {t('repositoriesPage.actions.sshKey')}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
+
+          <div className="md:col-span-2 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="autoDeploy"
+              checked={form.autoDeploy}
+              onChange={(e) => setForm({ ...form, autoDeploy: e.target.checked })}
+              className="rounded border-gray-300"
+            />
+            <label htmlFor="autoDeploy" className="text-sm text-gray-700 dark:text-gray-300">
+              {t('repositories.form.autoDeploy')}
+            </label>
+          </div>
         </div>
+
+        <button
+          onClick={() => createMutation.mutate()}
+          disabled={createMutation.isLoading || !form.name || !form.repoUrl}
+          className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {createMutation.isLoading ? (
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4" />
+          )}
+          {t('repositories.createButton')}
+        </button>
       </div>
 
-      <div className="card">
-        <div className="card-header">
-          <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-            {t('repositoriesPage.quickDeploy.title')}
+      {/* Repository List */}
+      {repos && repos.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            {t('repositories.list.title')}
           </h2>
-        </div>
-        <div className="card-body grid grid-cols-1 md:grid-cols-3 gap-3">
-          <select
-            className="input"
-            value={selectedRepo}
-            onChange={(e) => setSelectedRepo(e.target.value)}
-          >
-            <option value="">{t('repositoriesPage.quickDeploy.selectRepo')}</option>
-            {(repos || []).map((repo) => (
-              <option key={repo.id} value={repo.id}>
-                {repo.name}
-              </option>
-            ))}
-          </select>
-          <input
-            className="input"
-            placeholder={t('repositoriesPage.quickDeploy.stackName')}
-            value={stackName}
-            onChange={(e) => setStackName(e.target.value)}
-          />
-          <button
-            className="btn btn-primary"
-            disabled={!selectedRepo || deployMutation.isLoading}
-            onClick={() => deployMutation.mutate(selectedRepo)}
-          >
-            {t('repositoriesPage.quickDeploy.button')}
-          </button>
-        </div>
-      </div>
 
-      {publicKey && (
-        <div className="card">
-          <div className="card-header flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900 dark:text-gray-100">
-              {t('repositoriesPage.ssh.title')}
-            </h2>
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => {
-                navigator.clipboard.writeText(publicKey);
-                setMessage(t('repositoriesPage.messages.sshCopied'));
-              }}
+          {repos.map((repo) => (
+            <div
+              key={repo.id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
             >
-              <Copy className="h-4 w-4 mr-1" />
-              {t('repositoriesPage.ssh.copy')}
-            </button>
-          </div>
-          <div className="card-body">
-            <pre className="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-auto">
-              {publicKey}
-            </pre>
-          </div>
+              {/* Repo Header */}
+              <div
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                onClick={() => toggleRepoExpansion(repo.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <GitBranch className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{repo.name}</h3>
+                    <p className="text-sm text-gray-500">{repo.repoUrl}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    {repo.webhookEnabled && (
+                      <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded">
+                        <Webhook className="w-3 h-3" />
+                        {t('repositories.webhook.enabled')}
+                      </span>
+                    )}
+                    {repo.autoDeploy && (
+                      <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">
+                        <Play className="w-3 h-3" />
+                        {t('repositories.autoDeploy.enabled')}
+                      </span>
+                    )}
+                  </div>
+                  {expandedRepo === repo.id ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </div>
+              </div>
+
+              {/* Expanded Content */}
+              {expandedRepo === repo.id && (
+                <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-6">
+                  {/* Webhook Configuration */}
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Webhook className="w-5 h-5 text-primary-600" />
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        {t('repositories.webhook.title')}
+                      </h4>
+                    </div>
+
+                    {systemSettings?.publicUrl ? (
+                      <div className="space-y-4">
+                        {/* Webhook URL */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {t('repositories.webhook.url')}
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={
+                                repo.webhookUrl ||
+                                `${systemSettings.publicUrl}/api/repos/webhooks/${repo.provider === 'generic' ? 'github' : repo.provider}`
+                              }
+                              className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md text-sm text-gray-600 dark:text-gray-300"
+                            />
+                            <button
+                              onClick={() =>
+                                copyToClipboard(
+                                  repo.webhookUrl ||
+                                    `${systemSettings.publicUrl}/api/repos/webhooks/${repo.provider === 'generic' ? 'github' : repo.provider}`
+                                )
+                              }
+                              className="px-3 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-md"
+                              title={t('common.copy')}
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Webhook Toggle */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {webhookConfig[repo.id]?.enabled || repo.webhookEnabled ? (
+                              <ToggleRight className="w-6 h-6 text-green-600" />
+                            ) : (
+                              <ToggleLeft className="w-6 h-6 text-gray-400" />
+                            )}
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                              {t('repositories.webhook.enable')}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const newEnabled = !(
+                                webhookConfig[repo.id]?.enabled ?? repo.webhookEnabled
+                              );
+                              setWebhookConfig((prev) => ({
+                                ...prev,
+                                [repo.id]: { ...prev[repo.id], enabled: newEnabled },
+                              }));
+                            }}
+                            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                              (webhookConfig[repo.id]?.enabled ?? repo.webhookEnabled)
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                : 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {(webhookConfig[repo.id]?.enabled ?? repo.webhookEnabled)
+                              ? t('common.enabled')
+                              : t('common.disabled')}
+                          </button>
+                        </div>
+
+                        {/* Webhook Secret */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            {t('repositories.webhook.secret')}
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type={webhookConfig[repo.id]?.showSecret ? 'text' : 'password'}
+                              value={webhookConfig[repo.id]?.secret || ''}
+                              onChange={(e) =>
+                                setWebhookConfig((prev) => ({
+                                  ...prev,
+                                  [repo.id]: { ...prev[repo.id], secret: e.target.value },
+                                }))
+                              }
+                              placeholder={
+                                repo.hasWebhookSecret
+                                  ? '••••••••••••'
+                                  : t('repositories.webhook.secretPlaceholder')
+                              }
+                              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            />
+                            <button
+                              onClick={() =>
+                                setWebhookConfig((prev) => ({
+                                  ...prev,
+                                  [repo.id]: {
+                                    ...prev[repo.id],
+                                    showSecret: !prev[repo.id]?.showSecret,
+                                  },
+                                }))
+                              }
+                              className="px-3 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-md"
+                            >
+                              {webhookConfig[repo.id]?.showSecret
+                                ? t('common.hide')
+                                : t('common.show')}
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {t('repositories.webhook.secretHelp')}
+                          </p>
+                        </div>
+
+                        {/* Save Webhook Config */}
+                        <button
+                          onClick={() =>
+                            updateWebhookMutation.mutate({
+                              repoId: repo.id,
+                              enabled: webhookConfig[repo.id]?.enabled ?? repo.webhookEnabled,
+                              secret: webhookConfig[repo.id]?.secret || undefined,
+                            })
+                          }
+                          disabled={updateWebhookMutation.isLoading}
+                          className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {updateWebhookMutation.isLoading ? (
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
+                          {t('repositories.webhook.saveConfig')}
+                        </button>
+
+                        {/* Webhook Instructions */}
+                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                          <h5 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
+                            {getWebhookInstructions(repo.provider).title}
+                          </h5>
+                          <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-decimal list-inside">
+                            {getWebhookInstructions(repo.provider).steps.map((step, idx) => (
+                              <li key={idx}>{step}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {t('repositories.webhook.publicUrlRequired')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick Deploy */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('repositories.stackName')}
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedRepo === repo.id ? stackName : ''}
+                        onChange={(e) => {
+                          setSelectedRepo(repo.id);
+                          setStackName(e.target.value);
+                        }}
+                        placeholder={t('repositories.stackNamePlaceholder')}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <button
+                      onClick={() => deployMutation.mutate(repo.id)}
+                      disabled={deployMutation.isLoading}
+                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 mt-6"
+                    >
+                      {deployMutation.isLoading ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
+                      {t('repositories.deploy')}
+                    </button>
+                  </div>
+
+                  {/* SSH Key */}
+                  {repo.authType === 'ssh' && (
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                      <button
+                        onClick={() => loadPublicKeyMutation.mutate(repo.id)}
+                        disabled={loadPublicKeyMutation.isLoading}
+                        className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700"
+                      >
+                        <KeyRound className="w-4 h-4" />
+                        {t('repositories.showPublicKey')}
+                      </button>
+
+                      {publicKey && selectedRepo === repo.id && (
+                        <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-700 rounded-md">
+                          <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto">
+                            {publicKey}
+                          </pre>
+                          <button
+                            onClick={() => copyToClipboard(publicKey)}
+                            className="mt-2 text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                          >
+                            <Copy className="w-3 h-3" />
+                            {t('common.copy')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {repos && repos.length === 0 && (
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <GitBranch className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">{t('repositories.empty')}</p>
         </div>
       )}
     </div>
