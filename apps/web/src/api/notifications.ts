@@ -91,6 +91,16 @@ export async function saveNotificationChannel(
   // Separate config fields from metadata fields
   const { name, enabled, fromName, fromAddress, ...providerConfig } = config;
 
+  // For email providers, include fromAddress in config as required by backend validation
+  if (provider === 'resend' || provider === 'smtp') {
+    if (fromAddress) {
+      (providerConfig as Record<string, unknown>).fromAddress = fromAddress;
+    }
+    if (fromName && provider === 'resend') {
+      (providerConfig as Record<string, unknown>).fromName = fromName;
+    }
+  }
+
   const response = await api.put<ApiResponse<NotificationChannelResponse>>(
     '/system/notifications/config',
     {

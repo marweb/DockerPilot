@@ -54,6 +54,7 @@ const smtpSchema = z.object({
 const resendSchema = z.object({
   enabled: z.boolean(),
   apiKey: z.string().min(1, 'API Key is required when enabled'),
+  fromName: z.string().min(1, 'From name is required'),
   fromAddress: z.string().email('Invalid email address'),
 });
 
@@ -95,6 +96,7 @@ interface SMTPFormData {
 interface ResendFormData {
   enabled: boolean;
   apiKey: string;
+  fromName: string;
   fromAddress: string;
   configured: boolean;
 }
@@ -405,6 +407,7 @@ export default function NotificationsSection() {
   const [resendForm, setResendForm] = useState<ResendFormData>({
     enabled: false,
     apiKey: '',
+    fromName: '',
     fromAddress: '',
     configured: false,
   });
@@ -481,6 +484,7 @@ export default function NotificationsSection() {
             const resendData: ResendFormData = {
               enabled: channel.enabled,
               apiKey: '',
+              fromName: channel.fromName || '',
               fromAddress: channel.fromAddress || '',
               configured: channel.configured,
             };
@@ -584,6 +588,7 @@ export default function NotificationsSection() {
         name: 'Resend',
         enabled: resendForm.enabled,
         apiKey: resendForm.apiKey,
+        fromName: resendForm.fromName,
         fromAddress: resendForm.fromAddress,
       };
 
@@ -857,6 +862,23 @@ export default function NotificationsSection() {
                 error={errors.fromAddress}
               />
             </div>
+            <div className="mt-4 flex justify-end">
+              <Button
+                onClick={async () => {
+                  // Save general settings to all email providers
+                  if (smtpForm.configured || smtpForm.host) {
+                    await saveSMTP();
+                  }
+                  if (resendForm.configured || resendForm.apiKey) {
+                    await saveResend();
+                  }
+                }}
+                leftIcon={<Save className="h-4 w-4" />}
+                disabled={saving === 'smtp' || saving === 'resend'}
+              >
+                {saving === 'smtp' || saving === 'resend' ? 'Saving...' : 'Save General Settings'}
+              </Button>
+            </div>
           </div>
 
           {/* SMTP Server */}
@@ -987,6 +1009,17 @@ export default function NotificationsSection() {
 
               {resendForm.enabled && (
                 <>
+                  <FormInput
+                    label="From Name"
+                    value={resendForm.fromName}
+                    onChange={(value) =>
+                      setResendForm((prev) => ({ ...prev, fromName: value as string }))
+                    }
+                    placeholder="DockPilot"
+                    required
+                    disabled={!resendForm.enabled}
+                    error={errors.fromName}
+                  />
                   <FormInput
                     label="From Address"
                     type="email"
