@@ -49,6 +49,7 @@ export interface SaveNotificationChannelInput {
   username?: string;
   password?: string;
   useTLS?: boolean;
+  encryption?: 'none' | 'tls' | 'ssl' | 'starttls';
   channelId?: string;
   botToken?: string;
   chatId?: string;
@@ -87,11 +88,18 @@ export async function saveNotificationChannel(
   provider: NotificationProvider,
   config: SaveNotificationChannelInput
 ): Promise<NotificationChannelResponse> {
+  // Separate config fields from metadata fields
+  const { name, enabled, fromName, fromAddress, ...providerConfig } = config;
+
   const response = await api.put<ApiResponse<NotificationChannelResponse>>(
     '/system/notifications/config',
     {
       provider,
-      ...config,
+      name,
+      enabled,
+      fromName,
+      fromAddress,
+      config: providerConfig, // Send provider-specific config as nested object
     }
   );
   return extractData(response);

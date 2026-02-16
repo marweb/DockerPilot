@@ -549,7 +549,7 @@ export default function NotificationsSection() {
         port: smtpForm.port,
         username: smtpForm.username,
         password: smtpForm.password || undefined,
-        useTLS: smtpForm.encryption === 'tls' || smtpForm.encryption === 'ssl',
+        encryption: smtpForm.encryption,
         fromName: smtpForm.fromName,
         fromAddress: smtpForm.fromAddress,
       };
