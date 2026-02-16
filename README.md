@@ -5,54 +5,60 @@
 </p>
 
 <p align="center">
-  <strong>Gestion de contenedores Docker con UI web moderna, deploy desde repos y operaciones seguras.</strong>
+  <strong>Modern Docker container management with web UI, repository deployments, and secure operations.</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/marweb/DockPilot/actions"><img src="https://img.shields.io/github/actions/workflow/status/marweb/DockPilot/release.yml?style=flat-square" alt="Release"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/marweb/DockPilot?style=flat-square" alt="License"/></a>
   <a href="https://github.com/marweb/DockPilot/issues"><img src="https://img.shields.io/github/issues/marweb/DockPilot?style=flat-square" alt="Issues"/></a>
+  <a href="https://github.com/marweb/DockPilot/releases"><img src="https://img.shields.io/github/v/release/marweb/DockPilot?style=flat-square" alt="Version"/></a>
 </p>
 
-## Caracteristicas
+<p align="center">
+  <a href="README.md">English</a> | <a href="README-es.md">Español</a>
+</p>
 
-- Gestion completa de contenedores, imagenes, redes y volumenes.
-- Docker Compose wizard con preflight y validacion.
-- Deploy desde repositorios (manual + OAuth opcional).
-- Webhooks GitHub/GitLab con validacion de firma/token e idempotencia.
-- Editor de variables por microservicio con recreate seguro y rollback.
-- RBAC, rate limiting y auditoria para uso productivo.
-- **Sistema de notificaciones automaticas por eventos** (Nuevo en v2.0)
+---
 
-## Notifications
+## ✨ Features
 
-DockPilot includes a powerful event notification system that can alert you when important events occur:
+- **Complete Docker Management**: Containers, images, networks, and volumes
+- **Docker Compose Wizard**: Preflight checks and validation
+- **Repository Deployments**: Manual + OAuth support
+- **GitHub/GitLab Webhooks**: Signature/token validation with idempotency
+- **Environment Variable Editor**: Safe service recreate with rollback
+- **RBAC & Security**: Rate limiting and audit logging for production use
+- **🔔 Smart Notifications** (v2.0): Automatic event alerts via email, Slack, Telegram, Discord
 
-### Supported Events
+## 🔔 Notification System
 
-- Container crashes and OOM kills
-- Failed deployments
-- Security incidents
-- System upgrades
-- Authentication events
-- And 25+ more...
+DockPilot includes a powerful event notification system to alert you when important events occur:
+
+### Supported Events (30+)
+
+- **Containers**: Crashes, OOM kills, restarts, health check failures
+- **Deployments**: Success, failure, rollback events
+- **Security**: Brute force attacks, unauthorized access attempts
+- **System**: Upgrades, backups, startup/shutdown
+- **Authentication**: Login success/failure, password changes
 
 ### Notification Channels
 
-- Email (SMTP/Resend)
-- Slack
-- Telegram
-- Discord
+- 📧 **Email** (SMTP / Resend)
+- 💬 **Slack** (Webhooks)
+- ✈️ **Telegram** (Bot API)
+- 🎮 **Discord** (Webhooks)
 
 ### Quick Setup
 
-1. Configure channels in Settings → Notifications
-2. Enable events in Settings → Events
-3. Receive automatic alerts
+1. Go to **Settings** → **Notifications** → Configure channels
+2. Go to **Settings** → **Events** → Enable desired events
+3. Receive automatic alerts when events occur
 
-See [Notification Documentation](./docs/notifications/)
+📖 See [Notification Documentation](./docs/guides/notifications/)
 
-## Capturas
+## 📸 Screenshots
 
 ### Login
 
@@ -66,9 +72,9 @@ See [Notification Documentation](./docs/notifications/)
 
 ![DockPilot Settings](assets/screenshots/dockpilot-settings.png)
 
-## Instalacion rapida
+## 🚀 Quick Start
 
-### One-liner (recomendado)
+### One-liner (Recommended)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/marweb/DockPilot/master/scripts/install.sh | sudo bash
@@ -80,10 +86,11 @@ curl -fsSL https://raw.githubusercontent.com/marweb/DockPilot/master/scripts/ins
 git clone https://github.com/marweb/DockPilot.git
 cd DockPilot
 cp infra/.env.example infra/.env
+# Edit infra/.env with your settings
 docker compose -f infra/docker-compose.yml up -d --build
 ```
 
-### Desarrollo local
+### Local Development
 
 ```bash
 git clone https://github.com/marweb/DockPilot.git
@@ -92,42 +99,124 @@ pnpm install
 pnpm dev
 ```
 
-## Variables importantes
+## ⚙️ Important Environment Variables
 
 ```bash
-JWT_SECRET=change-this
-MASTER_KEY=change-this-with-32-plus-chars
+# Required
+JWT_SECRET=your-secure-jwt-secret-min-32-chars
+MASTER_KEY=your-secure-master-key-min-32-chars
+
+# Optional but recommended
 PUBLIC_BASE_URL=https://dockpilot.example.com
-GITHUB_WEBHOOK_SECRET=change-this
-GITLAB_WEBHOOK_SECRET=change-this
+GITHUB_WEBHOOK_SECRET=your-github-webhook-secret
+GITLAB_WEBHOOK_SECRET=your-gitlab-webhook-secret
 ```
 
-Referencias completas:
+See [Configuration Guide](./docs/guides/configuration.md) for complete documentation.
 
-- `docs/configuration.md`
-- `docs/operations-checklist.md`
-- `docs/installation.md`
-- `docs/troubleshooting.md`
+## 📚 Documentation
 
-## Scripts utiles
+### User Guides
 
-- `infra/scripts/start.sh`
-- `infra/scripts/stop.sh`
-- `infra/scripts/logs.sh`
-- `infra/scripts/backup.sh`
-- `infra/scripts/restore.sh`
+- [Installation](./docs/guides/installation.md)
+- [Configuration](./docs/guides/configuration.md)
+- [Operations Checklist](./docs/guides/operations-checklist.md)
+- [Troubleshooting](./docs/guides/troubleshooting.md)
+- [Notification Setup](./docs/guides/notifications/)
 
-## Estado de produccion
+### Developer Documentation
 
-Para cierre operativo (rotacion de secretos, runbook de incidentes, monitoreo/alertas y backup/restore probado), usar:
+- [Architecture](./docs/reference/architecture.md)
+- [API Reference](./docs/reference/api.md)
+- [Development Checklists](./docs/development/)
+- [Architecture Decisions](./docs/architecture/)
 
-- `docs/operations-checklist.md`
+### Deployment
 
-## Comunidad
+- [Docker Compose](./infra/docker-compose.yml)
+- [Environment Templates](./infra/.env.example)
+- [Scripts](./scripts/)
 
-- Issues: https://github.com/marweb/DockPilot/issues
-- Discussions: https://github.com/marweb/DockPilot/discussions
+## 🛠️ Useful Scripts
 
-## Licencia
+```bash
+# Start services
+infra/scripts/start.sh
 
-Este proyecto se distribuye bajo licencia MIT. Ver `LICENSE`.
+# Stop services
+infra/scripts/stop.sh
+
+# View logs
+infra/scripts/logs.sh
+
+# Backup data
+infra/scripts/backup.sh
+
+# Restore data
+infra/scripts/restore.sh
+```
+
+## 🔐 Security
+
+DockPilot implements multiple security layers:
+
+- **Encryption**: AES-256-GCM for sensitive data
+- **Authentication**: JWT with refresh tokens
+- **Authorization**: Role-based access control (RBAC)
+- **Rate Limiting**: Configurable per endpoint
+- **Audit Logging**: All actions tracked
+- **Secret Management**: Encrypted credentials storage
+
+## 🌍 Internationalization
+
+DockPilot supports 7 languages:
+
+- 🇺🇸 English
+- 🇪🇸 Español
+- 🇫🇷 Français
+- 🇩🇪 Deutsch
+- 🇨🇳 中文
+- 🇷🇺 Русский
+- 🇯🇵 日本語
+
+## 🏗️ Architecture
+
+DockPilot uses a microservices architecture:
+
+- **API Gateway** (Port 3000): Authentication, RBAC, routing
+- **Docker Control** (Port 3001): Docker operations, webhooks
+- **Tunnel Control** (Port 3002): Cloudflare tunnel management
+- **Web UI** (Port 8000): React frontend
+
+See [Architecture Documentation](./docs/reference/architecture.md) for details.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see:
+
+- [Contributing Guidelines](./CONTRIBUTING.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Development Setup](./docs/development/)
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Docker SDK for the amazing API
+- Fastify for the high-performance backend
+- React and Tailwind for the modern UI
+- The open-source community
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/marweb/DockPilot/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/marweb/DockPilot/discussions)
+- **Security**: Please report security issues privately
+
+---
+
+<p align="center">
+  Made with ❤️ by the DockPilot Team
+</p>
