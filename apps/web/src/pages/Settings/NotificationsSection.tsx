@@ -452,6 +452,10 @@ export default function NotificationsSection() {
     try {
       const channels = await getNotificationChannels();
 
+      // Track if we found any email provider with fromName/fromAddress for General Settings
+      let generalFromName = '';
+      let generalFromAddress = '';
+
       // Map channels to form states
       channels.forEach(
         (channel: {
@@ -481,6 +485,9 @@ export default function NotificationsSection() {
             };
             setSmtpForm(smtpData);
             setOriginalSmtp(smtpData);
+            // Use SMTP fromName/fromAddress for General Settings if available
+            if (channel.fromName) generalFromName = channel.fromName;
+            if (channel.fromAddress) generalFromAddress = channel.fromAddress;
           } else if (channel.provider === 'resend') {
             const resendData: ResendFormData = {
               enabled: channel.enabled,
@@ -491,6 +498,10 @@ export default function NotificationsSection() {
             };
             setResendForm(resendData);
             setOriginalResend(resendData);
+            // Use Resend fromName/fromAddress for General Settings if SMTP didn't have them
+            if (!generalFromName && channel.fromName) generalFromName = channel.fromName;
+            if (!generalFromAddress && channel.fromAddress)
+              generalFromAddress = channel.fromAddress;
           } else if (channel.provider === 'slack') {
             const slackData: SlackFormData = {
               enabled: channel.enabled,
@@ -519,7 +530,22 @@ export default function NotificationsSection() {
           }
         }
       );
-    } catch {
+
+      // If we found fromName/fromAddress from any email provider, update General Settings
+      if (generalFromName || generalFromAddress) {
+        setSmtpForm((prev) => ({
+          ...prev,
+          fromName: generalFromName || prev.fromName,
+          fromAddress: generalFromAddress || prev.fromAddress,
+        }));
+        setOriginalSmtp((prev) => ({
+          ...prev,
+          fromName: generalFromName || prev.fromName,
+          fromAddress: generalFromAddress || prev.fromAddress,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading notification channels:', error);
       showToast('Failed to load notification channels', 'error');
     } finally {
       setLoading(false);

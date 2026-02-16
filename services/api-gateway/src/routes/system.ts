@@ -560,7 +560,9 @@ export async function systemRoutes(fastify: FastifyInstance): Promise<void> {
 
       return reply.send({
         success: true,
-        data: transformedChannels,
+        data: {
+          channels: transformedChannels,
+        },
       });
     }
   );
